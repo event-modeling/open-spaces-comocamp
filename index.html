@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Booking</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Room Booking System</h1>
+    <form id="bookingForm">
+        <label for="roomNumber">Room Number:</label>
+        <input type="text" id="roomNumber" name="roomNumber" required>
+
+        <label for="startTime">Start Time:</label>
+        <input type="datetime-local" id="startTime" name="startTime" required>
+
+        <label for="endTime">End Time:</label>
+        <input type="datetime-local" id="endTime" name="endTime" required>
+
+        <button type="submit">Book Room</button>
+    </form>
+
+    <script src="script.js"></script>
+</body>
+</html>
