@@ -4,19 +4,20 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xanadiu/open-spaces-comocamp.git"
+    "url": "git+https://github.com/event-modeling/open-spaces-comocamp.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/xanadiu/open-spaces-comocamp/issues"
+    "url": "https://github.com/event-modeling/open-spaces-comocamp/issues"
   },
-  "homepage": "https://github.com/xanadiu/open-spaces-comocamp#readme",
+  "homepage": "https://github.com/event-modeling/open-spaces-comocamp#readme",
   "dependencies": {
     "express": "^4.19.2"
   }
