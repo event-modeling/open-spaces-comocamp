@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/event-modeling/open-spaces-comocamp/issues"
   },
-  "homepage": "https://github.com/event-modeling/open-spaces-comocamp#readme"
+  "homepage": "https://github.com/event-modeling/open-spaces-comocamp#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
 }
