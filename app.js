@@ -11,5 +11,9 @@ app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
 
+app.get('/rooms', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
 module.exports = app;
 
