@@ -1,11 +1,13 @@
 const express = require('express');
 const { engine } = require('express-handlebars');
 const app = express();
+app.use(express.urlencoded({ extended: true })); // Add this line
 app.engine('handlebars', engine({ defaultLayout: false }));
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 const port = 3000;
 const RoomCreatedEvent = require('./events/RoomCreatedEvent');
+const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
 
 app.get('/', (req, res) => {
   const date = new Date();
@@ -60,6 +62,36 @@ const scheduleData = {
 app.get('/schedule', (req, res) => {
     res.render('schedule', { layout: false, schedule: scheduleData.schedule });
 });
+app.get('/create_space', (req, res) => {
+  res.render('create_space', {
+    currentDate: new Date().toISOString()
+  });
+});
+
+app.post('/name_the_open_space', (req, res) => {
+  const spaceName = req.body.spaceName;
+  if (!spaceName) {
+    res.status(400).send('Space name is required');
+  } else {
+    const fs = require('fs');
+    const timestamp = new Date().toISOString();
+    const formattedTimestamp = timestamp.replace(/:/g, '-').replace(/\..+/, '');
+    const eventPath = __dirname + '/eventstore/OpenSpaceNamedEvent.json';
+    const openSpaceEvent = new OpenSpaceNamedEvent(spaceName, timestamp);
+    fs.appendFile(eventPath, JSON.stringify(openSpaceEvent), (err) => {
+      if (err) {
+        res.status(500).send('Failed to write event to the file system');
+      } else {
+        res.render('create_space', {
+          spaceName: spaceName,
+          currentDate: timestamp
+        });
+      }
+    });
+  }
+});
+
+
 
 module.exports = app;
 

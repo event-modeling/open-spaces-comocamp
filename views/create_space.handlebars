@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Space</title>
+</head>
+<body>
+    <h1>Space Created: {{spaceName}}</h1>
+    <h2>Today's Date: {{currentDate}}</h2>
+    <form action="/name_the_open_space" method="POST">
+        <label for="spaceName">Space Name:</label>
+        <input type="text" id="spaceName" name="spaceName" required>
+        <button type="submit">Set Name</button>
+    </form>
+</body>
+</html>
+
