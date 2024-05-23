@@ -8,6 +8,20 @@ app.set('views', './views');
 const port = 3000;
 const RoomCreatedEvent = require('./events/RoomCreatedEvent');
 const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
+const fs = require('fs');
+
+const EVENT_STORE_PATH = __dirname + '/eventstore/';
+
+function appendEventToFile(event, fileName) {
+  const filePath = EVENT_STORE_PATH + fileName;
+  fs.appendFile(filePath, JSON.stringify(event), (err) => {
+    if (err) {
+      console.error('Failed to write event to the file system', err);
+      return false;
+    }
+    return true;
+  });
+}
 
 app.get('/', (req, res) => {
   const date = new Date();
@@ -27,19 +41,15 @@ app.post('/add-room', (req, res) => {
   if (!roomName) {
     res.status(400).send('Room name is required');
   } else {
-    const fs = require('fs');
-    const eventPath = __dirname + '/eventstore/RoomAddedEvent.json';
     const roomEvent = new RoomCreatedEvent(roomName, new Date().toISOString());
 
-    fs.appendFile(eventPath, JSON.stringify(roomEvent), (err) => {
-      if (err) {
-        res.status(500).send('Failed to write event to the file system');
-      } else {
-        // Assuming showRooms is a function that returns a list of all rooms
-        const roomsList = showSchedule();
-        res.status(201).send(roomsList);
-      }
-    });
+    if (appendEventToFile(roomEvent, 'RoomAddedEvent.json')) {
+      // Assuming showRooms is a function that returns a list of all rooms
+      const roomsList = showSchedule();
+      res.status(201).send(roomsList);
+    } else {
+      res.status(500).send('Failed to write event to the file system');
+    }
   }
 });
 
@@ -68,30 +78,42 @@ app.get('/create_space', (req, res) => {
   });
 });
 
+
+const OpenSpaceNameSV = () => {
+  
+  const eventsData = fs.readFileSync(eventPath, 'utf8');
+  const events = eventsData.split('\n').filter(event => event.trim() !== '');
+  const lastEvent = JSON.parse(events[events.length - 1]);
+  return {
+    spaceName: lastEvent.spaceName,
+    currentDate: lastEvent.timestamp
+  };
+};
+
+const CreateEventFileNameWithPath = (eventName, eventTime) => {
+  const formattedTime = eventTime.replace(/:/g, '-').replace(/\..+/, '');
+  console.log(`${EVENT_STORE_PATH}${formattedTime}${eventName}Event.json`);
+  return `${EVENT_STORE_PATH}${formattedTime}-${eventName}Event.json`;
+}
+
 app.post('/name_the_open_space', (req, res) => {
   const spaceName = req.body.spaceName;
   if (!spaceName) {
     res.status(400).send('Space name is required');
   } else {
-    const fs = require('fs');
-    const timestamp = new Date().toISOString();
-    const formattedTimestamp = timestamp.replace(/:/g, '-').replace(/\..+/, '');
-    const eventPath = __dirname + '/eventstore/OpenSpaceNamedEvent.json';
-    const openSpaceEvent = new OpenSpaceNamedEvent(spaceName, timestamp);
-    fs.appendFile(eventPath, JSON.stringify(openSpaceEvent), (err) => {
-      if (err) {
-        res.status(500).send('Failed to write event to the file system');
-      } else {
-        res.render('create_space', {
-          spaceName: spaceName,
-          currentDate: timestamp
-        });
-      }
-    });
+    const openSpaceEvent = new OpenSpaceNamedEvent(spaceName, new Date().toISOString());
+    const eventPath = CreateEventFileNameWithPath('OpenSpaceNamed', openSpaceEvent.timestamp);
+    console.log(eventPath);
+    try {
+      fs.appendFileSync(eventPath, JSON.stringify(openSpaceEvent));
+      const spaceViewData = OpenSpaceNameSV();
+      res.render('space_created_confirmation', spaceViewData);
+    } catch (err) {
+      console.error('Failed to write event to the file system', err);
+      res.status(500).send('Failed to write event to the file system');
+    }
   }
 });
-
-
 
 module.exports = app;
 

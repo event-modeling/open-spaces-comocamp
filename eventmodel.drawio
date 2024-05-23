@@ -1,8 +1,14 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="1136" dy="575" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="1084" dy="396" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
+                <object label="progress" id="109">
+                    <mxCell parent="0"/>
+                </object>
+                <mxCell id="110" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=10;fillColor=#cdeb8b;align=left;verticalAlign=top;fontColor=#000000;opacity=40;" vertex="1" parent="109">
+                    <mxGeometry x="710" y="50" width="460" height="1000" as="geometry"/>
+                </mxCell>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="4" value="Organizer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
                     <mxGeometry x="150" y="160" width="30" height="60" as="geometry"/>
