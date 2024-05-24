@@ -1,0 +1,24 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    text-align: center;
+}
+h1 {
+    color: #333;
+}
+p {
+    color: #666;
+    font-size: 1.2rem;
+}
+.error {
+    color: #D33;
+}
+.continue-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+}
