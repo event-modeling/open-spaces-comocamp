@@ -9,6 +9,7 @@ app.set('views', './views');
 const port = 3000;
 const RoomCreatedEvent = require('./events/RoomCreatedEvent');
 const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
+const DateRangeSetEvent = require('./events/DateRangeSetEvent');
 const fs = require('fs');
 
 const EVENT_STORE_PATH = __dirname + '/eventstore/';
@@ -78,7 +79,12 @@ app.get('/create_space', (req, res) => {
     currentDate: new Date().toISOString()
   });
 });
-
+app.get('/set_dates', (req, res) => {
+    const spaceViewData = OpenSpaceNameSV();
+    res.render('set_dates', {
+        eventName: spaceViewData.spaceName || 'EM Open Spaces' // Dynamically set based on the latest open space event
+    });
+});
 
 const getAllEventFileNames = (filterFunction) => {
   return fs.readdirSync(EVENT_STORE_PATH).filter(filterFunction);
@@ -103,6 +109,16 @@ const CreateEventFileNameWithPath = (eventName, eventTime) => {
   return `${EVENT_STORE_PATH}${formattedTime}-${eventName}Event.json`;
 }
 
+const OpenSpaceDateRangeSV = () => {
+  const eventFiles = getAllEventFileNames(event => event.endsWith('DateRangeSetEvent.json'));
+  if (eventFiles.length === 0) {
+    return { errorMessage: 'Date range not set yet.', startDate: '', endDate: '' };
+  }
+  const eventPath = eventFiles.sort().reverse()[0]; // Assuming filenames are date prefixed and sortable as strings
+  const lastEvent = JSON.parse(fs.readFileSync(EVENT_STORE_PATH + eventPath, 'utf8'));
+  return { errorMessage: '', startDate: lastEvent.startDate, endDate: lastEvent.endDate };
+};
+
 app.post('/name_the_open_space', (req, res) => {
   const spaceName = req.body.spaceName;
   if (!spaceName) {
@@ -120,6 +136,26 @@ app.post('/name_the_open_space', (req, res) => {
       res.status(500).send('Failed to write event to the file system');
     }
   }
+});
+
+// Middleware to parse POST data
+app.use(express.urlencoded({ extended: true }));
+
+// Route to handle form submission
+app.post('/submit_dates', (req, res) => {
+    const { startDate, endDate } = req.body;
+
+    const dateRangeSetEvent = new DateRangeSetEvent(startDate, endDate, new Date().toISOString());
+    const eventPath = CreateEventFileNameWithPath('DateRangeSet', dateRangeSetEvent.timestamp);
+    try {
+      fs.appendFileSync(eventPath, JSON.stringify(dateRangeSetEvent));
+    } catch (err) {
+      console.error('Failed to write date range event to the file system', err);
+      res.status(500).send('Failed to write date range event to the file system');
+      return;
+    }
+    const openSpaceDateRange = OpenSpaceDateRangeSV();
+    res.render('set_dates_confirmation', openSpaceDateRange);
 });
 
 module.exports = app;
