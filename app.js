@@ -1,7 +1,8 @@
 const express = require('express');
 const { engine } = require('express-handlebars');
 const app = express();
-app.use(express.urlencoded({ extended: true })); // Add this line
+app.use(express.urlencoded({ extended: true })); 
+app.use(express.static('public'));
 app.engine('handlebars', engine({ defaultLayout: false }));
 app.set('view engine', 'handlebars');
 app.set('views', './views');
@@ -79,16 +80,22 @@ app.get('/create_space', (req, res) => {
 });
 
 
-const OpenSpaceNameSV = () => {
-  
-  const eventsData = fs.readFileSync(eventPath, 'utf8');
-  const events = eventsData.split('\n').filter(event => event.trim() !== '');
-  const lastEvent = JSON.parse(events[events.length - 1]);
-  return {
-    spaceName: lastEvent.spaceName,
-    currentDate: lastEvent.timestamp
-  };
+const getAllEventFileNames = (filterFunction) => {
+  return fs.readdirSync(EVENT_STORE_PATH).filter(filterFunction);
 };
+
+
+
+const OpenSpaceNameSV = () => {
+  const eventFiles = getAllEventFileNames(event => event.endsWith('OpenSpaceNamedEvent.json'));
+  if (eventFiles.length === 0) {
+    return { errorMessage: 'Open Space not named yet.', spaceName: '', currentDate: '' };
+  }
+  const eventPath = eventFiles.sort().reverse()[0]; // Assuming filenames are date prefixed and sortable as strings
+  const lastEvent = JSON.parse(fs.readFileSync(EVENT_STORE_PATH + eventPath, 'utf8'));
+  return { errorMessage: '', spaceName: lastEvent.spaceName, currentDate: lastEvent.timestamp };
+};
+
 
 const CreateEventFileNameWithPath = (eventName, eventTime) => {
   const formattedTime = eventTime.replace(/:/g, '-').replace(/\..+/, '');
