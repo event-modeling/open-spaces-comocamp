@@ -10,6 +10,7 @@ const port = 3000;
 const RoomCreatedEvent = require('./events/RoomCreatedEvent');
 const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
 const DateRangeSetEvent = require('./events/DateRangeSetEvent');
+const TopicSubmittedEvent = require('./events/TopicSubmittedEvent');
 const fs = require('fs');
 
 const EVENT_STORE_PATH = __dirname + '/eventstore/';
@@ -86,6 +87,13 @@ app.get('/set_dates', (req, res) => {
     });
 });
 
+app.get('/submit_topic', (req, res) => {
+    const spaceViewData = OpenSpaceNameSV();
+    res.render('submit_topic', {
+        eventName: spaceViewData.spaceName || 'EM Open Spaces' // Dynamically set based on the latest open space event
+    });
+});
+
 const getAllEventFileNames = (filterFunction) => {
   return fs.readdirSync(EVENT_STORE_PATH).filter(filterFunction);
 };
@@ -156,6 +164,21 @@ app.post('/submit_dates', (req, res) => {
     }
     const openSpaceDateRange = OpenSpaceDateRangeSV();
     res.render('set_dates_confirmation', openSpaceDateRange);
+});
+
+app.post('/submit_topic', (req, res) => {
+    const { name, type, topic } = req.body;
+    const timestamp = new Date().toISOString();
+    const topicSubmittedEvent = new TopicSubmittedEvent(name, type, topic, timestamp);
+
+    try {
+        const eventPath = CreateEventFileNameWithPath('TopicSubmitted', timestamp);
+        fs.appendFileSync(eventPath, JSON.stringify(topicSubmittedEvent));
+        res.send('Topic submitted successfully');
+    } catch (err) {
+        console.error('Failed to write topic submission event to the file system', err);
+        res.status(500).send('Failed to write event to the file system');
+    }
 });
 
 module.exports = app;

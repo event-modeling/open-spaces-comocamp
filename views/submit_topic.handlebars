@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Topic for {{eventName}}</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center; /* Aligns items vertically in the center */
+        }
+        label {
+            margin-right: 10px; /* Adds space between label and input */
+            white-space: nowrap; /* Prevents the label from wrapping */
+        }
+        input, textarea {
+            flex-grow: 1; /* Allows input and textarea to take up remaining space */
+            margin-left: 5px; /* Adds a small space between label and input */
+        }
+        button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Submit Your Topic for {{eventName}}</h1>
+    <form action="/submit_topic" method="POST">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="type">Facilitation:</label>
+            <input type="text" id="type" name="type" required>
+        </div>
+
+        <div class="form-group">
+            <label for="topic">Topic:</label>
+            <textarea id="topic" name="topic" required></textarea>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+
