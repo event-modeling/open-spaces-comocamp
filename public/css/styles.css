@@ -1,7 +1,10 @@
+/* Base styles for light mode */
 body {
     font-family: Arial, sans-serif;
     margin: 40px;
     text-align: center;
+    background-color: #fff;
+    color: #333;
 }
 h1 {
     color: #333;
@@ -21,4 +24,47 @@ p {
     border-radius: 5px;
     cursor: pointer;
     text-decoration: none;
+}
+
+table {
+    width: 80%; /* Adjusts the table width to 80% of its container */
+    margin: auto; /* Centers the table horizontally */
+    max-width: 1200px; /* Maximum width of the table */
+    min-width: 600px; /* Minimum width of the table */
+}
+
+th, td {
+    min-width: 100px; /* Minimum width for each cell */
+    max-width: 400px; /* Maximum width for each cell */
+    padding: 10px; /* Padding inside each cell */
+    text-align: left; /* Aligns text to the left */
+    border-bottom: 1px solid #ccc; /* Adds a bottom border to each cell */
+}
+
+thead th {
+    background-color: #f4f4f4; /* Background color for header */
+    font-weight: bold; /* Makes header text bold */
+}
+
+/* Styles for dark mode */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #333;
+        color: #fff;
+    }
+    h1 {
+        color: #fff;
+    }
+
+    table {
+        border: 1px solid #fff;
+    }
+
+    th, td {
+        border-bottom: 1px solid #666;
+    }
+
+    thead th {
+        background-color: #555;
+    }
 }

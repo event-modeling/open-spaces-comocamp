@@ -1,5 +1,6 @@
 const express = require('express');
 const { engine } = require('express-handlebars');
+const { v4: uuidv4 } = require('uuid');
 const app = express();
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.static('public'));
@@ -83,22 +84,22 @@ app.get('/create_space', (req, res) => {
 app.get('/set_dates', (req, res) => {
     const spaceViewData = OpenSpaceNameSV();
     res.render('set_dates', {
-        eventName: spaceViewData.spaceName || 'EM Open Spaces' // Dynamically set based on the latest open space event
+        eventName: spaceViewData.spaceName 
     });
 });
 
 app.get('/submit_topic', (req, res) => {
     const spaceViewData = OpenSpaceNameSV();
+    const id = uuidv4(); 
     res.render('submit_topic', {
-        eventName: spaceViewData.spaceName || 'EM Open Spaces' // Dynamically set based on the latest open space event
+        eventName: spaceViewData.spaceName,
+        id: id 
     });
 });
 
 const getAllEventFileNames = (filterFunction) => {
   return fs.readdirSync(EVENT_STORE_PATH).filter(filterFunction);
 };
-
-
 
 const OpenSpaceNameSV = () => {
   const eventFiles = getAllEventFileNames(event => event.endsWith('OpenSpaceNamedEvent.json'));
@@ -111,10 +112,10 @@ const OpenSpaceNameSV = () => {
 };
 
 
-const CreateEventFileNameWithPath = (eventName, eventTime) => {
+const CreateEventFileNameWithPath = (eventName, eventTime, id) => {
+  if (!id) { id = "undefine_id"; }
   const formattedTime = eventTime.replace(/:/g, '-').replace(/\..+/, '');
-  console.log(`${EVENT_STORE_PATH}${formattedTime}${eventName}Event.json`);
-  return `${EVENT_STORE_PATH}${formattedTime}-${eventName}Event.json`;
+  return `${EVENT_STORE_PATH}${formattedTime}-${id}-${eventName}Event.json`;
 }
 
 const OpenSpaceDateRangeSV = () => {
@@ -156,9 +157,8 @@ app.post('/submit_dates', (req, res) => {
     const dateRangeSetEvent = new DateRangeSetEvent(startDate, endDate, new Date().toISOString());
     const eventPath = CreateEventFileNameWithPath('DateRangeSet', dateRangeSetEvent.timestamp);
     try {
-      fs.appendFileSync(eventPath, JSON.stringify(dateRangeSetEvent));
+      if (!fs.existsSync(eventPath)) { fs.appendFileSync(eventPath, JSON.stringify(dateRangeSetEvent)); }
     } catch (err) {
-      console.error('Failed to write date range event to the file system', err);
       res.status(500).send('Failed to write date range event to the file system');
       return;
     }
@@ -166,18 +166,26 @@ app.post('/submit_dates', (req, res) => {
     res.render('set_dates_confirmation', openSpaceDateRange);
 });
 
+function SessionsSV() {
+    const eventFiles = getAllEventFileNames(event => event.endsWith('TopicSubmittedEvent.json'));
+    return eventFiles.map(eventPath => JSON.parse(fs.readFileSync(EVENT_STORE_PATH + eventPath, 'utf8')));
+}
+
 app.post('/submit_topic', (req, res) => {
-    const { name, type, topic } = req.body;
+    const { name, type, topic, id } = req.body;
     const timestamp = new Date().toISOString();
-    const topicSubmittedEvent = new TopicSubmittedEvent(name, type, topic, timestamp);
+    const topicSubmittedEvent = new TopicSubmittedEvent(name, type, topic, timestamp, id);
 
     try {
-        const eventPath = CreateEventFileNameWithPath('TopicSubmitted', timestamp);
-        fs.appendFileSync(eventPath, JSON.stringify(topicSubmittedEvent));
-        res.send('Topic submitted successfully');
+        const eventPath = CreateEventFileNameWithPath('TopicSubmitted', topicSubmittedEvent.timestamp, topicSubmittedEvent.id);
+        const existingFiles = fs.readdirSync(EVENT_STORE_PATH).filter(file => file.includes(topicSubmittedEvent.id));
+        if (existingFiles.length === 0) {
+            fs.appendFileSync(eventPath, JSON.stringify(topicSubmittedEvent));
+        }
+        const sessions = SessionsSV();
+        res.render('sessions', { sessions });
     } catch (err) {
-        console.error('Failed to write topic submission event to the file system', err);
-        res.status(500).send('Failed to write event to the file system');
+         res.status(500).send('Failed to write event to the file system');
     }
 });
 

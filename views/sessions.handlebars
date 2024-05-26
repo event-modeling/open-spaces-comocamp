@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current Sessions</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <h1>Current Sessions</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Session Name</th>
+                <th>Type</th>
+                <th>Facilitator</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each sessions}}
+            <tr>
+                <td>{{this.topic}}</td>
+                <td>{{this.type}}</td>
+                <td>{{this.name}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</body>
+</html>
+
