@@ -1,7 +1,8 @@
 class OpenSpaceNamedEvent {
-  constructor(spaceName, timestamp) {
+  constructor(spaceName, timestamp, id) {
     this.spaceName = spaceName;
     this.timestamp = timestamp;
+    this.id = id;
   }
 }
 
