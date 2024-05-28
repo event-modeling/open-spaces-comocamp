@@ -68,3 +68,8 @@ thead th {
         background-color: #555;
     }
 }
+
+body button {
+    margin-top: 20px; /* Adds space above every button in the body */
+}
+
