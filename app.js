@@ -30,7 +30,7 @@ function OpenSpaceNameSV() {
 }
 
 app.get('/create_space', (req, res) => { res.render('create_space', { spaceName: OpenSpaceNameSV().spaceName, id: uuidv4() }); });
-app.post('/name_the_open_space', (req, res) => {
+app.post('/create_space', (req, res) => {
   const {spaceName, id} = req.body;
   const openSpaceEvent = new OpenSpaceNamedEvent(spaceName, new Date().toISOString(), id);
   if (!spaceName.trim()) { res.status(400).send('Space name is required'); return; }
@@ -45,7 +45,7 @@ function OpenSpaceDateRangeSV() {
 }
 
 app.get('/set_dates', (req, res) => { res.render('set_dates', { eventName: OpenSpaceNameSV().spaceName, id: uuidv4() }); });
-app.post('/submit_dates', (req, res) => {
+app.post('/set_dates', (req, res) => {
   const { startDate, endDate, id } = req.body;
   const dateRangeSetEvent = new DateRangeSetEvent(startDate, endDate, new Date().toISOString(), id);
   try { writeEventIfIdNotExists(dateRangeSetEvent); 
@@ -71,4 +71,4 @@ app.post('/submit_topic', (req, res) => {
 });
 
 module.exports = app;
-
+module.exports = app;
