@@ -24,24 +24,18 @@ const TopicSubmittedEvent = require('./events/TopicSubmittedEvent');
 
 app.get('/', (req, res) => { res.redirect('/create_space'); });
 
-function OpenSpaceNameSV() {
-  const lastEvent = getLastEvent('OpenSpaceNamedEvent');
-  return lastEvent ? { spaceName: lastEvent.spaceName, errorMessage: ''} : { errorMessage: 'No space has been created yet.', spaceName: ''};
-}
-
 app.get('/create_space', (req, res) => { res.render('create_space', { spaceName: OpenSpaceNameSV().spaceName, id: uuidv4() }); });
 app.post('/create_space', (req, res) => {
-  const {spaceName, id} = req.body;
+  const {spaceName, id} = req.body;dy;
   const openSpaceEvent = new OpenSpaceNamedEvent(spaceName, new Date().toISOString(), id);
   if (!spaceName.trim()) { res.status(400).send('Space name is required'); return; }
   try { writeEventIfIdNotExists(openSpaceEvent);
     res.render('space_created_confirmation', OpenSpaceNameSV());
   } catch (err) { res.status(500).send('Failed to write event to the file system'); }
 });
-
-function OpenSpaceDateRangeSV() {
-  const lastEvent = getLastEvent('DateRangeSetEvent');
-  return lastEvent ? { errorMessage: '', startDate: lastEvent.startDate, endDate: lastEvent.endDate } : { errorMessage: 'Date range not set yet.', startDate: '', endDate: '' };
+function OpenSpaceNameSV() {
+  const lastEvent = getLastEvent('OpenSpaceNamedEvent');
+  return lastEvent ? { spaceName: lastEvent.spaceName, errorMessage: ''} : { errorMessage: 'No space has been created yet.', spaceName: ''};
 }
 
 app.get('/set_dates', (req, res) => { res.render('set_dates', { eventName: OpenSpaceNameSV().spaceName, id: uuidv4() }); });
@@ -52,15 +46,14 @@ app.post('/set_dates', (req, res) => {
     res.render('set_dates_confirmation', OpenSpaceDateRangeSV());
   } catch (err) { res.status(500).send('Failed to write date range event to the file system'); return; }
 });
-
-function SessionsSV() {
-    const eventFiles = getAllEventFileNames(event => event.endsWith('TopicSubmittedEvent.json'));
-    return eventFiles.map(eventPath => JSON.parse(fs.readFileSync(EVENT_STORE_PATH + eventPath, 'utf8')));
+function OpenSpaceDateRangeSV() {
+  const lastEvent = getLastEvent('DateRangeSetEvent');
+  return lastEvent ? { errorMessage: '', startDate: lastEvent.startDate, endDate: lastEvent.endDate } : { errorMessage: 'Date range not set yet.', startDate: '', endDate: '' };
 }
+
 
 app.get('/submit_topic', (req, res) => {
   res.render('submit_topic', { eventName: OpenSpaceNameSV().spaceName, id: uuidv4() }); });
-
 app.post('/submit_topic', (req, res) => {
     const { name, type, topic, id } = req.body;
     const topicSubmittedEvent = new TopicSubmittedEvent(name, type, topic, new Date().toISOString(), id);
@@ -69,6 +62,10 @@ app.post('/submit_topic', (req, res) => {
         res.render('sessions', { sessions: SessionsSV() });
     } catch (err) { res.status(500).send('Failed to write event to the file system'); }
 });
+function SessionsSV() {
+    const eventFiles = getAllEventFileNames(event => event.endsWith('TopicSubmittedEvent.json'));
+    return eventFiles.map(eventPath => JSON.parse(fs.readFileSync(EVENT_STORE_PATH + eventPath, 'utf8')));
+}
 
 module.exports = app;
 module.exports = app;
