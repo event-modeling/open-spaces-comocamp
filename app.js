@@ -26,7 +26,7 @@ app.get('/', (req, res) => { res.redirect('/create_space'); });
 
 app.get('/create_space', (req, res) => { res.render('create_space', { spaceName: OpenSpaceNameSV().spaceName, id: uuidv4() }); });
 app.post('/create_space', (req, res) => {
-  const {spaceName, id} = req.body;dy;
+  const {spaceName, id} = req.body;
   const openSpaceEvent = new OpenSpaceNamedEvent(spaceName, new Date().toISOString(), id);
   if (!spaceName.trim()) { res.status(400).send('Space name is required'); return; }
   try { writeEventIfIdNotExists(openSpaceEvent);
@@ -51,9 +51,7 @@ function OpenSpaceDateRangeSV() {
   return lastEvent ? { errorMessage: '', startDate: lastEvent.startDate, endDate: lastEvent.endDate } : { errorMessage: 'Date range not set yet.', startDate: '', endDate: '' };
 }
 
-
-app.get('/submit_topic', (req, res) => {
-  res.render('submit_topic', { eventName: OpenSpaceNameSV().spaceName, id: uuidv4() }); });
+app.get('/submit_topic', (req, res) => { res.render('submit_topic', { eventName: OpenSpaceNameSV().spaceName, id: uuidv4() }); });
 app.post('/submit_topic', (req, res) => {
     const { name, type, topic, id } = req.body;
     const topicSubmittedEvent = new TopicSubmittedEvent(name, type, topic, new Date().toISOString(), id);
@@ -67,5 +65,4 @@ function SessionsSV() {
     return eventFiles.map(eventPath => JSON.parse(fs.readFileSync(EVENT_STORE_PATH + eventPath, 'utf8')));
 }
 
-module.exports = app;
 module.exports = app;
