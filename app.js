@@ -1,3 +1,12 @@
+const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
+const DateRangeSetEvent = require('./events/DateRangeSetEvent');
+const TopicSubmittedEvent = require('./events/TopicSubmittedEvent');
+
+if (process.argv.includes('--run-tests')) {
+  run_tests();
+  process.exit(0);
+}
+
 const port = 3000;
 const fs = require('fs');
 const express = require('express');
@@ -17,10 +26,8 @@ function getAllEventFileNames(filterFunction) { return fs.readdirSync(EVENT_STOR
 function writeEventIfIdNotExists(event) { if (fs.readdirSync(EVENT_STORE_PATH).filter(file => file.includes(event.id)).length === 0) { fs.writeFileSync(`${EVENT_STORE_PATH}${event.timestamp.replace(/:/g, '-').replace(/\..+/, '')}-${event.id}-${event.constructor.name}.json`, JSON.stringify(event)); } }
 function getLastEvent(eventType) { try { return JSON.parse(fs.readFileSync(EVENT_STORE_PATH + getAllEventFileNames(file => file.includes(eventType)).sort().reverse()[0], 'utf8'));
 } catch (err) { return null; } }
+function getAllEvents(filterFunction) { return fs.readdirSync(EVENT_STORE_PATH).filter(filterFunction).map(file => JSON.parse(fs.readFileSync(EVENT_STORE_PATH + file, 'utf8'))); }
 
-const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
-const DateRangeSetEvent = require('./events/DateRangeSetEvent');
-const TopicSubmittedEvent = require('./events/TopicSubmittedEvent');
 
 app.get('/', (req, res) => { res.redirect('/create_space'); });
 
@@ -30,11 +37,11 @@ app.post('/create_space', (req, res) => {
   const openSpaceEvent = new OpenSpaceNamedEvent(spaceName, new Date().toISOString(), id);
   if (!spaceName.trim()) { res.status(400).send('Space name is required'); return; }
   try { writeEventIfIdNotExists(openSpaceEvent);
-    res.render('space_created_confirmation', OpenSpaceNameSV());
+    res.render('space_created_confirmation', OpenSpaceNameSV(getAllEvents));
   } catch (err) { res.status(500).send('Failed to write event to the file system'); }
 });
-function OpenSpaceNameSV() {
-  const lastEvent = getLastEvent('OpenSpaceNamedEvent');
+function OpenSpaceNameSV(eventsFunction) {
+  const lastEvent = eventsFunction(event => event.constructor.name === 'OpenSpaceNamedEvent').sort((a, b) => a.timestamp - b.timestamp)[0];
   return lastEvent ? { spaceName: lastEvent.spaceName, errorMessage: ''} : { errorMessage: 'No space has been created yet.', spaceName: ''};
 }
 
@@ -65,4 +72,51 @@ function SessionsSV() {
     return eventFiles.map(eventPath => JSON.parse(fs.readFileSync(EVENT_STORE_PATH + eventPath, 'utf8')));
 }
 
+function run_tests() {
+  const testEventStream = [
+    new OpenSpaceNamedEvent("Test1", new Date("2024-05-01T00:00:00.000Z"), "1ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new OpenSpaceNamedEvent("Test2", new Date("2024-05-02T00:00:00.000Z"), "2ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new OpenSpaceNamedEvent("Test3", new Date("2024-05-03T00:00:00.000Z"), "3ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+  ]
+  function testEvents(filterFunction) { return testEventStream.filter(filterFunction); }
+  
+  function logResult(expected, result) {
+    console.log(`Expected: ${JSON.stringify(expected)}, Got: ${JSON.stringify(result)}`);
+  }
+
+  const tests = [
+    {
+      name: 'Test OpenSpaceNameSV with no events',
+      test: () => {
+        const events = testEventStream.slice(0, 0);
+        const result1 = OpenSpaceNameSV(testEvents);
+        logResult({ errorMessage: 'No space has been created yet.', spaceName: '' }, result1);
+        return true;
+      }
+    },
+    {
+      name: 'Test OpenSpaceNameSV with first event',
+      test: () => {
+        const events = testEventStream.slice(0, 1);
+        const result2 = OpenSpaceNameSV(testEvents);
+        logResult({ spaceName: 'Test1', errorMessage: '' }, result2);
+        return true;
+      }
+    },
+    {
+      name: 'Test OpenSpaceNameSV with first two events',
+      test: () => {
+        const events = testEventStream.slice(0, 2);
+        const result3 = OpenSpaceNameSV(testEvents);
+        logResult({ spaceName: 'Test2', errorMessage: '' }, result3);
+        return true;
+      }
+    },
+  ]
+
+  tests.forEach(test => {
+    try { console.log((test.test() ? '✅ ' : '❌ ') + test.name);
+    } catch (error) { console.log('❌ ' + test.name + ' had error: ' + error); }
+  });
+}
 module.exports = app;
