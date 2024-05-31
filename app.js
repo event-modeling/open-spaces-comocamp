@@ -31,7 +31,7 @@ function getAllEvents(filterFunction) { return fs.readdirSync(EVENT_STORE_PATH).
 
 app.get('/', (req, res) => { res.redirect('/create_space'); });
 
-app.get('/create_space', (req, res) => { res.render('create_space', { spaceName: OpenSpaceNameSV().spaceName, id: uuidv4() }); });
+app.get('/create_space', (req, res) => { res.render('create_space', { spaceName: OpenSpaceNameSV(getAllEvents).spaceName, id: uuidv4() }); });
 app.post('/create_space', (req, res) => {
   const {spaceName, id} = req.body;
   const openSpaceEvent = new OpenSpaceNamedEvent(spaceName, new Date().toISOString(), id);
