@@ -90,7 +90,7 @@ function run_tests() {
   
   const tests = [
     {
-      name: 'Test OpenSpaceNameSV with no events',
+      name: 'Test OpenSpaceNameSV with no OpenSpaceNamedEvent events',
       test: () => {
         const expected = { errorMessage: 'No space has been created yet.', spaceName: '' };
         const result = OpenSpaceNameSV(testEvents.slice(0, 0));
@@ -99,7 +99,7 @@ function run_tests() {
       }
     },
     {
-      name: 'Test OpenSpaceNameSV with first event',
+      name: 'Test OpenSpaceNameSV with only one OpenSpaceNamedEvent event',
       test: () => {
         const expected = { spaceName: 'EM Open spaces', errorMessage: '' };
         const result = OpenSpaceNameSV(testEvents.slice(0, 1));
@@ -108,7 +108,7 @@ function run_tests() {
       }
     },
     {
-      name: 'Test OpenSpaceNameSV with first two events',
+      name: 'Test OpenSpaceNameSV with two OpenSpaceNamedEvent events; last one should always win',
       test: () => {
         const expected = { spaceName: 'Event Modeling Space', errorMessage: '' };
         const result = OpenSpaceNameSV(testEvents.slice(0, 2));
@@ -117,7 +117,7 @@ function run_tests() {
       }
     },
     {
-      name: 'Test OpenSpaceNameSV with all three events',
+      name: 'Test OpenSpaceNameSV with three OpenSpaceNamedEvent events; last one should always win',
       test: () => {
         const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
         const result = OpenSpaceNameSV(testEvents.slice(0, 3));
@@ -127,7 +127,7 @@ function run_tests() {
     },
     ,
     {
-      name: 'Test OpenSpaceNameSV with inconsequential event',
+      name: 'Test OpenSpaceNameSV with inconsequential DateRangeSetEvent event, it should be ignored and last OpenSpaceNamedEvent should be used',
       test: () => {
         const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
         const result = OpenSpaceNameSV(testEvents.slice(0, 4));
