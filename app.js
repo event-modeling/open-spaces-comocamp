@@ -82,9 +82,10 @@ function run_tests() {
   }
 
   const testEventStream = [
-    new OpenSpaceNamedEvent("Test1", new Date("2024-05-01T00:00:00.000Z"), "1ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
-    new OpenSpaceNamedEvent("Test2", new Date("2024-05-02T00:00:00.000Z"), "2ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
-    new OpenSpaceNamedEvent("Test3", new Date("2024-05-03T00:00:00.000Z"), "3ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new OpenSpaceNamedEvent("EM Open spaces", new Date("2024-05-21T00:00:00.000Z"), "1ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new OpenSpaceNamedEvent("Event Modeling Space", new Date("2024-05-22T00:00:00.000Z"), "2ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new OpenSpaceNamedEvent("Event Modeling Open Spaces", new Date("2024-05-23T00:00:00.000Z"), "3ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new DateRangeSetEvent("2024-06-06", "2024-06-07", new Date("2024-05-24T00:00:00.000Z"), "4ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
   ]
   
   const tests = [
@@ -100,7 +101,7 @@ function run_tests() {
     {
       name: 'Test OpenSpaceNameSV with first event',
       test: () => {
-        const expected = { spaceName: 'Test1', errorMessage: '' };
+        const expected = { spaceName: 'EM Open spaces', errorMessage: '' };
         const result = OpenSpaceNameSV(() => testEventStream.slice(0, 1));
         assertObjectEqual(expected, result);
         return true;
@@ -109,7 +110,7 @@ function run_tests() {
     {
       name: 'Test OpenSpaceNameSV with first two events',
       test: () => {
-        const expected = { spaceName: 'Test2', errorMessage: '' };
+        const expected = { spaceName: 'Event Modeling Space', errorMessage: '' };
         const result = OpenSpaceNameSV(() => testEventStream.slice(0, 2));
         assertObjectEqual(expected, result);
         return true;
@@ -118,12 +119,12 @@ function run_tests() {
     {
       name: 'Test OpenSpaceNameSV with all three events',
       test: () => {
-        const expected = { spaceName: 'Test3', errorMessage: '' };
-        const result = OpenSpaceNameSV(() => testEventStream);
+        const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
+        const result = OpenSpaceNameSV(() => testEventStream.slice(0, 3));
         assertObjectEqual(expected, result);
         return true;
       }
-    },
+    }
   ]
 
   tests.forEach(test => {
