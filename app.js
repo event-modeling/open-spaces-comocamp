@@ -26,18 +26,18 @@ function getAllEventFileNames(filterFunction) { return fs.readdirSync(EVENT_STOR
 function writeEventIfIdNotExists(event) { if (fs.readdirSync(EVENT_STORE_PATH).filter(file => file.includes(event.id)).length === 0) { fs.writeFileSync(`${EVENT_STORE_PATH}${event.timestamp.replace(/:/g, '-').replace(/\..+/, '')}-${event.id}-${event.type}.json`, JSON.stringify(event)); } }
 function getLastEvent(eventType) { try { return JSON.parse(fs.readFileSync(EVENT_STORE_PATH + getAllEventFileNames(file => file.includes(eventType)).sort().reverse()[0], 'utf8'));
 } catch (err) { return null; } }
-function getAllEvents(filterFunction) { return fs.readdirSync(EVENT_STORE_PATH).map(file => JSON.parse(fs.readFileSync(EVENT_STORE_PATH + file, 'utf8'))).filter(filterFunction); }
+function getAllEvents() { return fs.readdirSync(EVENT_STORE_PATH).map(file => JSON.parse(fs.readFileSync(EVENT_STORE_PATH + file, 'utf8'))); }
 
 
 app.get('/', (req, res) => { res.redirect('/create_space'); });
 
-app.get('/create_space', (req, res) => { res.render('create_space', { spaceName: OpenSpaceNameSV(getAllEvents).spaceName, id: uuidv4() }); });
+app.get('/create_space', (req, res) => { res.render('create_space', { spaceName: OpenSpaceNameSV(getAllEvents()).spaceName, id: uuidv4() }); });
 app.post('/create_space', (req, res) => {
   const {spaceName, id} = req.body;
   const openSpaceEvent = new OpenSpaceNamedEvent(spaceName, new Date().toISOString(), id);
   if (!spaceName.trim()) { res.status(400).send('Space name is required'); return; }
   try { writeEventIfIdNotExists(openSpaceEvent);
-    res.render('space_created_confirmation', OpenSpaceNameSV(getAllEvents));
+    res.render('space_created_confirmation', OpenSpaceNameSV(getAllEvents()));
   } catch (err) { res.status(500).send('Failed to write event to the file system'); }
 });
 function OpenSpaceNameSV(eventsArray) {
@@ -45,30 +45,30 @@ function OpenSpaceNameSV(eventsArray) {
   return lastEvent ? { spaceName: lastEvent.spaceName, errorMessage: ''} : { errorMessage: 'No space has been created yet.', spaceName: ''};
 }
 
-app.get('/set_dates', (req, res) => { res.render('set_dates', { eventName: OpenSpaceNameSV(getAllEvents).spaceName, id: uuidv4() }); });
+app.get('/set_dates', (req, res) => { res.render('set_dates', { eventName: OpenSpaceNameSV(getAllEvents()).spaceName, id: uuidv4() }); });
 app.post('/set_dates', (req, res) => {
   const { startDate, endDate, id } = req.body;
   const dateRangeSetEvent = new DateRangeSetEvent(startDate, endDate, new Date().toISOString(), id);
   try { writeEventIfIdNotExists(dateRangeSetEvent); 
-    res.render('set_dates_confirmation', OpenSpaceDateRangeSV(getAllEvents));
+    res.render('set_dates_confirmation', OpenSpaceDateRangeSV(getAllEvents()));
   } catch (err) { res.status(500).send('Failed to write date range event to the file system'); return; }
 });
-function OpenSpaceDateRangeSV(eventsFunction) {
-  const lastEvent = eventsFunction(event => event.type === 'DateRangeSetEvent').sort((a, b) => a.timestamp - b.timestamp).reverse()[0];
+function OpenSpaceDateRangeSV(events) {
+  const lastEvent = events.filter(event => event.type === 'DateRangeSetEvent').sort((a, b) => a.timestamp - b.timestamp).reverse()[0];
   return lastEvent ? { errorMessage: '', startDate: lastEvent.startDate, endDate: lastEvent.endDate } : { errorMessage: 'Date range not set yet.', startDate: '', endDate: '' };
 }
 
-app.get('/submit_topic', (req, res) => { res.render('submit_topic', { eventName: OpenSpaceNameSV(getAllEvents).spaceName, id: uuidv4() }); });
+app.get('/submit_topic', (req, res) => { res.render('submit_topic', { eventName: OpenSpaceNameSV(getAllEvents()).spaceName, id: uuidv4() }); });
 app.post('/submit_topic', (req, res) => {
     const { name, type, topic, id } = req.body;
     const topicSubmittedEvent = new TopicSubmittedEvent(name, type, topic, new Date().toISOString(), id);
     try {
         writeEventIfIdNotExists(topicSubmittedEvent);
-        res.render('sessions', { sessions: SessionsSV(getAllEvents) });
+        res.render('sessions', { sessions: SessionsSV(getAllEvents()) });
     } catch (err) { res.status(500).send('Failed to write event to the file system'); }
 });
-function SessionsSV(eventsFunction) {
-    return eventsFunction(event => event.type === 'TopicSubmittedEvent').sort((a, b) => a.timestamp - b.timestamp);
+function SessionsSV(events) {
+    return events.filter(event => event.type === 'TopicSubmittedEvent').sort((a, b) => a.timestamp - b.timestamp);
 }
 
 function run_tests() {
