@@ -72,8 +72,13 @@ function SessionsSV(eventsFunction) {
 }
 
 function run_tests() {
-  function logResult(expected, result) {
+  function logResult(expected, result) { 
     console.log(`Expected: ${expected}, Got: ${result}`);
+  }
+  function assertObjectEqual(expected, actual) {
+    if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+      throw new Error(`Assertion failed: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+    }
   }
 
   const testEventStream = [
@@ -88,7 +93,7 @@ function run_tests() {
       test: () => {
         const expected = { errorMessage: 'No space has been created yet.', spaceName: '' };
         const result = OpenSpaceNameSV(() => testEventStream.slice(0, 0));
-        if (JSON.stringify(result) !== JSON.stringify(expected)) { logResult(JSON.stringify(expected), JSON.stringify(result)); return false; }
+        assertObjectEqual(expected, result);
         return true;
       }
     },
@@ -97,7 +102,7 @@ function run_tests() {
       test: () => {
         const expected = { spaceName: 'Test1', errorMessage: '' };
         const result = OpenSpaceNameSV(() => testEventStream.slice(0, 1));
-        if (JSON.stringify(result) !== JSON.stringify(expected)) { logResult(JSON.stringify(expected), JSON.stringify(result)); return false; }
+        assertObjectEqual(expected, result);
         return true;
       }
     },
@@ -106,7 +111,7 @@ function run_tests() {
       test: () => {
         const expected = { spaceName: 'Test2', errorMessage: '' };
         const result = OpenSpaceNameSV(() => testEventStream.slice(0, 2));
-        if (JSON.stringify(result) !== JSON.stringify(expected)) { logResult(JSON.stringify(expected), JSON.stringify(result)); return false; }
+        assertObjectEqual(expected, result);
         return true;
       }
     },
@@ -115,7 +120,7 @@ function run_tests() {
       test: () => {
         const expected = { spaceName: 'Test3', errorMessage: '' };
         const result = OpenSpaceNameSV(() => testEventStream);
-        if (JSON.stringify(result) !== JSON.stringify(expected)) { logResult(JSON.stringify(expected), JSON.stringify(result)); return false; }
+        assertObjectEqual(expected, result);
         return true;
       }
     },
