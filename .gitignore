@@ -131,3 +131,5 @@ dist
 
 # application artifacts
 eventstore
+.npmrc
+.nvmrc

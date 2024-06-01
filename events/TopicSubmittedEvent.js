@@ -1,9 +1,11 @@
 class TopicSubmittedEvent {
-    constructor(name, type, topic, timestamp) {
+    constructor(name, sessionType, topic, timestamp, id) {
         this.name = name;
-        this.type = type;
+        this.sessionType = sessionType;
         this.topic = topic;
         this.timestamp = timestamp;
+        this.id = id;
+        this.type = 'TopicSubmittedEvent';
     }
 }
 module.exports = TopicSubmittedEvent;

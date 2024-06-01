@@ -8,13 +8,13 @@
 </head>
 <body>
     <h1>Set Dates for {{eventName}}</h1>
-    <form id="dateRangeForm" action="/submit_dates" method="post">
+    <form id="dateRangeForm" action="/set_dates" method="post">
         <label for="startDate">Start Date:</label>
         <input type="date" id="startDate" name="startDate" required>
 
         <label for="endDate">End Date:</label>
         <input type="date" id="endDate" name="endDate" required>
-
+        <input type="hidden" id="id" name="id" value="{{id}}">
         <button type="submit">Set Date Range</button>
     </form>
 
