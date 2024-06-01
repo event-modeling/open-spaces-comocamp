@@ -40,10 +40,8 @@ app.post('/create_space', (req, res) => {
     res.render('space_created_confirmation', OpenSpaceNameSV(getAllEvents));
   } catch (err) { res.status(500).send('Failed to write event to the file system'); }
 });
-function OpenSpaceNameSV(eventsFunction) {
-  console.log("OpenSpaceNameSV");
-  eventsFunction().forEach(event => console.log(JSON.stringify(event)));
-  const lastEvent = eventsFunction(event => event.type === 'OpenSpaceNamedEvent').sort((a, b) => a.timestamp - b.timestamp).reverse()[0];
+function OpenSpaceNameSV(eventsArray) {
+  const lastEvent = eventsArray.filter(event => event.type === 'OpenSpaceNamedEvent').sort((a, b) => a.timestamp - b.timestamp).reverse()[0];
   return lastEvent ? { spaceName: lastEvent.spaceName, errorMessage: ''} : { errorMessage: 'No space has been created yet.', spaceName: ''};
 }
 
@@ -83,11 +81,11 @@ function run_tests() {
     }
   }
 
-  const testEventStream = [
-    new OpenSpaceNamedEvent("EM Open spaces", new Date("2024-05-21T00:00:00.000Z"), "1ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
-    new OpenSpaceNamedEvent("Event Modeling Space", new Date("2024-05-22T00:00:00.000Z"), "2ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
-    new OpenSpaceNamedEvent("Event Modeling Open Spaces", new Date("2024-05-23T00:00:00.000Z"), "3ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
-    new DateRangeSetEvent("2024-06-06", "2024-06-07", new Date("2024-05-24T00:00:00.000Z"), "4ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+  const testEvents = [
+    new OpenSpaceNamedEvent("EM Open spaces", "2024-05-21T00:00:00.000Z", "1ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new OpenSpaceNamedEvent("Event Modeling Space", "2024-05-22T00:00:00.000Z", "2ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new OpenSpaceNamedEvent("Event Modeling Open Spaces", "2024-05-23T00:00:00.000Z", "3ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new DateRangeSetEvent("2024-06-06", "2024-06-07", "2024-05-24T00:00:00.000Z", "4ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
   ]
   
   const tests = [
@@ -95,7 +93,7 @@ function run_tests() {
       name: 'Test OpenSpaceNameSV with no events',
       test: () => {
         const expected = { errorMessage: 'No space has been created yet.', spaceName: '' };
-        const result = OpenSpaceNameSV(() => testEventStream.slice(0, 0));
+        const result = OpenSpaceNameSV(testEvents.slice(0, 0));
         assertObjectEqual(expected, result);
         return true;
       }
@@ -104,7 +102,7 @@ function run_tests() {
       name: 'Test OpenSpaceNameSV with first event',
       test: () => {
         const expected = { spaceName: 'EM Open spaces', errorMessage: '' };
-        const result = OpenSpaceNameSV(() => testEventStream.slice(0, 1));
+        const result = OpenSpaceNameSV(testEvents.slice(0, 1));
         assertObjectEqual(expected, result);
         return true;
       }
@@ -113,7 +111,7 @@ function run_tests() {
       name: 'Test OpenSpaceNameSV with first two events',
       test: () => {
         const expected = { spaceName: 'Event Modeling Space', errorMessage: '' };
-        const result = OpenSpaceNameSV(() => testEventStream.slice(0, 2));
+        const result = OpenSpaceNameSV(testEvents.slice(0, 2));
         assertObjectEqual(expected, result);
         return true;
       }
@@ -122,7 +120,7 @@ function run_tests() {
       name: 'Test OpenSpaceNameSV with all three events',
       test: () => {
         const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
-        const result = OpenSpaceNameSV(() => testEventStream.slice(0, 3));
+        const result = OpenSpaceNameSV(testEvents.slice(0, 3));
         assertObjectEqual(expected, result);
         return true;
       }
@@ -132,7 +130,7 @@ function run_tests() {
       name: 'Test OpenSpaceNameSV with inconsequential event',
       test: () => {
         const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
-        const result = OpenSpaceNameSV(() => testEventStream.slice(0, 4));
+        const result = OpenSpaceNameSV(testEvents.slice(0, 4));
         assertObjectEqual(expected, result);
         return true;
       }
