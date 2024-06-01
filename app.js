@@ -41,6 +41,8 @@ app.post('/create_space', (req, res) => {
   } catch (err) { res.status(500).send('Failed to write event to the file system'); }
 });
 function OpenSpaceNameSV(eventsFunction) {
+  console.log("OpenSpaceNameSV");
+  eventsFunction().forEach(event => console.log(JSON.stringify(event)));
   const lastEvent = eventsFunction(event => event.type === 'OpenSpaceNamedEvent').sort((a, b) => a.timestamp - b.timestamp).reverse()[0];
   return lastEvent ? { spaceName: lastEvent.spaceName, errorMessage: ''} : { errorMessage: 'No space has been created yet.', spaceName: ''};
 }
@@ -121,6 +123,16 @@ function run_tests() {
       test: () => {
         const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
         const result = OpenSpaceNameSV(() => testEventStream.slice(0, 3));
+        assertObjectEqual(expected, result);
+        return true;
+      }
+    },
+    ,
+    {
+      name: 'Test OpenSpaceNameSV with inconsequential event',
+      test: () => {
+        const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
+        const result = OpenSpaceNameSV(() => testEventStream.slice(0, 4));
         assertObjectEqual(expected, result);
         return true;
       }
