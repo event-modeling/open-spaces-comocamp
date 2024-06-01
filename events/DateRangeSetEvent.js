@@ -4,6 +4,7 @@ class DateRangeSetEvent {
     this.endDate = endDate;
     this.timestamp = timestamp;
     this.id = id;
+    this.type = 'DateRangeSetEvent';
   }
 }
 

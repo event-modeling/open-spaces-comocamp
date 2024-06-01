@@ -3,6 +3,7 @@ class OpenSpaceNamedEvent {
     this.spaceName = spaceName;
     this.timestamp = timestamp;
     this.id = id;
+    this.type = 'OpenSpaceNamedEvent';
   }
 }
 
