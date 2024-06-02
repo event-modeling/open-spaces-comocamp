@@ -87,59 +87,66 @@ function run_tests() {
     new OpenSpaceNamedEvent("Event Modeling Open Spaces", "2024-05-23T00:00:00.000Z", "3ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
     new DateRangeSetEvent("2024-06-06", "2024-06-07", "2024-05-24T00:00:00.000Z", "4ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
   ]
-  
-  const tests = [
-    {
-      name: 'Test OpenSpaceNameSV with no OpenSpaceNamedEvent events',
-      test: () => {
-        const expected = { errorMessage: 'No space has been created yet.', spaceName: '' };
-        const result = OpenSpaceNameSV(testEvents.slice(0, 0));
-        assertObjectEqual(expected, result);
-        return true;
-      }
-    },
-    {
-      name: 'Test OpenSpaceNameSV with only one OpenSpaceNamedEvent event',
-      test: () => {
-        const expected = { spaceName: 'EM Open spaces', errorMessage: '' };
-        const result = OpenSpaceNameSV(testEvents.slice(0, 1));
-        assertObjectEqual(expected, result);
-        return true;
-      }
-    },
-    {
-      name: 'Test OpenSpaceNameSV with two OpenSpaceNamedEvent events; last one should always win',
-      test: () => {
-        const expected = { spaceName: 'Event Modeling Space', errorMessage: '' };
-        const result = OpenSpaceNameSV(testEvents.slice(0, 2));
-        assertObjectEqual(expected, result);
-        return true;
-      }
-    },
-    {
-      name: 'Test OpenSpaceNameSV with three OpenSpaceNamedEvent events; last one should always win',
-      test: () => {
-        const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
-        const result = OpenSpaceNameSV(testEvents.slice(0, 3));
-        assertObjectEqual(expected, result);
-        return true;
-      }
-    },
-    ,
-    {
-      name: 'Test OpenSpaceNameSV with inconsequential DateRangeSetEvent event, it should be ignored and last OpenSpaceNamedEvent should be used',
-      test: () => {
-        const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
-        const result = OpenSpaceNameSV(testEvents.slice(0, 4));
-        assertObjectEqual(expected, result);
-        return true;
-      }
+  const slices = [
+    { 
+      name: "OpenSpaceNameSV",
+      tests: [
+        {
+          name: 'OpenSpaceNameSV with no OpenSpaceNamedEvent events',
+          test: () => {
+            const expected = { errorMessage: 'No space has been created yet.', spaceName: '' };
+            const result = OpenSpaceNameSV(testEvents.slice(0, 0));
+            assertObjectEqual(expected, result);
+            return true;
+          }
+        },
+        {
+          name: 'OpenSpaceNameSV with only one OpenSpaceNamedEvent event',
+          test: () => {
+            const expected = { spaceName: 'EM Open spaces', errorMessage: '' };
+            const result = OpenSpaceNameSV(testEvents.slice(0, 1));
+            assertObjectEqual(expected, result);
+            return true;
+          }
+        },
+        {
+          name: 'OpenSpaceNameSV with two OpenSpaceNamedEvent events; last one should always win',
+          test: () => {
+            const expected = { spaceName: 'Event Modeling Space', errorMessage: '' };
+            const result = OpenSpaceNameSV(testEvents.slice(0, 2));
+            assertObjectEqual(expected, result);
+            return true;
+          }
+        },
+        {
+          name: 'OpenSpaceNameSV with three OpenSpaceNamedEvent events; last one should always win',
+          test: () => {
+            const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
+            const result = OpenSpaceNameSV(testEvents.slice(0, 3));
+            assertObjectEqual(expected, result);
+            return true;
+          }
+        },
+        ,
+        {
+          name: 'OpenSpaceNameSV with inconsequential DateRangeSetEvent event, it should be ignored and last OpenSpaceNamedEvent should be used',
+          test: () => {
+            const expected = { spaceName: 'Event Modeling Open Spaces', errorMessage: '' };
+            const result = OpenSpaceNameSV(testEvents.slice(0, 4));
+            assertObjectEqual(expected, result);
+            return true;
+          }
+        }
+      ]
     }
   ]
 
-  tests.forEach(test => {
-    try { console.log((test.test() ? '✅ ' : '❌ ') + test.name);
-    } catch (error) { console.log('❌ ' + test.name + ' had error: ' + error); }
+  slices.forEach(slice => {
+    console.log(`\x1b[42;97m\x1b[1m${slice.name} slice tests:\x1b[0m`);
+    slice.tests.forEach(test => {
+      try { console.log("Test " + (test.test() ? '✅ ' : '❌ ') + test.name);
+      } catch (error) { console.log('❌ ' + test.name + ' had error: ' + error); }
+    });
   });
 }
 module.exports = app;
