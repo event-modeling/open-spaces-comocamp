@@ -1,3 +1,5 @@
+const NameOpenSpaceCD = require('./commands/NameOpenSpaceCD');
+
 const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
 const DateRangeSetEvent = require('./events/DateRangeSetEvent');
 const TopicSubmittedEvent = require('./events/TopicSubmittedEvent');
@@ -88,6 +90,18 @@ function run_tests() {
     new DateRangeSetEvent("2024-06-06", "2024-06-07", "2024-05-24T00:00:00.000Z", "4ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
   ]
   const slices = [
+    {
+      name: "NameOpneSpaceCD",
+      tests: [
+        {
+          name: "NameOpenSpaceCD should be valid with no prior events",
+          test: () => {
+            const testEvents = [];
+            handleNameOpenSpaceCD(testEvents, new )
+          }
+        }
+      ]
+    },
     { 
       name: "OpenSpaceNameSV",
       tests: [
