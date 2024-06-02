@@ -36,14 +36,17 @@ app.get('/', (req, res) => { res.redirect('/create_space'); });
 app.get('/create_space', (req, res) => { res.render('create_space', { spaceName: OpenSpaceNameSV(getAllEvents()).spaceName, id: uuidv4() }); });
 app.post('/create_space', (req, res) => {
   const {spaceName, id} = req.body;
-  const openSpaceEvent = new OpenSpaceNamedEvent(spaceName, new Date().toISOString(), id);
-  if (!spaceName.trim()) { res.status(400).send('Space name is required'); return; }
-  try { writeEventIfIdNotExists(openSpaceEvent);
+  const result = handleNameOpenSpaceCD(getAllEvents(), new NameOpenSpaceCD(spaceName, id, new Date().toISOString()));
+  if (result.Error) { res.status(400).send(result.Error); return; }
+  try { writeEventIfIdNotExists(result.Events[0]);
     res.render('space_created_confirmation', OpenSpaceNameSV(getAllEvents()));
-  } catch (err) { res.status(500).send('Failed to write event to the file system'); }
+  } catch (err) { res.status(500).send('Failed to write event to the file system' + JSON.stringify(err)); }
 });
 function handleNameOpenSpaceCD(eventsArray, command) {
-  return [new OpenSpaceNamedEvent(command.spaceName, command.timeStamp, command.id)];
+  if (command.spaceName.trim() === "") { return { Error: "Space name is required", Events: [] }; }
+  const lastEvent = eventsArray.filter(event => event.type === 'OpenSpaceNamedEvent').sort((a, b) => a.timestamp - b.timestamp).reverse()[0];
+  if (lastEvent && lastEvent.spaceName.trim() === command.spaceName.trim()) { return { Error: "Space name already exists", Events: [] }; }
+  return { Error: "", Events: [new OpenSpaceNamedEvent(command.spaceName, command.timeStamp, command.id)] };
 }
 function OpenSpaceNameSV(eventsArray) {
   const lastEvent = eventsArray.filter(event => event.type === 'OpenSpaceNamedEvent').sort((a, b) => a.timestamp - b.timestamp).reverse()[0];
@@ -98,11 +101,30 @@ function run_tests() {
       name: "NameOpneSpaceCD",
       tests: [
         {
+          name: "NameOpenSpaceCD can't have a blank name",
+          test: () => {
+            const result = handleNameOpenSpaceCD(testEvents, new NameOpenSpaceCD(" ", commandUUID, commandTimeStamp));
+            assertObjectEqual(result.Error, "Space name is required");
+            assertObjectEqual(result.Events, []);
+            return true;
+          }
+        },
+        {
           name: "NameOpenSpaceCD should be valid with no prior events",
           test: () => {
             const expected = new OpenSpaceNamedEvent("EM Open spaces", commandTimeStamp, commandUUID);
-            const resultEvents = handleNameOpenSpaceCD(testEvents, new NameOpenSpaceCD("EM Open spaces", commandUUID, commandTimeStamp));
-            assertObjectEqual(expected, resultEvents[0]);
+            const result = handleNameOpenSpaceCD(testEvents, new NameOpenSpaceCD(expected.spaceName, commandUUID, commandTimeStamp));
+            assertObjectEqual(result.Error, "");
+            assertObjectEqual(expected, result.Events[0]);
+            return true;
+          }
+        },
+        {
+          name: "NameOpenSpaceCD should not match the last name set event even if extra whitespace is present",
+          test: () => {
+            const result = handleNameOpenSpaceCD(testEvents, new NameOpenSpaceCD("Event Modeling Open Spaces ", commandUUID, commandTimeStamp));
+            assertObjectEqual(result.Error, "Space name already exists");
+            assertObjectEqual(result.Events, []);
             return true;
           }
         }
