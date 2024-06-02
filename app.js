@@ -42,6 +42,9 @@ app.post('/create_space', (req, res) => {
     res.render('space_created_confirmation', OpenSpaceNameSV(getAllEvents()));
   } catch (err) { res.status(500).send('Failed to write event to the file system'); }
 });
+function handleNameOpenSpaceCD(eventsArray, command) {
+  return [new OpenSpaceNamedEvent(command.spaceName, command.timeStamp, command.id)];
+}
 function OpenSpaceNameSV(eventsArray) {
   const lastEvent = eventsArray.filter(event => event.type === 'OpenSpaceNamedEvent').sort((a, b) => a.timestamp - b.timestamp).reverse()[0];
   return lastEvent ? { spaceName: lastEvent.spaceName, errorMessage: ''} : { errorMessage: 'No space has been created yet.', spaceName: ''};
@@ -82,9 +85,10 @@ function run_tests() {
       throw new Error(`Assertion failed: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
     }
   }
-
+  const commandTimeStamp = new Date("2024-05-21T00:00:00.000Z").toISOString();
+  const commandUUID = "fceee960-2f9f-47b0-ad19-fed15d4f82cb";
   const testEvents = [
-    new OpenSpaceNamedEvent("EM Open spaces", "2024-05-21T00:00:00.000Z", "1ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new OpenSpaceNamedEvent("EM Open spaces", commandTimeStamp, commandUUID),
     new OpenSpaceNamedEvent("Event Modeling Space", "2024-05-22T00:00:00.000Z", "2ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
     new OpenSpaceNamedEvent("Event Modeling Open Spaces", "2024-05-23T00:00:00.000Z", "3ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
     new DateRangeSetEvent("2024-06-06", "2024-06-07", "2024-05-24T00:00:00.000Z", "4ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
@@ -96,8 +100,10 @@ function run_tests() {
         {
           name: "NameOpenSpaceCD should be valid with no prior events",
           test: () => {
-            const testEvents = [];
-            handleNameOpenSpaceCD(testEvents, new )
+            const expected = new OpenSpaceNamedEvent("EM Open spaces", commandTimeStamp, commandUUID);
+            const resultEvents = handleNameOpenSpaceCD(testEvents, new NameOpenSpaceCD("EM Open spaces", commandUUID, commandTimeStamp));
+            assertObjectEqual(expected, resultEvents[0]);
+            return true;
           }
         }
       ]
