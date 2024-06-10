@@ -39,9 +39,10 @@ app.post('/create_space', (req, res) => {
   const result = handleNameOpenSpaceCD(getAllEvents(), new NameOpenSpaceCD(spaceName, id, new Date().toISOString()));
   if (result.Error) { res.status(400).send(result.Error); return; }
   try { writeEventIfIdNotExists(result.Events[0]);
-    res.render('space_created_confirmation', OpenSpaceNameSV(getAllEvents()));
+    res.redirect('/space_created_confirmation');
   } catch (err) { res.status(500).send('Failed to write event to the file system' + JSON.stringify(err)); }
 });
+app.get(/space_created_confirmation/, (req, res) => { res.render('space_created_confirmation', OpenSpaceNameSV(getAllEvents())); });
 function handleNameOpenSpaceCD(eventsArray, command) {
   if (command.spaceName.trim() === "") { return { Error: "Space name is required", Events: [] }; }
   const lastEvent = eventsArray.filter(event => event.type === 'OpenSpaceNamedEvent').sort((a, b) => a.timestamp - b.timestamp).reverse()[0];
@@ -58,9 +59,10 @@ app.post('/set_dates', (req, res) => {
   const { startDate, endDate, id } = req.body;
   const dateRangeSetEvent = new DateRangeSetEvent(startDate, endDate, new Date().toISOString(), id);
   try { writeEventIfIdNotExists(dateRangeSetEvent); 
-    res.render('set_dates_confirmation', OpenSpaceDateRangeSV(getAllEvents()));
+    res.redirect('/set_dates_confirmation');
   } catch (err) { res.status(500).send('Failed to write date range event to the file system'); return; }
 });
+app.get('/set_dates_confirmation', (req, res) => { res.render('set_dates_confirmation', OpenSpaceDateRangeSV(getAllEvents())); });
 function OpenSpaceDateRangeSV(events) {
   const lastEvent = events.filter(event => event.type === 'DateRangeSetEvent').sort((a, b) => a.timestamp - b.timestamp).reverse()[0];
   return lastEvent ? { errorMessage: '', startDate: lastEvent.startDate, endDate: lastEvent.endDate } : { errorMessage: 'Date range not set yet.', startDate: '', endDate: '' };
@@ -72,9 +74,10 @@ app.post('/submit_topic', (req, res) => {
     const topicSubmittedEvent = new TopicSubmittedEvent(name, type, topic, new Date().toISOString(), id);
     try {
         writeEventIfIdNotExists(topicSubmittedEvent);
-        res.render('sessions', { sessions: SessionsSV(getAllEvents()) });
+        res.redirect('/sessions');
     } catch (err) { res.status(500).send('Failed to write event to the file system'); }
 });
+app.get('/sessions', (req, res) => { res.render('sessions', { sessions: SessionsSV(getAllEvents()) }); });
 function SessionsSV(events) {
     return events.filter(event => event.type === 'TopicSubmittedEvent').sort((a, b) => a.timestamp - b.timestamp);
 }
