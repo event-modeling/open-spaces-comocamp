@@ -1,8 +1,10 @@
 const NameOpenSpaceCD = require('./commands/NameOpenSpaceCD');
+const AddTimeSlot = require('./commands/AddTimeSlot');
 
 const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
 const DateRangeSetEvent = require('./events/DateRangeSetEvent');
 const TopicSubmittedEvent = require('./events/TopicSubmittedEvent');
+const TimeSlotAdded = require('./events/TimeSlotAdded');
 
 if (process.argv.includes('--run-tests')) {
   run_tests();
@@ -82,6 +84,44 @@ function SessionsSV(events) {
     return events.filter(event => event.type === 'TopicSubmittedEvent').sort((a, b) => a.timestamp - b.timestamp);
 }
 
+app.get('/time_slots', (req, res) => {
+    const timeOptions = [];
+    for (let hour = 0; hour < 24; hour++) {
+        for (let minute = 0; minute < 60; minute += 30) {
+            const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            timeOptions.push(time);
+        }
+    }
+    const events = getAllEvents();
+    const timeSlots = events.filter(event => event.type === 'TimeSlotAdded');
+    res.render('time_slots', { id: uuidv4(), timeSlots: timeSlots, timeOptions: timeOptions });
+});
+app.post('/add_time_slot', (req, res) => {
+    const { start, end, name, id } = req.body;
+    const command = new AddTimeSlot(start, end, name, id, new Date().toISOString());
+    const result = handleAddTimeSlotCD(getAllEvents(), command);
+    if (result.Error) {
+        res.status(400).send(result.Error);
+        return;
+    }
+    try {
+        result.Events.forEach(event => writeEventIfIdNotExists(event));
+        res.redirect('/time_slots');
+    } catch (err) {
+        res.status(500).send('Failed to write event to the file system' + JSON.stringify(err));
+    }
+});
+function handleAddTimeSlotCD(eventsArray, command) {
+  const timeSlotAddedEvents = eventsArray.filter(event => event.type === 'TimeSlotAdded').sort((a, b) => a.timestamp - b.timestamp);
+  const timeSlotExists = timeSlotAddedEvents.some(event => 
+    event.start === command.start && 
+    event.end === command.end && 
+    event.name.trim().toLowerCase() === command.name.trim().toLowerCase()
+  );
+  if (timeSlotExists) { return { Error: "Time slot already exists", Events: [] }; }
+  return { Events: [new TimeSlotAdded(command.start, command.end, command.name, command.timeStamp, command.id)] };
+}
+
 function run_tests() {
   function logResult(expected, result) { 
     console.log(`Expected: ${expected}, Got: ${result}`);
@@ -98,6 +138,7 @@ function run_tests() {
     new OpenSpaceNamedEvent("Event Modeling Space", "2024-05-22T00:00:00.000Z", "2ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
     new OpenSpaceNamedEvent("Event Modeling Open Spaces", "2024-05-23T00:00:00.000Z", "3ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
     new DateRangeSetEvent("2024-06-06", "2024-06-07", "2024-05-24T00:00:00.000Z", "4ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+    new TimeSlotAdded("9:00", "9:30", "Intro", "2024-05-25T00:00:00.000Z", "5ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
   ]
   const slices = [
     {
@@ -117,7 +158,6 @@ function run_tests() {
           test: () => {
             const expected = new OpenSpaceNamedEvent("EM Open spaces", commandTimeStamp, commandUUID);
             const result = handleNameOpenSpaceCD(testEvents, new NameOpenSpaceCD(expected.spaceName, commandUUID, commandTimeStamp));
-            assertObjectEqual(result.Error, "");
             assertObjectEqual(expected, result.Events[0]);
             return true;
           }
@@ -183,6 +223,31 @@ function run_tests() {
           }
         }
       ]
+    },
+    {
+      name: "AddTimeSlotCD",
+      tests: [
+        {
+          name: "AddTimeSlot should create a TimeSlotAdded event",
+          test: () => {
+            const command = new AddTimeSlot("9:00", "9:30", "Intro", commandUUID, commandTimeStamp);
+            const result = handleAddTimeSlotCD(testEvents.slice(0, 4), command);
+            const expected = new TimeSlotAdded("9:00", "9:30", "Intro", commandTimeStamp, commandUUID);
+            assertObjectEqual(expected, result.Events[0]);
+            return true;
+          }
+        },
+        {
+          name: "AddTimeSlot should not allow duplicate time slots",
+          test: () => {
+            const command = new AddTimeSlot("9:00", "9:30", "intro", commandUUID, commandTimeStamp);
+            const result = handleAddTimeSlotCD(testEvents, command);
+            assertObjectEqual(result.Error, "Time slot already exists");
+            assertObjectEqual(result.Events, []);
+            return true;
+          }
+        }
+      ]
     }
   ]
 
@@ -195,3 +260,4 @@ function run_tests() {
   });
 }
 module.exports = app;
+
