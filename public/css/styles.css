@@ -27,10 +27,11 @@ p {
 }
 
 table {
-    width: 80%; /* Adjusts the table width to 80% of its container */
+    width: 100%; /* Adjusts the table width to 80% of its container */
     margin: auto; /* Centers the table horizontally */
     max-width: 1200px; /* Maximum width of the table */
     min-width: 600px; /* Minimum width of the table */
+    margin-bottom: 60px; /* Add this line to create space below the table */
 }
 
 th, td {
@@ -73,3 +74,33 @@ body button {
     margin-top: 20px; /* Adds space above every button in the body */
 }
 
+.form-group {
+    text-align: left; /* Aligns everything inside form-group to the left */
+    margin-bottom: 20px; /* Adds space below each form group */
+}
+
+.form-group label, .form-group input {
+    display: inline-block; /* Aligns items in a line while respecting text alignment */
+    text-align: left; /* Keeps text left-aligned */
+    width: 100%; /* Ensures full width to maintain alignment */
+}
+
+.form-group select {
+    text-align: left; /* Aligns the select input text to the left */
+}
+
+.time-slots-heading {
+    text-align: left;
+}
+
+.container {
+    max-width: 1200px; /* Maximum width of the table */
+    margin: auto; /* Centers the table horizontally */
+}
+
+.form-container {
+    background-color: #f4f4f4; /* Light gray background */
+    padding: 20px; /* Padding around the form */
+    border-radius: 5px; /* Optional: rounded corners */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: slight shadow for depth */
+}

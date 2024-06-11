@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Time Slot</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Add Time Slot</h1>
+        <h2 class="time-slots-heading">Time Slots</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each timeSlots}}
+                <tr>
+                    <td>{{this.name}}</td>
+                    <td>{{this.start}}</td>
+                    <td>{{this.end}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        <div class="form-container">
+            <form action="/add_time_slot" method="post">
+                <div class="form-group">
+                    <label for="start">Start Time:</label>
+                    <select id="start" name="start" required>
+                        {{#each timeOptions}}
+                        <option value="{{this}}">{{this}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="end">End Time:</label>
+                    <select id="end" name="end" required>
+                        {{#each timeOptions}}
+                        <option value="{{this}}">{{this}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <input type="hidden" id="id" name="id" value="{{id}}">
+                <button type="submit" class="continue-button">Add Time Slot</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

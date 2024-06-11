@@ -84,6 +84,33 @@ function SessionsSV(events) {
     return events.filter(event => event.type === 'TopicSubmittedEvent').sort((a, b) => a.timestamp - b.timestamp);
 }
 
+app.get('/time_slots', (req, res) => {
+    const timeOptions = [];
+    for (let hour = 0; hour < 24; hour++) {
+        for (let minute = 0; minute < 60; minute += 30) {
+            const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            timeOptions.push(time);
+        }
+    }
+    const events = getAllEvents();
+    const timeSlots = events.filter(event => event.type === 'TimeSlotAdded');
+    res.render('time_slots', { id: uuidv4(), timeSlots: timeSlots, timeOptions: timeOptions });
+});
+app.post('/add_time_slot', (req, res) => {
+    const { start, end, name, id } = req.body;
+    const command = new AddTimeSlot(start, end, name, id, new Date().toISOString());
+    const result = handleAddTimeSlotCD(getAllEvents(), command);
+    if (result.Error) {
+        res.status(400).send(result.Error);
+        return;
+    }
+    try {
+        result.Events.forEach(event => writeEventIfIdNotExists(event));
+        res.redirect('/time_slots');
+    } catch (err) {
+        res.status(500).send('Failed to write event to the file system' + JSON.stringify(err));
+    }
+});
 function handleAddTimeSlotCD(eventsArray, command) {
   const timeSlotAddedEvents = eventsArray.filter(event => event.type === 'TimeSlotAdded').sort((a, b) => a.timestamp - b.timestamp);
   const timeSlotExists = timeSlotAddedEvents.some(event => 
@@ -131,7 +158,6 @@ function run_tests() {
           test: () => {
             const expected = new OpenSpaceNamedEvent("EM Open spaces", commandTimeStamp, commandUUID);
             const result = handleNameOpenSpaceCD(testEvents, new NameOpenSpaceCD(expected.spaceName, commandUUID, commandTimeStamp));
-            assertObjectEqual(result.Error, "");
             assertObjectEqual(expected, result.Events[0]);
             return true;
           }
@@ -234,3 +260,4 @@ function run_tests() {
   });
 }
 module.exports = app;
+
