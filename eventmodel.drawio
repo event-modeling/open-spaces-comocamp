@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="595" dy="310" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="2795" dy="1680" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
@@ -37,21 +37,21 @@
                     <mxGeometry x="40" y="1090" width="220" height="230" as="geometry"/>
                 </mxCell>
                 <mxCell id="530" value="Manuel - in progress" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=10;fillColor=#CDEB8B;align=left;verticalAlign=top;opacity=10;fontColor=#000000;" parent="109" vertex="1">
-                    <mxGeometry x="4070" y="310" width="480" height="1030" as="geometry"/>
+                    <mxGeometry x="4070" y="310" width="1060" height="1030" as="geometry"/>
                 </mxCell>
-                <mxCell id="533" value="&lt;font color=&quot;#000000&quot;&gt;AddTimeSlot:&lt;br&gt;&amp;nbsp;- Start: 9:00&lt;br&gt;&amp;nbsp;- End: 9:30&lt;br&gt;&amp;nbsp;- Name: Intro&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" vertex="1" parent="109">
+                <mxCell id="533" value="&lt;font color=&quot;#000000&quot;&gt;AddTimeSlot:&lt;br&gt;&amp;nbsp;- Start: 9:00&lt;br&gt;&amp;nbsp;- End: 9:30&lt;br&gt;&amp;nbsp;- Name: Intro&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="109" vertex="1">
                     <mxGeometry x="4180" y="1420" width="180" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="535" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TimeSlotAdded:&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Start: 9:00&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- End: 9:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Name: Intro&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" vertex="1" parent="109">
+                <mxCell id="535" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TimeSlotAdded:&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Start: 9:00&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- End: 9:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Name: Intro&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="109" vertex="1">
                     <mxGeometry x="4370" y="1420" width="180" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="536" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TimeSlotAdded:&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Start: 9:00&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- End: 9:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Name: Intro&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" vertex="1" parent="109">
+                <mxCell id="536" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TimeSlotAdded:&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Start: 9:00&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- End: 9:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Name: Intro&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="109" vertex="1">
                     <mxGeometry x="3990" y="1520" width="180" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="537" value="&lt;font color=&quot;#000000&quot;&gt;AddTimeSlot:&lt;br&gt;&amp;nbsp;- Start: 9:00&lt;br&gt;&amp;nbsp;- End: 9:30&lt;br&gt;&amp;nbsp;- Name: Intro&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" vertex="1" parent="109">
+                <mxCell id="537" value="&lt;font color=&quot;#000000&quot;&gt;AddTimeSlot:&lt;br&gt;&amp;nbsp;- Start: 9:00&lt;br&gt;&amp;nbsp;- End: 9:30&lt;br&gt;&amp;nbsp;- Name: Intro&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="109" vertex="1">
                     <mxGeometry x="4180" y="1520" width="180" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="538" value="&lt;font color=&quot;#000000&quot;&gt;You didn't change the name. No change registered.&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#FF0000;verticalAlign=top;align=left;fontStyle=1" vertex="1" parent="109">
+                <mxCell id="538" value="&lt;font color=&quot;#000000&quot;&gt;You didn't change the name. No change registered.&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#FF0000;verticalAlign=top;align=left;fontStyle=1" parent="109" vertex="1">
                     <mxGeometry x="905" y="1780" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <object label="Event Model" id="1">
