@@ -85,6 +85,10 @@ body button {
     width: 100%; /* Ensures full width to maintain alignment */
 }
 
+.form-group textarea {
+    width: 100%; /* Makes the textarea full width */
+}
+
 .form-group select {
     text-align: left; /* Aligns the select input text to the left */
 }

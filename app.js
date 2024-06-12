@@ -93,7 +93,7 @@ app.get('/time_slots', (req, res) => {
         }
     }
     const events = getAllEvents();
-    const timeSlots = events.filter(event => event.type === 'TimeSlotAdded');
+    const timeSlots = TimeSlotsSV(events);
     res.render('time_slots', { id: uuidv4(), timeSlots: timeSlots, timeOptions: timeOptions });
 });
 app.post('/add_time_slot', (req, res) => {
@@ -120,6 +120,9 @@ function handleAddTimeSlotCD(eventsArray, command) {
   );
   if (timeSlotExists) { return { Error: "Time slot already exists", Events: [] }; }
   return { Events: [new TimeSlotAdded(command.start, command.end, command.name, command.timeStamp, command.id)] };
+}
+function TimeSlotsSV(events) {
+  return events.filter(event => event.type === 'TimeSlotAdded').map(event => ({ start: event.start, end: event.end, name: event.name }));
 }
 
 function run_tests() {
@@ -244,6 +247,25 @@ function run_tests() {
             const result = handleAddTimeSlotCD(testEvents, command);
             assertObjectEqual(result.Error, "Time slot already exists");
             assertObjectEqual(result.Events, []);
+            return true;
+          }
+        }
+      ]
+    },
+    {
+      name: "TimeSlotsSV",
+      tests: [
+        {
+          name: "TimeSlotsSV should return all TimeSlotAdded events",
+          test: () => {
+            const testEvents = [
+              new TimeSlotAdded("9:00", "9:30", "Intro", "2024-05-25T00:00:00.000Z", "5ceee960-2f9f-47b0-ad19-fed15d4f82cb"),
+              new TimeSlotAdded("10:00", "10:30", "Discussion", "2024-05-25T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82cb")
+            ];
+            const result = TimeSlotsSV(testEvents);
+            assertObjectEqual(result.length, 2);
+            assertObjectEqual(result[0].start, "9:00");
+            assertObjectEqual(result[1].start, "10:00");
             return true;
           }
         }
