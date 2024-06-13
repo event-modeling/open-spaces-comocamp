@@ -267,6 +267,16 @@ function run_tests() {
           }
         },
         {
+          name: "AddTimeSlot should not allow overlap other time slots but can share end and start time",
+          test: () => {
+            const command = new AddTimeSlot("9:30", "10:30", "Slot 1", "d86c4e43-a7cd-4640-a3a4-b2e16f893326", "2024-05-25T00:00:01.000Z");
+            const result = handleAddTimeSlotCD(testEvents, command);
+            const expected = new TimeSlotAdded("9:30", "10:30", "Slot 1", commandTimeStamp, commandUUID);
+            assertObjectEqual(expected, result.Events[0]);
+            return true;
+          }
+        },
+        {
           name: "AddTimeSlot can end or start at same time for now",
           test: () => {
             const command = new AddTimeSlot("9:30", "10:30", "Slot 1", "d86c4e43-a7cd-4640-a3a4-b2e16f893326", "2024-05-25T00:00:01.000Z");
