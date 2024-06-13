@@ -120,9 +120,9 @@ function handleAddTimeSlotCD(eventsArray, command) {
   );
   if (timeSlotExists) { return { Error: "Time slot already exists", Events: [] }; }
   const timeSlotOverlaps = timeSlotAddedEvents.some(event =>
-    (event.start <= command.start && event.end >= command.start) ||
-    (event.start <= command.end && event.end >= command.end) ||
-    (event.start >= command.start && event.end <= command.end)
+    (command.start >= event.start && command.start < event.end) ||
+    (command.end > event.start && command.end <= event.end) ||
+    (command.start <= event.start && command.end >= event.end)
   );
   if (timeSlotOverlaps) { return { Error: "Time slot overlaps an existing slot", Events: [] }; }
   return { Events: [new TimeSlotAdded(command.start, command.end, command.name, command.timeStamp, command.id)] };
@@ -267,22 +267,12 @@ function run_tests() {
           }
         },
         {
-          name: "AddTimeSlot should not allow overlap other time slots but can share end and start time",
+          name: "AddTimeSlot should allow slots to share end and start times",
           test: () => {
             const command = new AddTimeSlot("9:30", "10:30", "Slot 1", "d86c4e43-a7cd-4640-a3a4-b2e16f893326", "2024-05-25T00:00:01.000Z");
             const result = handleAddTimeSlotCD(testEvents, command);
-            const expected = new TimeSlotAdded("9:30", "10:30", "Slot 1", commandTimeStamp, commandUUID);
+            const expected = new TimeSlotAdded("9:30", "10:30", "Slot 1", "2024-05-25T00:00:01.000Z", "d86c4e43-a7cd-4640-a3a4-b2e16f893326");
             assertObjectEqual(expected, result.Events[0]);
-            return true;
-          }
-        },
-        {
-          name: "AddTimeSlot can end or start at same time for now",
-          test: () => {
-            const command = new AddTimeSlot("9:30", "10:30", "Slot 1", "d86c4e43-a7cd-4640-a3a4-b2e16f893326", "2024-05-25T00:00:01.000Z");
-            const result = handleAddTimeSlotCD(testEvents, command);
-            assertObjectEqual(result.Error, "Time slot overlaps an existing slot");
-            assertObjectEqual(result.Events, []);
             return true;
           }
         },
