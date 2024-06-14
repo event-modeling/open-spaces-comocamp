@@ -1,43 +1,43 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="917" dy="503" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="5108" dy="1780" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
-                    <mxCell parent="0" visible="0"/>
+                    <mxCell parent="0"/>
                 </object>
                 <mxCell id="110" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#66FF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;fontColor=#66FF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="280" y="330" width="880" height="1000" as="geometry"/>
+                    <mxGeometry x="280" y="290" width="880" height="1040" as="geometry"/>
                 </mxCell>
                 <mxCell id="111" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#66FF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;fontColor=#66FF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="1180" y="330" width="380" height="1000" as="geometry"/>
+                    <mxGeometry x="1180" y="290" width="380" height="1040" as="geometry"/>
                 </mxCell>
                 <mxCell id="112" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#66FF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;fontColor=#66FF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="1580" y="330" width="760" height="1000" as="geometry"/>
+                    <mxGeometry x="1580" y="290" width="760" height="1040" as="geometry"/>
                 </mxCell>
                 <mxCell id="129" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#66FF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;fontColor=#66FF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="2360" y="330" width="450" height="1000" as="geometry"/>
+                    <mxGeometry x="2360" y="290" width="450" height="1040" as="geometry"/>
                 </mxCell>
                 <mxCell id="130" value="Manuel - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#66FF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;fontColor=#66FF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="5380" y="310" width="490" height="1000" as="geometry"/>
+                    <mxGeometry x="7520" y="340" width="490" height="1000" as="geometry"/>
                 </mxCell>
                 <mxCell id="131" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#66FF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;gradientColor=none;fontColor=#66FF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="5890" y="310" width="790" height="1000" as="geometry"/>
+                    <mxGeometry x="8030" y="340" width="790" height="1000" as="geometry"/>
                 </mxCell>
                 <mxCell id="176" value="Manuel - in progress" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#FFFF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;fontColor=#FFFF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="6700" y="310" width="490" height="1000" as="geometry"/>
+                    <mxGeometry x="8840" y="340" width="490" height="1000" as="geometry"/>
                 </mxCell>
                 <mxCell id="189" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#66FF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;gradientColor=none;fontColor=#66FF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="7210" y="310" width="790" height="1000" as="geometry"/>
+                    <mxGeometry x="9350" y="340" width="790" height="1000" as="geometry"/>
                 </mxCell>
                 <mxCell id="481" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#FFFF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;fontColor=#FFFF33;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="2830" y="330" width="750" height="1000" as="geometry"/>
+                    <mxGeometry x="2830" y="290" width="750" height="1040" as="geometry"/>
                 </mxCell>
                 <mxCell id="530" value="Manuel - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#66FF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;fontColor=#66FF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="4060" y="310" width="460" height="1030" as="geometry"/>
+                    <mxGeometry x="4060" y="280" width="460" height="1060" as="geometry"/>
                 </mxCell>
                 <mxCell id="539" value="Manuel - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#66FF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;fontColor=#66FF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="4550" y="310" width="590" height="1030" as="geometry"/>
+                    <mxGeometry x="4550" y="280" width="590" height="1060" as="geometry"/>
                 </mxCell>
                 <object label="Event Model" id="1">
                     <mxCell parent="0"/>
@@ -780,10 +780,10 @@
                     <mxGeometry x="4930" y="560" width="40" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="506" value="&lt;font color=&quot;#000000&quot;&gt;TokensCreated&lt;br&gt;&amp;nbsp;[ guid: xxxx-xxxx-xxxxx-xxxx, ... ]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="7520" y="230" width="180" height="70" as="geometry"/>
+                    <mxGeometry x="5530" y="345" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="507" value="&lt;font color=&quot;#000000&quot;&gt;TokenClaimed&lt;br&gt;&amp;nbsp;- token: 123-xxxx-xxxx-xxxx&lt;br&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="7520" y="310" width="180" height="70" as="geometry"/>
+                    <mxGeometry x="5530" y="425" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="508" value="&lt;font color=&quot;#000000&quot;&gt;VotingSessionStarted&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
                     <mxGeometry x="1570" y="3140" width="180" height="70" as="geometry"/>
@@ -1299,13 +1299,13 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <object label="communication" id="562">
-                    <mxCell parent="0" visible="0"/>
+                    <mxCell parent="0"/>
                 </object>
                 <mxCell id="563" value="This should not be almost white-on-white on a dark theme" style="rounded=0;whiteSpace=wrap;html=1;fontSize=37;align=left;verticalAlign=top;fillColor=none;strokeColor=#FF0000;fontColor=#FF0000;gradientColor=none;strokeWidth=12;spacing=8;spacingLeft=13;" vertex="1" parent="562">
-                    <mxGeometry x="6720" y="500" width="410" height="400" as="geometry"/>
+                    <mxGeometry x="8860" y="500" width="410" height="400" as="geometry"/>
                 </mxCell>
                 <mxCell id="565" value="This should not be almost white-on-white on a dark theme" style="rounded=0;whiteSpace=wrap;html=1;fontSize=37;align=left;verticalAlign=bottom;fillColor=none;strokeColor=#FF0000;fontColor=#FF0000;gradientColor=none;strokeWidth=12;spacing=8;spacingLeft=13;" vertex="1" parent="562">
-                    <mxGeometry x="4700" y="380" width="410" height="400" as="geometry"/>
+                    <mxGeometry x="4700" y="330" width="410" height="450" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
