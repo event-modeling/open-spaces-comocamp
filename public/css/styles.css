@@ -68,6 +68,10 @@ thead th {
     thead th {
         background-color: #555;
     }
+    input, textarea, select {
+        color: #fff; /* Ensures text in form elements is visible in dark mode */
+        background-color: #333; /* Optional: to match the dark theme background */
+    }
 }
 
 body button {
@@ -103,7 +107,7 @@ body button {
 }
 
 .form-container {
-    background-color: #f4f4f4; /* Light gray background */
+    background-color: transparent; /* Changed from light gray to transparent */
     padding: 20px; /* Padding around the form */
     border-radius: 5px; /* Optional: rounded corners */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: slight shadow for depth */
