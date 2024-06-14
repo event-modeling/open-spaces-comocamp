@@ -70,19 +70,7 @@ function OpenSpaceDateRangeSV(events) {
   return lastEvent ? { errorMessage: '', startDate: lastEvent.startDate, endDate: lastEvent.endDate } : { errorMessage: 'Date range not set yet.', startDate: '', endDate: '' };
 }
 
-app.get('/submit_topic', (req, res) => { res.render('submit_topic', { eventName: OpenSpaceNameSV(getAllEvents()).spaceName, id: uuidv4() }); });
-app.post('/submit_topic', (req, res) => {
-    const { name, type, topic, id } = req.body;
-    const topicSubmittedEvent = new TopicSubmittedEvent(name, type, topic, new Date().toISOString(), id);
-    try {
-        writeEventIfIdNotExists(topicSubmittedEvent);
-        res.redirect('/sessions');
-    } catch (err) { res.status(500).send('Failed to write event to the file system'); }
-});
-app.get('/sessions', (req, res) => { res.render('sessions', { sessions: SessionsSV(getAllEvents()) }); });
-function SessionsSV(events) {
-    return events.filter(event => event.type === 'TopicSubmittedEvent').sort((a, b) => a.timestamp - b.timestamp);
-}
+app.get('/rooms', (req, res) => { res.render('rooms'); });
 
 app.get('/time_slots', (req, res) => {
     const timeOptions = [];
@@ -129,6 +117,20 @@ function handleAddTimeSlotCD(eventsArray, command) {
 }
 function TimeSlotsSV(events) {
   return events.filter(event => event.type === 'TimeSlotAdded').map(event => ({ start: event.start, end: event.end, name: event.name }));
+}
+
+app.get('/submit_topic', (req, res) => { res.render('submit_topic', { eventName: OpenSpaceNameSV(getAllEvents()).spaceName, id: uuidv4() }); });
+app.post('/submit_topic', (req, res) => {
+    const { name, type, topic, id } = req.body;
+    const topicSubmittedEvent = new TopicSubmittedEvent(name, type, topic, new Date().toISOString(), id);
+    try {
+        writeEventIfIdNotExists(topicSubmittedEvent);
+        res.redirect('/sessions');
+    } catch (err) { res.status(500).send('Failed to write event to the file system'); }
+});
+app.get('/sessions', (req, res) => { res.render('sessions', { sessions: SessionsSV(getAllEvents()) }); });
+function SessionsSV(events) {
+    return events.filter(event => event.type === 'TopicSubmittedEvent').sort((a, b) => a.timestamp - b.timestamp);
 }
 
 function run_tests() {
