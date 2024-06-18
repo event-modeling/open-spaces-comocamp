@@ -153,7 +153,7 @@ function run_tests() {
   ]
   const slices = [
     {
-      name: "NameOpneSpaceCD",
+      name: "NameOpenSpaceCD",
       tests: [
         {
           name: "NameOpenSpaceCD can't have a blank name",
