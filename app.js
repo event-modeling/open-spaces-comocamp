@@ -119,6 +119,9 @@ function TimeSlotsSV(events) {
   return events.filter(event => event.type === 'TimeSlotAdded').map(event => ({ start: event.start, end: event.end, name: event.name }));
 }
 
+<a href="/create_conf_id" class="continue-button">Continue</a>
+// End Generation  Here
+
 app.get('/submit_topic', (req, res) => { res.render('submit_topic', { eventName: OpenSpaceNameSV(getAllEvents()).spaceName, id: uuidv4() }); });
 app.post('/submit_topic', (req, res) => {
     const { name, type, topic, id } = req.body;
