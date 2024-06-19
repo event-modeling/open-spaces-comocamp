@@ -133,3 +133,5 @@ dist
 eventstore
 .npmrc
 .nvmrc
+_wk-progress/app.js _wk-progress/commands _wk-progress/eventmodel.drawio _wk-progress/events _wk-progress/package-lock.json _wk-progress/package.json _wk-progress/public _wk-progress/readme.md _wk-progress/views
+_wk*/
