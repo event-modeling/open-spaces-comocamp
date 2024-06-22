@@ -26,12 +26,8 @@ app.set('views', './views');
 app.listen(port, () => { console.log(`Example app listening at http://localhost:${port}`); });
 
 const EVENT_STORE_PATH = __dirname + '/eventstore/';
-function getAllEventFileNames(filterFunction) { return fs.readdirSync(EVENT_STORE_PATH).filter(filterFunction)};
 function writeEventIfIdNotExists(event) { if (fs.readdirSync(EVENT_STORE_PATH).filter(file => file.includes(event.id)).length === 0) { fs.writeFileSync(`${EVENT_STORE_PATH}${event.timestamp.replace(/:/g, '-').replace(/\..+/, '')}-${event.id}-${event.type}.json`, JSON.stringify(event)); } }
-function getLastEvent(eventType) { try { return JSON.parse(fs.readFileSync(EVENT_STORE_PATH + getAllEventFileNames(file => file.includes(eventType)).sort().reverse()[0], 'utf8'));
-} catch (err) { return null; } }
-function getAllEvents() { return fs.readdirSync(EVENT_STORE_PATH).map(file => JSON.parse(fs.readFileSync(EVENT_STORE_PATH + file, 'utf8'))); }
-
+function getAllEvents() { return fs.readdirSync(EVENT_STORE_PATH).filter(file => file.endsWith('.json')).map(file => JSON.parse(fs.readFileSync(EVENT_STORE_PATH + file, 'utf8'))); }
 
 app.get('/', (req, res) => { res.redirect('/create_space'); });
 
