@@ -130,7 +130,6 @@ dist
 .pnp.*
 
 # application artifacts
-eventstore
 .npmrc
 .nvmrc
 _wk*/
