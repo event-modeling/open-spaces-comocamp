@@ -1,10 +1,12 @@
 const NameOpenSpaceCD = require('./commands/NameOpenSpaceCD');
 const AddTimeSlot = require('./commands/AddTimeSlot');
+const RequestConfIdCD = require('./commands/RequestConfIdCD');
 
 const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
 const DateRangeSetEvent = require('./events/DateRangeSetEvent');
 const TopicSubmittedEvent = require('./events/TopicSubmittedEvent');
 const TimeSlotAdded = require('./events/TimeSlotAdded');
+const RequestedConfIdEvent = require('./events/RequestedConfIdEvent');
 
 if (process.argv.includes('--run-tests')) {
   run_tests();
@@ -114,6 +116,16 @@ function handleAddTimeSlotCD(eventsArray, command) {
 function TimeSlotsSV(events) {
   return events.filter(event => event.type === 'TimeSlotAdded').map(event => ({ start: event.start, end: event.end, name: event.name }));
 }
+
+app.get('/create_conf_id', (req, res) => { res.render('create_conf_id'); });
+app.post('/create_conf_id', (req, res) => {
+  const timeStamp = new Date().toISOString();
+  const confId = uuidv4();
+  const requestConfIdCommand = new RequestConfIdCD(confId, timeStamp);
+  const event = new RequestedConfIdEvent(confId, timeStamp);
+  writeEventIfIdNotExists(event);
+  res.redirect('/create_conf_id_confirmation');
+});
 
 app.get('/submit_topic', (req, res) => { res.render('submit_topic', { eventName: OpenSpaceNameSV(getAllEvents()).spaceName, id: uuidv4() }); });
 app.post('/submit_topic', (req, res) => {
