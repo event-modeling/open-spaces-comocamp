@@ -1346,7 +1346,7 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="861" value="" style="shape=image;html=1;verticalLabelPosition=bottom;verticalAlign=top;imageAspect=0;image=img/clipart/Gear_128x128.png;fillColor=#CCE5FF;" parent="1" vertex="1">
-                    <mxGeometry x="5930" y="1460" width="142.11" height="150" as="geometry"/>
+                    <mxGeometry x="5980" y="1460" width="142.11" height="150" as="geometry"/>
                 </mxCell>
                 <mxCell id="862" value="&lt;font color=&quot;#000000&quot;&gt;ConfererenceIDs&lt;br&gt;&amp;nbsp;[&lt;br&gt;&amp;nbsp; &amp;nbsp;{ value: &quot;&quot; }&lt;br&gt;&amp;nbsp;]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" parent="1" vertex="1">
                     <mxGeometry x="5761.11" y="2030" width="230" height="70" as="geometry"/>
@@ -1361,7 +1361,7 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="864" value="Unique Conference Identifier Generator" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=27;fontColor=#99FF99;" parent="1" connectable="0" vertex="1">
-                    <mxGeometry x="5750" y="1430" as="geometry"/>
+                    <mxGeometry x="5820" y="1420" as="geometry"/>
                 </mxCell>
                 <mxCell id="866" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;strokeColor=#808080;fontColor=#000000;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="862" target="861" edge="1">
                     <mxGeometry relative="1" as="geometry">
