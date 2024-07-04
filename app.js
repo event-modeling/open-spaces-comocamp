@@ -127,6 +127,8 @@ app.post('/create_conf_id', (req, res) => {
   res.redirect('/create_conf_id_confirmation');
 });
 
+app.get('create_conf_id_confirmation', (req, res) => { res.render('create_conf_id_confirmation'); });
+
 app.get('/submit_topic', (req, res) => { res.render('submit_topic', { eventName: OpenSpaceNameSV(getAllEvents()).spaceName, id: uuidv4() }); });
 app.post('/submit_topic', (req, res) => {
     const { name, type, topic, id } = req.body;
