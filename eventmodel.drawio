@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="2516" dy="885" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="3387" dy="1233" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
@@ -43,7 +43,7 @@
                     <mxGeometry x="3600" y="1490" width="430" height="1040" as="geometry"/>
                 </mxCell>
                 <mxCell id="1035" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#66FF66;fontFamily=Helvetica;fontSize=37;fillColor=none;align=left;verticalAlign=top;fontColor=#66FF66;strokeWidth=12;spacing=8;spacingLeft=13;" parent="109" vertex="1">
-                    <mxGeometry x="5180" y="1480" width="570" height="1060" as="geometry"/>
+                    <mxGeometry x="5710" y="1460" width="570" height="1060" as="geometry"/>
                 </mxCell>
                 <object label="Event Model" id="1">
                     <mxCell parent="0"/>
@@ -1619,55 +1619,55 @@
                 <mxCell id="1034" value="&lt;font style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 72px;&quot;&gt;Contributing to the project:&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;div style=&quot;font-size: 28px;&quot;&gt;&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 60px;&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;1. Update the EM in the first commit of you slice branch. Name the branch to reflect the Command or the State View you are working on.&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;2. Make PR for the change into main branch so that others can see that you're working on that slice&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;3. Implement the slice&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;4. Make PR for the new version of the branch to complete the slice work into main.&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=3;" parent="1" vertex="1">
                     <mxGeometry x="310" y="300" width="1000" height="490" as="geometry"/>
                 </mxCell>
-                <mxCell id="1036" value="" style="endArrow=classic;html=1;shape=flexArrow;fillColor=#1ba1e2;strokeColor=#006EAF;" edge="1" parent="1">
+                <mxCell id="1036" value="" style="endArrow=classic;html=1;shape=flexArrow;fillColor=#1ba1e2;strokeColor=#006EAF;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="5860" y="1410" as="sourcePoint"/>
                         <mxPoint x="7090" y="1410" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="1037" value="Set Sign Up URL" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=60;fontColor=#99CCFF;" vertex="1" connectable="0" parent="1036">
+                <mxCell id="1037" value="Set Sign Up URL" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=60;fontColor=#99CCFF;" parent="1036" vertex="1" connectable="0">
                     <mxGeometry x="-0.9687" y="4" relative="1" as="geometry">
                         <mxPoint x="-20" y="-46" as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="1038" value="&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;Set a conference URL for participants&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;align=left;verticalAlign=top;" vertex="1" parent="1">
+                <mxCell id="1038" value="&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;Set a conference URL for participants&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;align=left;verticalAlign=top;" parent="1" vertex="1">
                     <mxGeometry x="5860" y="1510" width="290" height="270" as="geometry"/>
                 </mxCell>
-                <mxCell id="1039" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="1041">
+                <mxCell id="1039" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="1041" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="6012.200000000001" y="1690" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="1040" style="edgeStyle=none;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="1041">
+                <mxCell id="1040" style="edgeStyle=none;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" parent="1" source="1041" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="5987.9" y="1690" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="1041" value="&lt;font color=&quot;#000000&quot;&gt;Generate URL and QR code&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#CCE5FF;" vertex="1" parent="1">
+                <mxCell id="1041" value="&lt;font color=&quot;#000000&quot;&gt;Generate URL and QR code&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#CCE5FF;" parent="1" vertex="1">
                     <mxGeometry x="5950" y="1640" width="90" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="1042" value="&amp;nbsp;&lt;span style=&quot;background-color: rgb(255, 153, 204);&quot;&gt;Setup&lt;/span&gt; | Sessions | Voting | Schedule" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;align=left;verticalAlign=top;fontColor=#000000;" vertex="1" parent="1">
+                <mxCell id="1042" value="&amp;nbsp;&lt;span style=&quot;background-color: rgb(255, 153, 204);&quot;&gt;Setup&lt;/span&gt; | Sessions | Voting | Schedule" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;align=left;verticalAlign=top;fontColor=#000000;" parent="1" vertex="1">
                     <mxGeometry x="5860" y="1510" width="220" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="1044" value="" style="shape=flexArrow;endArrow=classic;html=1;" edge="1" parent="1">
+                <mxCell id="1044" value="" style="shape=flexArrow;endArrow=classic;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="940" y="2560" as="sourcePoint"/>
                         <mxPoint x="940" y="2640" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="1045" value="" style="shape=flexArrow;endArrow=classic;html=1;" edge="1" parent="1">
+                <mxCell id="1045" value="" style="shape=flexArrow;endArrow=classic;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="940" y="2660" as="sourcePoint"/>
                         <mxPoint x="940" y="2810" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="1046" value="" style="shape=flexArrow;endArrow=classic;html=1;" edge="1" parent="1">
+                <mxCell id="1046" value="" style="shape=flexArrow;endArrow=classic;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="940" y="2840" as="sourcePoint"/>
                         <mxPoint x="940" y="3070" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="1047" value="" style="shape=flexArrow;endArrow=classic;html=1;" edge="1" parent="1">
+                <mxCell id="1047" value="" style="shape=flexArrow;endArrow=classic;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="940" y="3110" as="sourcePoint"/>
                         <mxPoint x="940" y="3260" as="targetPoint"/>
