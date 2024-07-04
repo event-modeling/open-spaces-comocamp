@@ -7,6 +7,7 @@ const DateRangeSetEvent = require('./events/DateRangeSetEvent');
 const TopicSubmittedEvent = require('./events/TopicSubmittedEvent');
 const TimeSlotAdded = require('./events/TimeSlotAdded');
 const RequestedConfIdEvent = require('./events/RequestedConfIdEvent');
+const ConfIdGeneratedEvent = require('./events/ConfIdGeneratedEvent');
 
 if (process.argv.includes('--run-tests')) {
   run_tests();
@@ -120,12 +121,30 @@ function TimeSlotsSV(events) {
 app.get('/create_conf_id', (req, res) => { res.render('create_conf_id'); });
 app.post('/create_conf_id', (req, res) => {
   const timeStamp = new Date().toISOString();
-  const confId = uuidv4();
-  const requestConfIdCommand = new RequestConfIdCD(confId, timeStamp);
-  const event = new RequestedConfIdEvent(confId, timeStamp);
-  writeEventIfIdNotExists(event);
+  const Id = uuidv4();
+  const requestConfIdCommand = new RequestConfIdCD(Id, timeStamp);
+  if (!TODO_ConfIdsToGenerateSV().some(confId => confId.value === "")) {
+    const event = new RequestedConfIdEvent(Id, timeStamp);
+    writeEventIfIdNotExists(event);
+  }
+  processConfIDgeneration();
   res.redirect('/create_conf_id_confirmation');
 });
+
+function TODO_ConfIdsToGenerateSV() {
+  const events = getAllEvents().filter(event => event.type === 'RequestedConfIdEvent' || event.type === 'ConfIdGeneratedEvent');
+  const lastEvent = events.length > 0 ? events.sort((a, b) => b.timestamp - a.timestamp)[0] : [];
+  if (lastEvent.length === 0) return [];
+  return lastEvent.type === "ConfIdGeneratedEvent" ? [] : [lastEvent];
+}
+
+function processConfIDgeneration() {
+  TODO_ConfIdsToGenerateSV().forEach(confId => {
+    if (confId.value != "") return;
+    const event = new ConfIdGeneratedEvent(uuidv4(), uuidv4(), new Date().toISOString());
+    writeEventIfIdNotExists(event);
+  });
+}
 
 app.get('create_conf_id_confirmation', (req, res) => { res.render('create_conf_id_confirmation'); });
 
