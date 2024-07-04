@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="3387" dy="1233" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="10160" dy="3700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
@@ -327,7 +327,7 @@
                 <mxCell id="370" value="" style="endArrow=classic;html=1;shape=flexArrow;fillColor=#1ba1e2;strokeColor=#006EAF;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="280" y="1170" as="sourcePoint"/>
-                        <mxPoint x="9340" y="1150" as="targetPoint"/>
+                        <mxPoint x="8930" y="1150" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="371" value="Open Spaces Setup" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=60;fontColor=#99CCFF;" parent="370" vertex="1" connectable="0">
@@ -778,7 +778,7 @@
                 <mxCell id="503" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#f9f7ed;fontColor=#000000;" parent="1" vertex="1">
                     <mxGeometry x="4850" y="1760" width="70" height="20" as="geometry"/>
                 </mxCell>
-                <mxCell id="1006" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=11;fontColor=#000000;endArrow=classic;" parent="1" source="504" target="989" edge="1">
+                <mxCell id="1006" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=11;fontColor=#000000;endArrow=classic;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="504" target="1038" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="504" value="&lt;font color=&quot;#000000&quot;&gt;Continue&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#f9f7ed;" parent="1" vertex="1">
@@ -1430,8 +1430,8 @@
                 </mxCell>
                 <mxCell id="884" value="" style="endArrow=classic;html=1;shape=flexArrow;fillColor=#1ba1e2;strokeColor=#006EAF;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="8960" y="1423.33" as="sourcePoint"/>
-                        <mxPoint x="10170" y="1423.33" as="targetPoint"/>
+                        <mxPoint x="8950" y="1300" as="sourcePoint"/>
+                        <mxPoint x="10160" y="1300" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="885" value="Participant Registration" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=60;fontColor=#99CCFF;" parent="884" connectable="0" vertex="1">
@@ -1533,22 +1533,10 @@
                 <mxCell id="964" value="&lt;font color=&quot;#000000&quot;&gt;RegistrationOpened&lt;br&gt;&amp;nbsp;- conf id: 1111-2222-3333&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
                     <mxGeometry x="8540" y="2260" width="280" height="100" as="geometry"/>
                 </mxCell>
-                <mxCell id="989" value="&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;Create Conference URL and QR code&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;align=left;verticalAlign=top;" parent="1" vertex="1">
-                    <mxGeometry x="5230" y="1545" width="290" height="270" as="geometry"/>
-                </mxCell>
-                <mxCell id="1005" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=11;fontColor=#000000;endArrow=classic;" parent="1" source="1002" target="856" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="1002" value="&lt;font color=&quot;#000000&quot;&gt;Create&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#CCE5FF;" parent="1" vertex="1">
-                    <mxGeometry x="5420" y="1785" width="90" height="20" as="geometry"/>
-                </mxCell>
-                <mxCell id="1004" value="&amp;nbsp;&lt;span style=&quot;background-color: rgb(255, 153, 204);&quot;&gt;Setup&lt;/span&gt; | Sessions | Voting | Schedule" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;align=left;verticalAlign=top;fontColor=#000000;" parent="1" vertex="1">
-                    <mxGeometry x="5230" y="1545" width="220" height="30" as="geometry"/>
-                </mxCell>
                 <mxCell id="1007" value="" style="endArrow=classic;html=1;shape=flexArrow;fillColor=#1ba1e2;strokeColor=#006EAF;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="5115" y="1300" as="sourcePoint"/>
-                        <mxPoint x="9330" y="1296" as="targetPoint"/>
+                        <mxPoint x="8930" y="1296" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="1008" value="Participant Registration Portal Management" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=60;fontColor=#99CCFF;" parent="1007" connectable="0" vertex="1">
@@ -1621,8 +1609,8 @@
                 </mxCell>
                 <mxCell id="1036" value="" style="endArrow=classic;html=1;shape=flexArrow;fillColor=#1ba1e2;strokeColor=#006EAF;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="5860" y="1410" as="sourcePoint"/>
-                        <mxPoint x="7090" y="1410" as="targetPoint"/>
+                        <mxPoint x="5700" y="1420" as="sourcePoint"/>
+                        <mxPoint x="6930" y="1420" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="1037" value="Set Sign Up URL" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=60;fontColor=#99CCFF;" parent="1036" vertex="1" connectable="0">
