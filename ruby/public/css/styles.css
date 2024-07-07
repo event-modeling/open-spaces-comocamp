@@ -1,10 +1,134 @@
-/* Your CSS styles here */
+/* Base styles for light mode */
 body {
     font-family: Arial, sans-serif;
     margin: 40px;
     text-align: center;
     background-color: #fff;
     color: #333;
+}
+h1 {
+    color: #333;
+}
+p {
+    color: #666;
+    font-size: 1.2rem;
+}
+.error {
+    color: #D33;
+}
+.continue-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+table {
+    width: 100%; /* Adjusts the table width to 80% of its container */
+    margin: auto; /* Centers the table horizontally */
+    max-width: 1200px; /* Maximum width of the table */
+    min-width: 600px; /* Minimum width of the table */
+    margin-bottom: 60px; /* Add this line to create space below the table */
+}
+
+th, td {
+    min-width: 100px; /* Minimum width for each cell */
+    max-width: 400px; /* Maximum width for each cell */
+    padding: 10px; /* Padding inside each cell */
+    text-align: left; /* Aligns text to the left */
+    border-bottom: 1px solid #ccc; /* Adds a bottom border to each cell */
+}
+
+thead th {
+    background-color: #f4f4f4; /* Background color for header */
+    font-weight: bold; /* Makes header text bold */
+}
+
+/* Styles for dark mode */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #333;
+        color: #fff;
+    }
+    h1 {
+        color: #fff;
+    }
+    p {
+        color: #fff;
+    }
+
+    table {
+        border: 1px solid #fff;
+    }
+
+    th, td {
+        border-bottom: 1px solid #666;
+    }
+
+    thead th {
+        background-color: #555;
+    }
+    input, textarea, select {
+        color: #fff; /* Ensures text in form elements is visible in dark mode */
+        background-color: #333; /* Optional: to match the dark theme background */
+    }
+
+    .content {
+        color: #fff; /* Light text color for the content */
+        padding: 20px; /* Padding around the content */
+    }
+
+    .qr-code {
+        background-color: #666; /* Dark background for the QR code container */
+        padding: 10px; /* Padding around the QR code */
+        border-radius: 5px; /* Optional: rounded corners */
+    }
+
+    a {
+        color: #4CAF50; /* Light green color for links */
+    }
+}
+
+body button {
+    margin-top: 20px; /* Adds space above every button in the body */
+}
+
+.form-group {
+    text-align: left; /* Aligns everything inside form-group to the left */
+    margin-bottom: 20px; /* Adds space below each form group */
+}
+
+.form-group label, .form-group input {
+    display: inline-block; /* Aligns items in a line while respecting text alignment */
+    text-align: left; /* Keeps text left-aligned */
+    width: 100%; /* Ensures full width to maintain alignment */
+}
+
+.form-group textarea {
+    width: 100%; /* Makes the textarea full width */
+}
+
+.form-group select {
+    text-align: left; /* Aligns the select input text to the left */
+}
+
+.time-slots-heading {
+    text-align: left;
+}
+
+.container {
+    max-width: 1200px; /* Maximum width of the table */
+    margin: auto; /* Centers the table horizontally */
+}
+
+.form-container {
+    background-color: transparent; /* Changed from light gray to transparent */
+    padding: 20px; /* Padding around the form */
+    border-radius: 5px; /* Optional: rounded corners */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: slight shadow for depth */
 }
 
 .center-container {
