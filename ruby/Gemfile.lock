@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     base64 (0.2.0)
+    chunky_png (1.4.0)
     multi_json (1.15.0)
     mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
@@ -14,6 +15,10 @@ GEM
     rackup (2.1.0)
       rack (>= 3)
       webrick (~> 1.8)
+    rqrcode (2.2.0)
+      chunky_png (~> 1.0)
+      rqrcode_core (~> 1.0)
+    rqrcode_core (1.2.0)
     ruby2_keywords (0.0.5)
     sinatra (4.0.0)
       mustermann (~> 3.0)
@@ -36,6 +41,7 @@ PLATFORMS
 
 DEPENDENCIES
   rackup
+  rqrcode
   sinatra
   sinatra-contrib
 
