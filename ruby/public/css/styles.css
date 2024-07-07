@@ -1,0 +1,14 @@
+/* Your CSS styles here */
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    text-align: center;
+    background-color: #fff;
+    color: #333;
+}
+
+.center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
