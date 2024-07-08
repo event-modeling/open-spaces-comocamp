@@ -16,7 +16,8 @@ def run_tests
   command_uuid = "fceee960-2f9f-47b0-ad19-fed15d4f82cb"
   test_events = [
     UniqueIdProvidedEvent.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "<svg>...</svg>", "http://localhost:3000/register/6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1"),
-    RegistrationOpenedEvent.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1")
+    RegistrationOpenedEvent.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1"),
+    RegistrationClosedEvent.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1")
   ]
 
   slices = [
@@ -50,7 +51,7 @@ def run_tests
           name: "RegistrationStatusSV with RegistrationOpenEvent",
           test: -> {
             expected = {conf_id: "6ceee960-2f9f-47b0-ad19-fed15d4f82c1", status: "open", error_message: ""}
-            result = registration_status_sv(test_events)
+            result = registration_status_sv(test_events.slice(0, 2))
             assert_object_equal(expected, result)
             true
           }
@@ -59,8 +60,30 @@ def run_tests
           name: "RegistrationStatusSV with RegistrationClosedEvent",
           test: -> {
             expected = {conf_id: "6ceee960-2f9f-47b0-ad19-fed15d4f82c1", status: "closed", error_message: ""}
-            test_events << RegistrationClosedEvent.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1")
-            result = registration_status_sv(test_events)
+            result = registration_status_sv(test_events.slice(0, 3))
+            assert_object_equal(expected, result)
+            true
+          }
+        }
+      ]
+    },
+    {
+      name: "CloseRegistrationCD",
+      tests: [
+        {
+          name: "CloseRegistrationCD when registration is open",
+          test: -> {
+            result = handle_close_registration_cd(test_events.slice(0, 2), CloseRegistrationCD.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1"))
+            expected = RegistrationClosedEvent.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1")
+            assert_object_equal(expected, result[:events].first)
+            true
+          }
+        },
+        {
+          name: "CloseRegistrationCD when registration is closed",
+          test: -> {
+            result = handle_close_registration_cd(test_events.slice(0, 3), CloseRegistrationCD.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1"))
+            expected = { error: "Registration already closed", events: [] }
             assert_object_equal(expected, result)
             true
           }
@@ -75,7 +98,7 @@ def run_tests
       begin
         puts "Test " + (test[:test].call ? '✅ ' : '❌ ') + test[:name]
       rescue => error
-        puts '❌ ' + test[:name] + ' had error: ' + error
+        puts '❌ ' + test[:name] + ' had error: ' + error.message
       end
     end
   end

@@ -4,6 +4,8 @@ require 'json'
 require 'fileutils'
 require 'ostruct'
 
+require_relative 'commands/close_registration_cd'
+
 require_relative 'events/unique_id_provided_event'
 require_relative 'events/registration_opened_event'
 require_relative 'events/registration_closed_event'
@@ -25,4 +27,17 @@ def registration_status_sv(events_array)
   status = registration_closed ? 'closed' : (registration_opened ? 'open' : 'closed')
 
   { conf_id: conf_id, status: status, error_message: '' }
+end
+def handle_close_registration_cd(events_array, command)
+  last_event = events_array.select { |event| event.confId == command.confId }
+    .select { |event| ['RegistrationOpenedEvent', 'RegistrationClosedEvent'].include?(event.type) }
+    .sort_by { |event| event.timestamp }
+    .last
+
+  registration_closed = last_event.type == 'RegistrationClosedEvent'
+  if registration_closed
+    return { error: "Registration already closed", events: [] }
+  end
+
+  { error: "", events: [RegistrationClosedEvent.new(command.confId, command.timestamp, command.id)] }
 end
