@@ -15,7 +15,8 @@ def run_tests
   command_time_stamp = Time.parse("2024-05-21T00:00:00.000Z").iso8601
   command_uuid = "fceee960-2f9f-47b0-ad19-fed15d4f82cb"
   test_events = [
-    UniqueIdProvidedEvent.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "<svg>...</svg>", "http://localhost:3000/register/6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1")
+    UniqueIdProvidedEvent.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "<svg>...</svg>", "http://localhost:3000/register/6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1"),
+    RegistrationOpenedEvent.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1")
   ]
 
   slices = [
@@ -28,6 +29,39 @@ def run_tests
             expected = {conf_id: "6ceee960-2f9f-47b0-ad19-fed15d4f82c1", qr: "<svg>...</svg>", url: "http://localhost:3000/register/6ceee960-2f9f-47b0-ad19-fed15d4f82c1"}
             result = conference_ids_sv(test_events)
             assert_object_equal(expected, result.last)
+            true
+          }
+        }
+      ]
+    },
+    {
+      name: "RegistrationStatusSV",
+      tests: [
+        {
+          name: "RegistrationStatusSV with no UniqueIdProvidedEvent",
+          test: -> {
+            expected = {conf_id: "", status: "", error_message: "No unique ID provided"}
+            result = registration_status_sv([])
+            assert_object_equal(expected, result)
+            true
+          }
+        },
+        {
+          name: "RegistrationStatusSV with RegistrationOpenEvent",
+          test: -> {
+            expected = {conf_id: "6ceee960-2f9f-47b0-ad19-fed15d4f82c1", status: "open", error_message: ""}
+            result = registration_status_sv(test_events)
+            assert_object_equal(expected, result)
+            true
+          }
+        },
+        {
+          name: "RegistrationStatusSV with RegistrationClosedEvent",
+          test: -> {
+            expected = {conf_id: "6ceee960-2f9f-47b0-ad19-fed15d4f82c1", status: "closed", error_message: ""}
+            test_events << RegistrationClosedEvent.new("6ceee960-2f9f-47b0-ad19-fed15d4f82c1", "2024-05-26T00:00:00.000Z", "6ceee960-2f9f-47b0-ad19-fed15d4f82c1")
+            result = registration_status_sv(test_events)
+            assert_object_equal(expected, result)
             true
           }
         }
