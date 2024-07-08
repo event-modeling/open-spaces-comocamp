@@ -28,6 +28,18 @@ def registration_status_sv(events_array)
 
   { conf_id: conf_id, status: status, error_message: '' }
 end
+post "/close_registration" do
+  result = handle_close_registration_cd(get_all_events, CloseRegistrationCD.new(params[:confId], Time.now.utc.iso8601, SecureRandom.uuid))
+  halt 400, result[:error] unless result[:error].empty?
+
+  begin
+    result[:events].each { |event| write_event_if_id_not_exists(event) }
+    redirect '/portal_management'
+  rescue => e
+    status 500
+    body "Failed to write event to the file system: #{e.message}"
+  end
+end
 def handle_close_registration_cd(events_array, command)
   last_event = events_array.select { |event| event.confId == command.confId }
     .select { |event| ['RegistrationOpenedEvent', 'RegistrationClosedEvent'].include?(event.type) }

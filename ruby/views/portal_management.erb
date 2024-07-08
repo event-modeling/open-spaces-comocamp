@@ -17,8 +17,9 @@
               <p>Conference URL: <a href="<%= conference_id[:url] %>"><%= conference_id[:url] %></a></p>
               <% if registration_status[:status] == "open" %>
                 <form action="/close_registration" method="post" style="text-align: right;">
-                    <button type="submit" class="continue-button">Close Registration</button>
-                </form>
+                  <input type="hidden" name="confId" value="<%= conference_id[:conf_id] %>">
+                  <button type="submit" class="continue-button">Close Registration</button>
+                </form> 
               <% else %>
                 <form action="/open_registration" method="post" style="text-align: right;">
                     <button type="submit" class="continue-button">Open Registration</button>
