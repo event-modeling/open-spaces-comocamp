@@ -133,3 +133,4 @@ dist
 .npmrc
 .nvmrc
 _wk*/
+.aider*
