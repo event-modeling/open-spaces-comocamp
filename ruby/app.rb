@@ -4,6 +4,10 @@ require 'json'
 require 'fileutils'
 require 'ostruct'
 
+configure do
+  set :bind, '0.0.0.0'
+end
+
 require_relative 'commands/close_registration_cd'
 
 require_relative 'events/unique_id_provided_event'
