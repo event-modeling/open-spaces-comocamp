@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  ruby:
+    build: .
+    image: 'open_spaces_comocamp:latest'
+    command: sh -c "cd ruby && ruby app.rb"
+    volumes:
+      - .:/app/
+    ports:
+      - "4567:4567"
