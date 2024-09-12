@@ -57,20 +57,19 @@ class EventStore:
 
 
 app = FastAPI(docs_url=None)
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-app.mount("/", StaticFiles(directory='./static'), name="static")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.mount("/static", StaticFiles(directory='./static'), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 
 @app.get("/events")
-def get_home():
+def get_events():
     """
     Endpoint to test event store retrieval of all events from this slice
     :return:
@@ -103,7 +102,7 @@ def cart_state_view(events_list: list[type(Event)]):
 
 # state view for payment
 @app.get('/cart')
-def get_cart(request):
+def get_cart(request: Request):
     """
     Endpoint to view checkout page
 
