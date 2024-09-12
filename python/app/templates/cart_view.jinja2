@@ -2,11 +2,22 @@
 <body>
 {{ data }}
 <form action="/pay" method="post">
-    <input type="text" name="name" value="{{ data.name }}" readonly/>
-    <input type="text" name="email" value="{{ data.username }}" readonly/>
-    <input type="text" name="conference" value="{{ data.conference }}" readonly/>
-    <input type="text" name="amount" value="{{ data.amount }}" readonly/>
-    <input type="text" name="currency" value="{{ data.currency }}" readonly/>
+    <label for="name">Name</label>
+    <input type="text" id="name" value="{{ data.name }}" readonly/><br>
+
+    <label for="email">Email</label>
+    <input type="text" id="email" value="{{ data.username }}" readonly/><br>
+
+    <label for="conference">Conference</label>
+    <input type="text" id="conference" value="{{ data.conference }}" readonly/><br>
+
+    <label for="amount">Amount</label>
+    <input type="text" id="amount" value="{{ data.amount }}" readonly/><br>
+
+
+    <label for="currency">Currency</label>
+    <input type="text" id="currency" value="{{ data.currency }}" readonly/><br>
+
     <input type="submit" value="Pay"/>
 </form>
 </body>
