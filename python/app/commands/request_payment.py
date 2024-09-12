@@ -1,7 +1,7 @@
 from commands.base import Command
 
 
-class RequestPayment(Command):
+class RequestPaymentCD(Command):
     username: str
     name: str
     amount: float

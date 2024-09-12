@@ -5,9 +5,13 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+from starlette.staticfiles import StaticFiles
+from starlette.templating import Jinja2Templates
 
+from commands.request_payment import RequestPaymentCD
 from events.base import Event
 
 
@@ -53,6 +57,16 @@ class EventStore:
 
 
 app = FastAPI(docs_url=None)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.mount("/", StaticFiles(directory='./static'), name="static")
+
+templates = Jinja2Templates(directory="app/templates")
 
 
 @app.get("/events")
@@ -74,6 +88,46 @@ def post_event(event: Event):
     """
     event_id = EventStore.write_event_if_id_not_exists(event)
     return {'message': f'Event written with id {event_id}'}
+
+
+# state view for cart
+def cart_state_view(events_list: list[type(Event)]):
+    events = [
+        event for event in
+        events_list
+        if event.get('type') == 'UserAddedConferenceToCart'
+    ]
+    result = events[-1] if events else None
+    return result
+
+
+# state view for payment
+@app.get('/cart')
+def get_cart(request):
+    """
+    Endpoint to view checkout page
+
+    :return:
+    """
+    events = EventStore.get_all_events()
+    return templates.get_template('cart_view.jinja2').render(**{
+        'request': request,
+        'data': cart_state_view(events)
+    })
+
+
+# command handler for request payment
+@app.post("/request_payment")
+def request_payment(command: RequestPaymentCD):
+    """
+    Command handler for request payment
+
+    :param command:
+    :return:
+    """
+
+
+    return
 
 
 @app.get("/openapi.json", include_in_schema=False)
