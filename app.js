@@ -10,11 +10,11 @@ const TimeSlotAdded = require("./events/TimeSlotAdded");
 const RequestedConfIdEvent = require("./events/RequestedConfIdEvent");
 const ConferenceCreatedEvent = require("./events/ConferenceCreatedEvent");
 const VoterRegisteredRequestedEvent = require("./events/VoterRegisteredRequestedEvent");
+const VoterRegisteredEvent = require("./events/VoterRegisteredEvent");
 
-if (process.argv.includes("--run-tests")) {
-  run_tests();
-  process.exit(0);
-}
+const EventEmitter = require('events');
+const eventEmitter = new EventEmitter();
+
 
 const port = 3000;
 const fs = require("fs");
@@ -28,9 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.engine("handlebars", engine({ defaultLayout: false }));
 app.set("view engine", "handlebars");
 app.set("views", "./views");
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
-});
+
 
 const EVENT_STORE_PATH = __dirname + "/eventstore/";
 function writeEventIfIdNotExists(event) {
@@ -44,8 +42,15 @@ function writeEventIfIdNotExists(event) {
         .replace(/\..+/, "")}-${event.id}-${event.type}.json`,
       JSON.stringify(event)
     );
+    eventEmitter.emit('eventWritten', event); // Emitting an event for every new event written
+    if (event.type === 'VoterRegisteredRequestedEvent') {
+      eventEmitter.emit('VoterRegisteredRequested', event);
+    }
+  } else {
+    console.log(`Event ${event.id} already exists`);
   }
 }
+
 function getAllEvents() {
   return fs
     .readdirSync(EVENT_STORE_PATH)
@@ -158,5 +163,58 @@ app.post('/setup_conf', (req,res) => {
     res.status(500).send('Failed to write event to the file system');
   }
 })
+
+eventEmitter.on('VoterRegisteredRequested', (event) => {
+  console.log(`1VoterRegisteredRequestedEvent received: ${event.id}`);
+  const command = new VoterRegisteredEvent(timestamp=event.timestamp, id=uuidv4(), requestId=event.id, voterId=event.voterId, openSpaceId=event.openSpaceId);
+  console.log(`2VoterRegisteredEvent received: ${command.id}`);
+  writeEventIfIdNotExists(command);
+});
+
+function VoterRegisteredRequestedCountSV(eventsArray, openSpaceId) {
+  const voterRegisteredEvents = eventsArray.filter(event => event.type === 'VoterRegisteredRequestedEvent' && event.openSpaceId === openSpaceId);
+  return voterRegisteredEvents.length > 0 ? voterRegisteredEvents.map(event => ({ voterId: event.voterId, openSpaceId: event.openSpaceId })) : [{ errorMessage: 'No voters have been registered for this open space.', voterId: '', openSpaceId: '' }];
+}
+function VoterRegisteredCountSV(eventsArray, openSpaceId) {
+  const voterRegisteredEvents = eventsArray.filter(event => event.type === 'VoterRegisteredEvent' && event.openSpaceId === openSpaceId);
+  return voterRegisteredEvents.length > 0 ? voterRegisteredEvents.map(event => ({ voterId: event.voterId, openSpaceId: event.openSpaceId })) : [{ errorMessage: 'No voters have been registered for this open space.', voterId: '', openSpaceId: '' }];
+}
+
+eventEmitter.on('eventWritten', (event) => {
+  console.log(`1Event written: ${event.type} with ID: ${event.id}`);
+  console.log('2event', event);
+});
+
+function setupEventListeners() {
+  eventEmitter.on('VoterRegistrationRequested', (event) => {
+    console.log(`VoterRegistrationRequestedEvent received: ${event.id}`);
+    const command = new VoterRegisteredEvent(event.id, event.timestamp, event.voterId, event.openSpaceId);
+    writeEventIfIdNotExists(command);
+  });
+  eventEmitter.on('eventWritten', (event) => {
+    console.log(`2Event written: ${event.type} with ID: ${event.id}`);
+  });
+}
+
+if (process.argv.includes("--run-tests")) {
+  run_tests();
+  process.exit(0);
+}
+
+app.listen(port, () => {
+  console.log(`Example app listening at http://localhost:${port}`);
+});
+
+
+function run_tests() {
+  // const tests = require('./tests');
+  // tests.run_tests();
+  console.log("Running tests");
+  // setupEventListeners();
+  writeEventIfIdNotExists(new VoterRegisteredRequestedEvent( timestamp=new Date().toISOString(), id=uuidv4(), voterId=uuidv4(), openSpaceId=5));
+  console.log(VoterRegisteredRequestedCountSV(getAllEvents(), 5));
+  console.log(VoterRegisteredCountSV(getAllEvents(), 5));
+  process.exit(0);
+}
 
 module.exports = app;
