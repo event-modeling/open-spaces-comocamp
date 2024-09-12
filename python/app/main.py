@@ -57,13 +57,13 @@ class EventStore:
 
 
 app = FastAPI(docs_url=None)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 app.mount("/", StaticFiles(directory='./static'), name="static")
 
 templates = Jinja2Templates(directory="app/templates")
@@ -125,7 +125,6 @@ def request_payment(command: RequestPaymentCD):
     :param command:
     :return:
     """
-
 
     return
 
