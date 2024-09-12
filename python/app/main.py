@@ -3,12 +3,16 @@ import os
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from events.base import Event
 
 
 class EventStore:
-    event_store_path = 'eventstore'
+    event_store_path = '/app/eventstore'
 
     @staticmethod
     def get_all_events() -> list[dict]:
@@ -48,7 +52,7 @@ class EventStore:
         return event_id
 
 
-app = FastAPI()
+app = FastAPI(docs_url=None)
 
 
 @app.get("/events")
@@ -71,6 +75,19 @@ def post_event(event: Event):
     event_id = EventStore.write_event_if_id_not_exists(event)
     return {'message': f'Event written with id {event_id}'}
 
+
+@app.get("/openapi.json", include_in_schema=False)
+async def get_open_api_endpoint():
+    return JSONResponse(get_openapi(
+        title='python-slice',
+        version='0.0.1',
+        routes=app.routes
+    ))
+
+
+@app.get("/docs", include_in_schema=False)
+async def get_documentation(request: Request):
+    return get_swagger_ui_html(openapi_url="openapi.json", title="docs")
 
 
 uvicorn.run(app, host="0.0.0.0", port=5656)
