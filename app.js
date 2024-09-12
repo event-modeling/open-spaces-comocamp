@@ -61,7 +61,7 @@ function getAllEvents() {
 }
 
 app.get("/", (req, res) => {
-  res.redirect("/create_space");
+  res.redirect("/setup_conf");
 });
 
 app.get("/conferences", (req, res) => {
