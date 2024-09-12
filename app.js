@@ -9,6 +9,7 @@ const TopicSubmittedEvent = require("./events/TopicSubmittedEvent");
 const TimeSlotAdded = require("./events/TimeSlotAdded");
 const RequestedConfIdEvent = require("./events/RequestedConfIdEvent");
 const ConferenceCreatedEvent = require("./events/ConferenceCreatedEvent");
+const VoterRegisteredRequestedEvent = require("./events/VoterRegisteredRequestedEvent");
 
 if (process.argv.includes("--run-tests")) {
   run_tests();
