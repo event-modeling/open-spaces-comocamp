@@ -1,5 +1,5 @@
 <h1>Setup a Conference</h1>
-<form action="setup_conference" method="POST">
+<form action="setup_conf" method="POST">
     <div><label for="name">Name</label><input type="text" id="name" name="name"></div>
     <div><label for="subject">Subject</label><input type="text" id="subject" name="subject"></div>
     <div><label for="startDate">Start Date</label><input type="date" id="start_date" name="start_date"></div>
@@ -12,3 +12,12 @@
         <button type="submit">Setup</button>
     </div>
 </form>
+<script>
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const location = document.getElementById("location");
+            location.value = `${position.coords.latitude},${position.coords.longitude}`;
+            location.readOnly = true;
+        });
+    }    
+</script>
