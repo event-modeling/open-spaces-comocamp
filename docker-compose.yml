@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: production_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - net1
+
+  ruby:
+    image: 'ruby:alpine'
+    command: sh -c "cd /app/ruby && bundle install && ruby app.rb"
+    volumes:
+      - .:/app/
+    ports:
+      - "4567:4567"
+    networks:
+      - net1
+
+  js:
+    image: 'node:alpine'
+    command: sh -c "cd app && npm install && npm start"
+    volumes:
+      - .:/app/
+    ports:
+      - "3000:3000"
+    networks:
+      - net1
+
+networks:
+  net1:
+    driver: bridge
