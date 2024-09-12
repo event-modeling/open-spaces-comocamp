@@ -10,11 +10,11 @@ const TimeSlotAdded = require("./events/TimeSlotAdded");
 const RequestedConfIdEvent = require("./events/RequestedConfIdEvent");
 const ConferenceCreatedEvent = require("./events/ConferenceCreatedEvent");
 const VoterRegisteredRequestedEvent = require("./events/VoterRegisteredRequestedEvent");
+const VoterRegisteredEvent = require("./events/VoterRegisteredEvent");
 
-if (process.argv.includes("--run-tests")) {
-  run_tests();
-  process.exit(0);
-}
+const EventEmitter = require('events');
+const eventEmitter = new EventEmitter();
+
 
 const port = 3000;
 const fs = require("fs");
@@ -28,9 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.engine("handlebars", engine({ defaultLayout: false }));
 app.set("view engine", "handlebars");
 app.set("views", "./views");
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
-});
+
 
 const EVENT_STORE_PATH = __dirname + "/eventstore/";
 function writeEventIfIdNotExists(event) {
@@ -44,8 +42,15 @@ function writeEventIfIdNotExists(event) {
         .replace(/\..+/, "")}-${event.id}-${event.type}.json`,
       JSON.stringify(event)
     );
+    eventEmitter.emit('eventWritten', event); // Emitting an event for every new event written
+    if (event.type === 'VoterRegisteredRequestedEvent') {
+      eventEmitter.emit('VoterRegisteredRequested', event);
+    }
+  } else {
+    console.log(`Event ${event.id} already exists`);
   }
 }
+
 function getAllEvents() {
   return fs
     .readdirSync(EVENT_STORE_PATH)
@@ -383,309 +388,57 @@ app.post('/setup_conf', (req,res) => {
   }
 })
 
-function run_tests() {
-  function logResult(expected, result) {
-    console.log(`Expected: ${expected}, Got: ${result}`);
-  }
-  function assertObjectEqual(expected, actual) {
-    if (JSON.stringify(expected) !== JSON.stringify(actual)) {
-      throw new Error(
-        `Assertion failed: expected ${JSON.stringify(
-          expected
-        )}, got ${JSON.stringify(actual)}`
-      );
-    }
-  }
-  const commandTimeStamp = new Date("2024-05-21T00:00:00.000Z").toISOString();
-  const commandUUID = "fceee960-2f9f-47b0-ad19-fed15d4f82cb";
-  const testEvents = [
-    new OpenSpaceNamedEvent("EM Open spaces", commandTimeStamp, commandUUID),
-    new OpenSpaceNamedEvent(
-      "Event Modeling Space",
-      "2024-05-22T00:00:00.000Z",
-      "2ceee960-2f9f-47b0-ad19-fed15d4f82cb"
-    ),
-    new OpenSpaceNamedEvent(
-      "Event Modeling Open Spaces",
-      "2024-05-23T00:00:00.000Z",
-      "3ceee960-2f9f-47b0-ad19-fed15d4f82cb"
-    ),
-    new DateRangeSetEvent(
-      "2024-06-06",
-      "2024-06-07",
-      "2024-05-24T00:00:00.000Z",
-      "4ceee960-2f9f-47b0-ad19-fed15d4f82cb"
-    ),
-    new TimeSlotAdded(
-      "9:00",
-      "9:30",
-      "Intro",
-      "2024-05-25T00:00:00.000Z",
-      "5ceee960-2f9f-47b0-ad19-fed15d4f82cb"
-    ),
-  ];
-  const slices = [
-    {
-      name: "NameOpenSpaceCD",
-      tests: [
-        {
-          name: "NameOpenSpaceCD can't have a blank name",
-          test: () => {
-            const result = handleNameOpenSpaceCD(
-              testEvents,
-              new NameOpenSpaceCD(" ", commandUUID, commandTimeStamp)
-            );
-            assertObjectEqual(result.Error, "Space name is required");
-            assertObjectEqual(result.Events, []);
-            return true;
-          },
-        },
-        {
-          name: "NameOpenSpaceCD should be valid with no prior events",
-          test: () => {
-            const expected = new OpenSpaceNamedEvent(
-              "EM Open spaces",
-              commandTimeStamp,
-              commandUUID
-            );
-            const result = handleNameOpenSpaceCD(
-              testEvents,
-              new NameOpenSpaceCD(
-                expected.spaceName,
-                commandUUID,
-                commandTimeStamp
-              )
-            );
-            assertObjectEqual(expected, result.Events[0]);
-            return true;
-          },
-        },
-        {
-          name: "NameOpenSpaceCD should not match the last name set event even if extra whitespace is present",
-          test: () => {
-            const result = handleNameOpenSpaceCD(
-              testEvents,
-              new NameOpenSpaceCD(
-                "Event Modeling Open Spaces ",
-                commandUUID,
-                commandTimeStamp
-              )
-            );
-            assertObjectEqual(result.Error, "Space name already exists");
-            assertObjectEqual(result.Events, []);
-            return true;
-          },
-        },
-      ],
-    },
-    {
-      name: "OpenSpaceNameSV",
-      tests: [
-        {
-          name: "OpenSpaceNameSV with no OpenSpaceNamedEvent events",
-          test: () => {
-            const expected = {
-              errorMessage: "No space has been created yet.",
-              spaceName: "",
-            };
-            const result = OpenSpaceNameSV(testEvents.slice(0, 0));
-            assertObjectEqual(expected, result);
-            return true;
-          },
-        },
-        {
-          name: "OpenSpaceNameSV with only one OpenSpaceNamedEvent event",
-          test: () => {
-            const expected = { spaceName: "EM Open spaces", errorMessage: "" };
-            const result = OpenSpaceNameSV(testEvents.slice(0, 1));
-            assertObjectEqual(expected, result);
-            return true;
-          },
-        },
-        {
-          name: "OpenSpaceNameSV with two OpenSpaceNamedEvent events; last one should always win",
-          test: () => {
-            const expected = {
-              spaceName: "Event Modeling Space",
-              errorMessage: "",
-            };
-            const result = OpenSpaceNameSV(testEvents.slice(0, 2));
-            assertObjectEqual(expected, result);
-            return true;
-          },
-        },
-        {
-          name: "OpenSpaceNameSV with three OpenSpaceNamedEvent events; last one should always win",
-          test: () => {
-            const expected = {
-              spaceName: "Event Modeling Open Spaces",
-              errorMessage: "",
-            };
-            const result = OpenSpaceNameSV(testEvents.slice(0, 3));
-            assertObjectEqual(expected, result);
-            return true;
-          },
-        },
-        ,
-        {
-          name: "OpenSpaceNameSV with inconsequential DateRangeSetEvent event, it should be ignored and last OpenSpaceNamedEvent should be used",
-          test: () => {
-            const expected = {
-              spaceName: "Event Modeling Open Spaces",
-              errorMessage: "",
-            };
-            const result = OpenSpaceNameSV(testEvents.slice(0, 4));
-            assertObjectEqual(expected, result);
-            return true;
-          },
-        },
-      ],
-    },
-    {
-      name: "AddTimeSlotCD",
-      tests: [
-        {
-          name: "AddTimeSlot should create a TimeSlotAdded event",
-          test: () => {
-            const command = new AddTimeSlot(
-              "9:00",
-              "9:30",
-              "Intro",
-              commandUUID,
-              commandTimeStamp
-            );
-            const result = handleAddTimeSlotCD(testEvents.slice(0, 4), command);
-            const expected = new TimeSlotAdded(
-              "9:00",
-              "9:30",
-              "Intro",
-              commandTimeStamp,
-              commandUUID
-            );
-            assertObjectEqual(expected, result.Events[0]);
-            return true;
-          },
-        },
-        {
-          name: "AddTimeSlot should not allow duplicate time slots",
-          test: () => {
-            const command = new AddTimeSlot(
-              "9:00",
-              "9:30",
-              "intro",
-              commandUUID,
-              commandTimeStamp
-            );
-            const result = handleAddTimeSlotCD(testEvents, command);
-            assertObjectEqual(result.Error, "Time slot already exists");
-            assertObjectEqual(result.Events, []);
-            return true;
-          },
-        },
-        {
-          name: "AddTimeSlot should not allow overlap other time slots",
-          test: () => {
-            const command = new AddTimeSlot(
-              "9:15",
-              "10:30",
-              "Slot 1",
-              "d86c4e43-a7cd-4640-a3a4-b2e16f893326",
-              "2024-05-25T00:00:01.000Z"
-            );
-            const result = handleAddTimeSlotCD(testEvents, command);
-            assertObjectEqual(
-              result.Error,
-              "Time slot overlaps an existing slot"
-            );
-            assertObjectEqual(result.Events, []);
-            return true;
-          },
-        },
-        {
-          name: "AddTimeSlot should allow slots to share end and start times",
-          test: () => {
-            const command = new AddTimeSlot(
-              "9:30",
-              "10:30",
-              "Slot 1",
-              "d86c4e43-a7cd-4640-a3a4-b2e16f893326",
-              "2024-05-25T00:00:01.000Z"
-            );
-            const result = handleAddTimeSlotCD(testEvents, command);
-            const expected = new TimeSlotAdded(
-              "9:30",
-              "10:30",
-              "Slot 1",
-              "2024-05-25T00:00:01.000Z",
-              "d86c4e43-a7cd-4640-a3a4-b2e16f893326"
-            );
-            assertObjectEqual(expected, result.Events[0]);
-            return true;
-          },
-        },
-        {
-          name: "AddTimeSlot can't duplicate existing slot times",
-          test: () => {
-            const command = new AddTimeSlot(
-              "9:00",
-              "9:30",
-              "Slot 1",
-              "d86c4e43-a7cd-4640-a3a4-b2e16f893326",
-              "2024-05-25T00:00:01.000Z"
-            );
-            const result = handleAddTimeSlotCD(testEvents, command);
-            assertObjectEqual(
-              result.Error,
-              "Time slot overlaps an existing slot"
-            );
-            assertObjectEqual(result.Events, []);
-            return true;
-          },
-        },
-      ],
-    },
-    {
-      name: "TimeSlotsSV",
-      tests: [
-        {
-          name: "TimeSlotsSV should return all TimeSlotAdded events",
-          test: () => {
-            const testEvents = [
-              new TimeSlotAdded(
-                "9:00",
-                "9:30",
-                "Intro",
-                "2024-05-25T00:00:00.000Z",
-                "5ceee960-2f9f-47b0-ad19-fed15d4f82cb"
-              ),
-              new TimeSlotAdded(
-                "10:00",
-                "10:30",
-                "Discussion",
-                "2024-05-25T00:00:00.000Z",
-                "6ceee960-2f9f-47b0-ad19-fed15d4f82cb"
-              ),
-            ];
-            const result = TimeSlotsSV(testEvents);
-            assertObjectEqual(result.length, 2);
-            assertObjectEqual(result[0].start, "9:00");
-            assertObjectEqual(result[1].start, "10:00");
-            return true;
-          },
-        },
-      ],
-    },
-  ];
+eventEmitter.on('VoterRegisteredRequested', (event) => {
+  console.log(`1VoterRegisteredRequestedEvent received: ${event.id}`);
+  const command = new VoterRegisteredEvent(timestamp=event.timestamp, id=uuidv4(), requestId=event.id, voterId=event.voterId, openSpaceId=event.openSpaceId);
+  console.log(`2VoterRegisteredEvent received: ${command.id}`);
+  writeEventIfIdNotExists(command);
+});
 
-  slices.forEach((slice) => {
-    console.log(`\x1b[42;97m\x1b[1m${slice.name} slice tests:\x1b[0m`);
-    slice.tests.forEach((test) => {
-      try {
-        console.log("Test " + (test.test() ? "✅ " : "❌ ") + test.name);
-      } catch (error) {
-        console.log("❌ " + test.name + " had error: " + error);
-      }
-    });
+function VoterRegisteredRequestedCountSV(eventsArray, openSpaceId) {
+  const voterRegisteredEvents = eventsArray.filter(event => event.type === 'VoterRegisteredRequestedEvent' && event.openSpaceId === openSpaceId);
+  return voterRegisteredEvents.length > 0 ? voterRegisteredEvents.map(event => ({ voterId: event.voterId, openSpaceId: event.openSpaceId })) : [{ errorMessage: 'No voters have been registered for this open space.', voterId: '', openSpaceId: '' }];
+}
+function VoterRegisteredCountSV(eventsArray, openSpaceId) {
+  const voterRegisteredEvents = eventsArray.filter(event => event.type === 'VoterRegisteredEvent' && event.openSpaceId === openSpaceId);
+  return voterRegisteredEvents.length > 0 ? voterRegisteredEvents.map(event => ({ voterId: event.voterId, openSpaceId: event.openSpaceId })) : [{ errorMessage: 'No voters have been registered for this open space.', voterId: '', openSpaceId: '' }];
+}
+
+eventEmitter.on('eventWritten', (event) => {
+  console.log(`1Event written: ${event.type} with ID: ${event.id}`);
+  console.log('2event', event);
+});
+
+function setupEventListeners() {
+  eventEmitter.on('VoterRegistrationRequested', (event) => {
+    console.log(`VoterRegistrationRequestedEvent received: ${event.id}`);
+    const command = new VoterRegisteredEvent(event.id, event.timestamp, event.voterId, event.openSpaceId);
+    writeEventIfIdNotExists(command);
+  });
+  eventEmitter.on('eventWritten', (event) => {
+    console.log(`2Event written: ${event.type} with ID: ${event.id}`);
   });
 }
+
+if (process.argv.includes("--run-tests")) {
+  run_tests();
+  process.exit(0);
+}
+
+app.listen(port, () => {
+  console.log(`Example app listening at http://localhost:${port}`);
+});
+
+
+function run_tests() {
+  // const tests = require('./tests');
+  // tests.run_tests();
+  console.log("Running tests");
+  // setupEventListeners();
+  writeEventIfIdNotExists(new VoterRegisteredRequestedEvent( timestamp=new Date().toISOString(), id=uuidv4(), voterId=uuidv4(), openSpaceId=5));
+  console.log(VoterRegisteredRequestedCountSV(getAllEvents(), 5));
+  console.log(VoterRegisteredCountSV(getAllEvents(), 5));
+  process.exit(0);
+}
+
 module.exports = app;
