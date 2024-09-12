@@ -72,4 +72,5 @@ def post_event(event: Event):
     return {'message': f'Event written with id {event_id}'}
 
 
-uvicorn.run(app, host="127.0.0.1", port=5656)
+
+uvicorn.run(app, host="0.0.0.0", port=5656)
