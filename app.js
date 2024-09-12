@@ -1,14 +1,14 @@
-const NameOpenSpaceCD = require('./commands/NameOpenSpaceCD');
-const AddTimeSlot = require('./commands/AddTimeSlot');
-const RequestConfIdCD = require('./commands/RequestConfIdCD');
-const CreateConferenceCD = require('./commands/CreateConferenceCD');
+const NameOpenSpaceCD = require("./commands/NameOpenSpaceCD");
+const AddTimeSlot = require("./commands/AddTimeSlot");
+const RequestConfIdCD = require("./commands/RequestConfIdCD");
+const CreateConferenceCD = require("./commands/CreateConferenceCD");
 
-const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
-const DateRangeSetEvent = require('./events/DateRangeSetEvent');
-const TopicSubmittedEvent = require('./events/TopicSubmittedEvent');
-const TimeSlotAdded = require('./events/TimeSlotAdded');
-const RequestedConfIdEvent = require('./events/RequestedConfIdEvent');
-const ConferenceCreatedEvent = require('./events/ConferenceCreatedEvent');
+const OpenSpaceNamedEvent = require("./events/OpenSpaceNamedEvent");
+const DateRangeSetEvent = require("./events/DateRangeSetEvent");
+const TopicSubmittedEvent = require("./events/TopicSubmittedEvent");
+const TimeSlotAdded = require("./events/TimeSlotAdded");
+const RequestedConfIdEvent = require("./events/RequestedConfIdEvent");
+const ConferenceCreatedEvent = require("./events/ConferenceCreatedEvent");
 
 if (process.argv.includes("--run-tests")) {
   run_tests();
@@ -141,29 +141,35 @@ app.get("/set_dates_confirmation", (req, res) => {
 });
 
 app.get("/conferences", (req, res) => {
+  const events = getAllEvents().filter((event) => {
+    if (
+      event.type === "ConferenceCreatedEvent" ||
+      event.type === "ConferenceOpenedEvent"
+    ) {
+      if (event.type === "ConferenceOpenedEvent") {
+        event.opened = true;
+      }
+      return event;
+    }
+  });
 
-  const events = getAllEvents().filter( event => {
-    if(
-      event.type === 'ConferenceCreated' || 
-      event.type === "ConferenceOpened"
-    ){ return event}
-  }
-    
-  );
-
-  let tableRows = '';
-  for(const event of events){
+  let tableRows = "";
+  for (const event of events) {
     tableRows += `<tr>
-    <td>${event.start_date.slice(0,10)}</td>
-    <td>${event.end_date.slice(0,10)}</td>
+    <td>${event.start_date.slice(0, 10)}</td>
+    <td>${event.end_date.slice(0, 10)}</td>
     <td>${event.name}</td>
     <td>${event.location}</td>
     <td>${event.capacity}</td>
     <td>${event.amount}</td>
     <td>
-      ${event.open ? "<span>Open</span>" : '<button hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>'}
+      ${
+        event.open
+          ? "<span>Open</span>"
+          : '<button hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>'
+      }
     </td>
-    </tr>`
+    </tr>`;
   }
 
   const table = `
@@ -183,9 +189,9 @@ app.get("/conferences", (req, res) => {
       ${tableRows}
     </tablebody>
   </table>
-  `
+  `;
 
-  res.send(table)
+  res.send(table);
 });
 
 
