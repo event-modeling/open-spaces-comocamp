@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set Event Dates</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://unpkg.com/htmx.org@1.8.1/dist/htmx.min.js"></script>
 </head>
 <body>
     <h1>Set Dates for {{eventName}}</h1>
-    <form id="dateRangeForm" action="/set_dates" method="post">
+    <form id="dateRangeForm" action="/set_dates" method="post"
+          hx-post="/set_dates" hx-target="#content" hx-swap="innerHTML">
         <label for="startDate">Start Date:</label>
         <input type="date" id="startDate" name="startDate" required>
 

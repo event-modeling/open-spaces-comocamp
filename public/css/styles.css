@@ -112,3 +112,15 @@ body button {
     border-radius: 5px; /* Optional: rounded corners */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: slight shadow for depth */
 }
+
+.container {
+    display: flex; /* Use flexbox to layout children side by side */
+}
+
+.menu {
+    flex: 0 0 200px; /* menu width set to 200px, adjust as needed */
+}
+
+#content {
+    flex-grow: 1; /* content area takes up remaining space */
+}

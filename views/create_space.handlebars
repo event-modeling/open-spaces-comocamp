@@ -5,15 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Space</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <!-- Include HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.8.1/dist/htmx.min.js"></script>
 </head>
 <body>
-    <h1>Please name the open space</h1>
-    <form action="/create_space" method="POST">
-        <label for="spaceName">Space Name:</label>
-        <input type="text" id="spaceName" name="spaceName" value="{{spaceName}}" required>
-        <input type="hidden" id="id" name="id" value="{{id}}">
-        <button type="submit">Set Name</button>
-    </form>
+    <div id="main-content">
+        <h1>Please name the open space</h1>
+        <form action="/create_space" method="POST" hx-post="/create_space" hx-target="#main-content" hx-swap="outerHTML">
+            <label for="spaceName">Space Name:</label>
+            <input type="text" id="spaceName" name="spaceName" value="{{spaceName}}" required>
+            <input type="hidden" id="id" name="id" value="{{id}}">
+            <button type="submit">Set Name</button>
+        </form>
+    </div>
 </body>
 </html>
 
