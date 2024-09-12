@@ -34,7 +34,9 @@
             }
 
             // If validation passes, submit the form programmatically
-            this.submit();
+            {{!-- this.submit(); --}}
+            htmx.trigger(this, 'htmx:trigger', {target: this});
+
         });
     </script>
 </body>
