@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 import uvicorn
 from fastapi import FastAPI
@@ -53,13 +54,11 @@ def post_event(event: Event):
 # state view for cart
 def cart_state_view(username: str, conference: str):
     events_list: list = EventStore.get_all_events()
-    events = [
-        event for event in
-        events_list
-        if (event.get('type') == 'UserAddedConferenceToCart'
-            and event.get('username') == username and event.get(conference))
-    ]
-    result = events[-1] if events else None
+    result = None
+    for event in events_list:
+        if event.get('type') == 'UserAddedConferenceToCart' and event.get('username') == username and event.get('conference') == conference:
+            result = event
+            break
     return result
 
 
@@ -98,7 +97,8 @@ def request_payment(command: RequestPaymentCD):
     """
     handler = CommandsHandler()
     event_id: str = str(uuid.uuid4())
-    handler.request_payment_command(event_id, command)
+    timestamp = datetime.now().isoformat()
+    handler.request_payment_command(event_id, timestamp, command)
     return {
         'message': 'Payment requested'
     }

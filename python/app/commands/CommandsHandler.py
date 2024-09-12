@@ -1,13 +1,17 @@
 from commands.request_payment import RequestPaymentCD
-from events.base import Event
+from events.payment_requested import PaymentRequested
 from events_store.events_store import EventStore
 
 
 class CommandsHandler:
-    def request_payment_command(self,event_id: str, command: RequestPaymentCD):
+    def request_payment_command(
+            self, event_id: str, timestamp: str, command: RequestPaymentCD
+    ):
         """
         Command handler for request payment
 
+        :param timestamp:
+        :param event_id:
         :param command:
         :return:
         """
@@ -28,9 +32,10 @@ class CommandsHandler:
                 'message': 'Name is required'
             }
         EventStore.write_event_if_id_not_exists(
-            Event(**{
+            PaymentRequested(**{
                 'type': 'PaymentRequested',
-                'event_id': event_id,
+                'id': event_id,
+                'timestamp': timestamp,
                 'amount': command.amount,
                 'currency': command.currency,
                 'conference': command.conference,

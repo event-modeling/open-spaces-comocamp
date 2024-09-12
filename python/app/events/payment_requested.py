@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from events.base import Event
 
 
-class PaymentRequested(BaseModel):
+class PaymentRequested(Event):
     username: str
     name: str
     amount: float

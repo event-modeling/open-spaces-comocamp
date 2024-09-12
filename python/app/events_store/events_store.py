@@ -35,8 +35,7 @@ class EventStore:
         """
         event_id = event.id
         event_timestamp = event.timestamp
-        formatted_timestamp = event_timestamp.replace(':', '-').rsplit('.', 1)[0]
-        event_type = event.event_type
+        event_type = event.type
         filename = f'{event_timestamp}-{event_id}-{event_type}.json'
         if filename in os.listdir(EventStore.event_store_path):
             return {
