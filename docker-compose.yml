@@ -1,10 +1,9 @@
-service:
+services:
   nginx:
     image: nginx:latest
     container_name: production_nginx
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-      - event_store:/data/event_store
     ports:
       - 80:80
       - 443:443
@@ -20,7 +19,6 @@ service:
       - "4567:4567"
     networks:
       - net1
-      - event_store:/data/event_store
 
   js:
     image: 'node:alpine'
@@ -31,7 +29,6 @@ service:
       - "3000:3000"
     networks:
       - net1
-      - event_store:/data/event_store
 
 networks:
   net1:
