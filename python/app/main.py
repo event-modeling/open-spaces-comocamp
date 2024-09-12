@@ -51,11 +51,13 @@ def post_event(event: Event):
 
 
 # state view for cart
-def cart_state_view(events_list: list[type(Event)]):
+def cart_state_view(username: str, conference: str):
+    events_list: list = EventStore.get_all_events()
     events = [
         event for event in
         events_list
-        if event.get('type') == 'UserAddedConferenceToCart'
+        if (event.get('type') == 'UserAddedConferenceToCart'
+            and event.get('username') == username and event.get(conference))
     ]
     result = events[-1] if events else None
     return result
@@ -63,18 +65,26 @@ def cart_state_view(events_list: list[type(Event)]):
 
 # state view for payment
 @app.get('/cart')
-def get_cart(request: Request):
+def get_cart(request: Request, username: str, conference: str):
     """
     Endpoint to view checkout page
 
     :return:
     """
-    events = EventStore.get_all_events()
-    return templates.TemplateResponse(
-        request=request, name="cart_view.jinja2", context={
-            "data": cart_state_view(events)
-        }
-    )
+    events = cart_state_view(username, conference)
+
+    if not events:
+        return templates.TemplateResponse(
+            request=request, name="cart_view_empty.jinja2", context={
+                "data": events
+            }
+        )
+    else:
+        return templates.TemplateResponse(
+            request=request, name="cart_view.jinja2", context={
+                "data": events
+            }
+        )
 
 
 # command handler for request payment
