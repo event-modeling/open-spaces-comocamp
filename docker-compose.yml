@@ -1,4 +1,4 @@
-version: "3"
+#version: "3"
 
 services:
   nginx:
@@ -29,6 +29,16 @@ services:
       - .:/app/
     ports:
       - "3000:3000"
+    networks:
+      - net1
+
+  python:
+    image: 'python:alpine'
+    command: sh -c "cd /app/python && pip install -r requirements.txt && python app/main.py"
+    volumes:
+      - .:/app/
+    ports:
+      - "5656:5656"
     networks:
       - net1
 
