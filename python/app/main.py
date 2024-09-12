@@ -50,7 +50,9 @@ class EventStore:
         event_type = event.event_type
         filename = f'{event_timestamp}-{event_id}-{event_type}.json'
         if filename in os.listdir(EventStore.event_store_path):
-            return {'message': f'Event with id {event_id} already exists'}
+            return {
+                'message': f'Event with id {event_id} already exists'
+            }
         with open(f'{EventStore.event_store_path}/{filename}', 'w') as f:
             f.write(event.json())
         return event_id
@@ -86,7 +88,9 @@ def post_event(event: Event):
     :return:
     """
     event_id = EventStore.write_event_if_id_not_exists(event)
-    return {'message': f'Event written with id {event_id}'}
+    return {
+        'message': f'Event written with id {event_id}'
+    }
 
 
 # state view for cart
@@ -110,7 +114,9 @@ def get_cart(request: Request):
     """
     events = EventStore.get_all_events()
     return templates.TemplateResponse(
-        request=request, name="cart_view.jinja2", context={"data": events}
+        request=request, name="cart_view.jinja2", context={
+            "data": events
+        }
     )
 
 
@@ -123,8 +129,36 @@ def request_payment(command: RequestPaymentCD):
     :param command:
     :return:
     """
+    if not command.amount:
+        return {
+            'message': 'Amount is required'
+        }
+    if not command.conference:
+        return {
+            'message': 'Conference is required'
+        }
+    if not command.username:
+        return {
+            'message': 'Username is required'
+        }
+    if not command.name:
+        return {
+            'message': 'Name is required'
+        }
+    EventStore.write_event_if_id_not_exists(
+        Event(**{
+            'type': 'PaymentRequested',
+            'amount': command.amount,
+            'currency': command.currency,
+            'conference': command.conference,
+            'username': command.username,
+            'name': command.name
 
-    return
+        })
+    )
+    return {
+        'message': 'Payment requested'
+    }
 
 
 @app.get("/openapi.json", include_in_schema=False)
@@ -141,4 +175,4 @@ async def get_documentation(request: Request):
     return get_swagger_ui_html(openapi_url="openapi.json", title="docs")
 
 
-uvicorn.run(app, host="0.0.0.0", port=5656)
+uvicorn.run(app, host="0.0.0.0", port=5656, root_path='/python')
