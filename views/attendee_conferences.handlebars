@@ -1,0 +1,52 @@
+{{#unless search}}
+<script src="https://unpkg.com/htmx.org@2.0.2" integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ" crossorigin="anonymous"></script>
+<style>
+    .register {
+        margin-top: 10px;
+    }
+    .search-input {
+        border: solid 1px black;padding:4px;vertical-align:center;margin-bottom:5px;display:inline-flex
+    }
+    .search-input > input, .search-input > input:focus-visible { border: 0; outline: none }
+    .conferences-table { border-spacing: 0 }
+    .conferences-table th, td { min-width: 100px; text-align: left; border: solid 1px black; padding: 4px }
+</style>
+<div class="search-input">
+    <img alt="search" width="14px" src="/images/search-svgrepo-com.svg" />
+    <input type="text" id="conferences-search" name="search" placeholder="Name"
+           hx-get="/attendee/conferences"
+           hx-trigger="keyup changed delay:500ms"
+           hx-target="#search-results" />
+</div>
+<div id="search-results">
+{{/unless}}
+    <table class="conferences-table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Attendees</th>
+            <th>Price</th>
+            <th>Registration</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#unless conferences.length}}
+            <tr>
+                <td colspan="4">No results</td>
+            </tr>
+        {{/unless}}
+        {{#each conferences}}
+            <tr>
+                <td>{{this.name}}</td>
+                <td>{{this.attendees}}/{{this.capacity}}</td>
+                <td>{{this.amount}}$</td>
+                <td>{{#if this.registration_open}}<button hx-get="/attendee/register" hx-target="#register">Register</button>{{/if}}</td>
+            </tr>
+        {{/each}}
+        </tbody>
+    </table>
+{{#unless search}}
+</div>
+<div id="register">
+</div>
+{{/unless}}
