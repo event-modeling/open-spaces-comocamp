@@ -337,6 +337,38 @@ function SessionsSV(events) {
     .filter((event) => event.type === "TopicSubmittedEvent")
     .sort((a, b) => a.timestamp - b.timestamp);
 }
+app.get("/attendee/conferences", (req, res) => {
+  const search = req.query.search;
+  const all_conferences = ConferencesSV(getAllEvents());
+  const conferences = search ? all_conferences.filter(x => x.name.includes(search)) : all_conferences;
+  return res.render('attendee_conferences', { search, conferences })
+})
+function ConferencesSV(events) {
+  return events
+    .reduce(function(sv, event) {
+      switch(event.type){
+        case 'ConferenceCreated': {
+          const { id, name, capacity, amount } = event;
+          sv.push({ id, name, capacity, amount, registration_open: false, attendees: 0 });
+          break;
+        }
+        case 'RegistrationOpened': {
+          const { id } = event;
+          const item  = sv.find(x => x.id === id);
+          item && (item.registration_open = true);
+          break;
+        }
+        case 'RegisteredUser': {
+          const { conference_id } = event;
+          const item  = sv.find(x => x.id === conference_id);
+          item && (item.attendees++);
+          break;
+        }
+      }
+      return sv;
+    }, [])
+}
+
 
 app.get('/setup_conf', (req, res) => { res.render('setup_conf', { id: uuidv4() })});
 app.post('/setup_conf', (req,res) => {
