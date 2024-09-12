@@ -109,10 +109,9 @@ def get_cart(request: Request):
     :return:
     """
     events = EventStore.get_all_events()
-    return templates.get_template('cart_view.jinja2').render(**{
-        'request': request,
-        'data': cart_state_view(events)
-    })
+    return templates.TemplateResponse(
+        request=request, name="cart_view.jinja2", context={"data": events}
+    )
 
 
 # command handler for request payment
