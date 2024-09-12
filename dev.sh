@@ -1,0 +1,5 @@
+alias sd="source ./dev.sh"
+alias node="docker-compose run --rm js node"
+alias npm="docker-compose run --rm js node npm"
+alias ruby="docker-compose run --rm ruby ruby"
+alias irb="docker-compose run --rm ruby irb"

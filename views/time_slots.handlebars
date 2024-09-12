@@ -29,7 +29,8 @@
             </tbody>
         </table>
         <div class="form-container">
-            <form action="/add_time_slot" method="post">
+            <form action="/add_time_slot" method="post"
+                  hx-post="/add_time_slot" hx-target="#content" hx-swap="innerHTML">
                 <div class="form-group">
                     <label for="start">Start Time:</label>
                     <select id="start" name="start" required>
@@ -53,7 +54,7 @@
                 <input type="hidden" id="id" name="id" value="{{id}}">
                 <button type="submit" class="continue-button">Add Time Slot</button>
             </form>
-             <a href="/create_conf_id" class="continue-button">Continue</a>
+             <a href="/create_conf_id" class="continue-button" hx-get="/create_conf_id" hx-target="#content" hx-swap="innerHTML">Continue</a>
         </div>
     </div>
 </body>

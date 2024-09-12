@@ -133,6 +133,7 @@ dist
 .npmrc
 .nvmrc
 _wk*/
+.idea/
 
 
 python/.venv

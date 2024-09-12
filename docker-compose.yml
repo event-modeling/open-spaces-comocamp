@@ -1,5 +1,3 @@
-#version: "3"
-
 services:
   nginx:
     image: nginx:latest
@@ -17,6 +15,7 @@ services:
     command: sh -c "cd /app/ruby && bundle install && ruby app.rb"
     volumes:
       - .:/app/
+      - event_store:/data/event_store
     ports:
       - "4567:4567"
     networks:
@@ -27,6 +26,7 @@ services:
     command: sh -c "cd app && npm install && npm start"
     volumes:
       - .:/app/
+      - event_store:/data/event_store
     ports:
       - "3000:3000"
     networks:
@@ -45,3 +45,11 @@ services:
 networks:
   net1:
     driver: bridge
+
+volumes:
+  event_store:
+    driver: local 
+    driver_opts:
+      type: none
+      device: ./eventstore
+      o: bind
