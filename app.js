@@ -1,12 +1,14 @@
-const NameOpenSpaceCD = require("./commands/NameOpenSpaceCD");
-const AddTimeSlot = require("./commands/AddTimeSlot");
-const RequestConfIdCD = require("./commands/RequestConfIdCD");
+const NameOpenSpaceCD = require('./commands/NameOpenSpaceCD');
+const AddTimeSlot = require('./commands/AddTimeSlot');
+const RequestConfIdCD = require('./commands/RequestConfIdCD');
+const CreateConferenceCD = require('./commands/CreateConferenceCD');
 
-const OpenSpaceNamedEvent = require("./events/OpenSpaceNamedEvent");
-const DateRangeSetEvent = require("./events/DateRangeSetEvent");
-const TopicSubmittedEvent = require("./events/TopicSubmittedEvent");
-const TimeSlotAdded = require("./events/TimeSlotAdded");
-const RequestedConfIdEvent = require("./events/RequestedConfIdEvent");
+const OpenSpaceNamedEvent = require('./events/OpenSpaceNamedEvent');
+const DateRangeSetEvent = require('./events/DateRangeSetEvent');
+const TopicSubmittedEvent = require('./events/TopicSubmittedEvent');
+const TimeSlotAdded = require('./events/TimeSlotAdded');
+const RequestedConfIdEvent = require('./events/RequestedConfIdEvent');
+const ConferenceCreatedEvent = require('./events/ConferenceCreatedEvent');
 
 if (process.argv.includes("--run-tests")) {
   run_tests();
@@ -328,6 +330,19 @@ function SessionsSV(events) {
     .filter((event) => event.type === "TopicSubmittedEvent")
     .sort((a, b) => a.timestamp - b.timestamp);
 }
+
+app.get('/setup_conf', (req, res) => { res.render('setup_conf', { id: uuidv4() })});
+app.post('/setup_conf', (req,res) => {
+  const { id, name, subject, startDate, endDate, location, capacity, price } = req.body ;
+  const command = new CreateConferenceCD(id,name,subject,startDate,endDate,location,capacity,price);
+
+  const event = new ConferenceCreatedEvent(id,name,subject,startDate,endDate,location,capacity,price);
+  try {
+    writeEventIfIdNotExists(event);
+  } catch (err) {
+    res.status(500).send('Failed to write event to the file system');
+  }
+})
 
 function run_tests() {
   function logResult(expected, result) {

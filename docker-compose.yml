@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   nginx:
     image: nginx:latest
@@ -35,3 +33,11 @@ services:
 networks:
   net1:
     driver: bridge
+
+volumes:
+  event_store:
+    driver: local 
+    driver_opts:
+      type: none
+      device: ./eventstore
+      o: bind
