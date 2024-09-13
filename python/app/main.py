@@ -5,6 +5,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+from starlette import status
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse
@@ -15,7 +16,6 @@ from commands.add_room import AddRoomCD
 from events.base import Event
 from commands.CommandsHandler import CommandsHandler
 from events_store.events_store import EventStore
-
 
 app = FastAPI(docs_url=None)
 app.add_middleware(
@@ -87,7 +87,33 @@ def get_cart(request: Request, conference_id: str):
         )
 
 
-# command handler for request payment
+@app.get("/add_rooms")
+async def add_rooms(request: Request):
+    """
+    Endpoint to add a room
+
+    :param request:
+    :return:
+    """
+    events = EventStore.get_all_events()
+    conference_name = None
+    conference_id = None
+    for event in events:
+        if event.get('type') == 'ConferenceClaimed':
+            conference_name = event.get('name')
+            conference_id = event.get('conferenceId')
+            break
+    return templates.TemplateResponse(
+        request=request, name="add_room.jinja2", context={
+            "data": {
+                "conference_id": conference_id,
+                "conference_name": conference_name
+            },
+        }
+    )
+
+
+# command handler for adding a room
 @app.post("/add_room")
 async def add_room(request: Request):
     """
@@ -100,10 +126,20 @@ async def add_room(request: Request):
     handler = CommandsHandler()
     event_id: str = str(uuid.uuid4())
     timestamp = datetime.now().isoformat()
-    command = AddRoomCD(**payload)
+
+    command = AddRoomCD(
+        **{
+            'conferenceId': payload.get('conferenceId'),
+            'room': payload.get('roomName'),
+            'capacity': payload.get('capacity')
+        }
+    )
     handler.add_room_command(event_id, timestamp, command)
     # redirect to rooms_and_time_slots view
-    return RedirectResponse(url=f'/rooms_and_time_slots?conference_id={command.conferenceId}')
+    return RedirectResponse(
+        url=f'rooms_and_time_slots?conference_id={command.conferenceId}',
+        status_code=status.HTTP_303_SEE_OTHER
+    )
 
 
 @app.get("/openapi.json", include_in_schema=False)

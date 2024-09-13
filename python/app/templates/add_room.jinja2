@@ -8,12 +8,12 @@
         // Actual implementation might involve sending this data to a server
         var roomName = document.getElementById('room_name').value;
         var capacity = document.getElementById('capacity').value;
-        var conferenceId = '{{ data.conference_id }}';
+        var conferenceId = document.getElementById('conference_id').value;
 
         console.log("Submitting:", roomName, capacity);
         // Here you would typically send the data to your server using fetch() or another AJAX method
         // Example (not executable in this environment):
-        fetch('/add_room', {
+        fetch('add_room', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -33,7 +33,10 @@
 
 
 <body>
+
 <h1>
+        <input hidden type="text" id="conference_id" value="{{ data.conference_id }}">
+
     {{ data.conference_name }} - Add Room
 
 </h1>
