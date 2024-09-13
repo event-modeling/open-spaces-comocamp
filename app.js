@@ -124,9 +124,9 @@ app.get("/conferences", (req, res) => {
     "ConferenceOpenedEvent",
   ])[0];
 
-  const rooms = rehydrate(roomAddedEvents, "RoomAddedEvent", []);
+  const rooms = rehydrate(roomAddedEvents, "RoomAdded", []);
 ;
-  const htmlRooms = rooms.length ? `<ul>${rooms.map(r => `<li>${r.room}</li>`)}</ul>` : "<div>No rooms available</div>";
+  const htmlRooms = rooms.length ? `<ul>${rooms.map(r => `<li>room: ${r.room} | cap: ${r.capacity}</li>`)}</ul>` : "<div>No rooms available</div>";
   
   const page = ev?.id ? `
   <div>
