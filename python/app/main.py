@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import Annotated
 
 import uvicorn
 from fastapi import FastAPI
@@ -13,11 +12,9 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 from commands.add_room import AddRoomCD
-from commands.request_payment import RequestPaymentCD
 from events.base import Event
 from commands.CommandsHandler import CommandsHandler
 from events_store.events_store import EventStore
-from fastapi import Form
 
 
 app = FastAPI(docs_url=None)
@@ -94,14 +91,8 @@ def get_cart(request: Request, conference_id: str):
 @app.post("/add_room")
 async def add_room(request: Request):
     """
-    Command handler for request payment
 
-    :param name:
-    :param username:
-    :param conference:
-    :param amount:
-    :param currency:
-
+    :param request:
     :return:
     """
     payload = await request.json()
