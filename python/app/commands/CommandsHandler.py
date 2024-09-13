@@ -1,5 +1,3 @@
-from commands.request_payment import RequestPaymentCD
-from events.payment_requested import PaymentRequested
 from events.registration_opened import RegistrationOpened
 from commands.add_room import AddRoomCD
 from commands.add_time_slot import AddTimeSlotCD
