@@ -88,7 +88,7 @@ function rehydrate(events, firstEvent, subsquentEvents = []) {
       let tmp = ev[i];
       console.log('subev', event, tmp);
       if (tmp) {
-      
+
         ev[i] = { ...tmp, ...event };
       }
     }
@@ -122,7 +122,7 @@ app.get("/conferences", (req, res) => {
       return event;
     }
   });
-  
+
 
   const ev = rehydrate(conferenceEvents, "ConferenceClaimedEvent", [
     "ConferenceOpenedEvent",
@@ -148,8 +148,8 @@ app.get("/conferences", (req, res) => {
         <a href="/add_rooms"><button>Add Room</button></a>
         <a href="/timeslot?"><button>Add Time Slot</button></a>
         ${
-          ev.opened ? 
-          "<span>Registration Opened</span>" : 
+          ev.opened ?
+          "<span>Registration Opened (<a href=\"/show_registration_qr_code/${ev.conferenceId}\">QR Code</a>)</span>" :
           `<button hx-vals='{"id": "${ev.conferenceId}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
         }
       </div>
