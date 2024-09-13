@@ -1,0 +1,10 @@
+<h1>Setup a Conference</h1>
+<form action="setup_conf" method="POST">
+    <div class="form-group"><label for="name">Name</label><input type="text" id="name" name="name"></div>
+    <div class="form-group"><label for="subject">Subject</label><input type="text" id="subject" name="subject"></div>
+    <input type="hidden" name="conferenceId" value="{{conferenceId}}" />
+    <input type="hidden" name="organizerToken" value="{{organizerToken}}" />
+    <div>
+        <button type="submit">Claim Conference</button>
+    </div>
+</form>
