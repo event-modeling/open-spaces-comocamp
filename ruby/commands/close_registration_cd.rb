@@ -5,4 +5,3 @@ class CloseRegistrationCD < OpenStruct
     super(confId: confId, timestamp: timestamp, id: id, type: 'CloseRegistrationCD')
   end
 end
-

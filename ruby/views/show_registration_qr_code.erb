@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register for Conference</title>
+    <link rel="stylesheet" href="/css/styles.css?v=<%= Time.now.to_i %>">
+</head>
+<body>
+<svg>
+  <%= RQRCode::QRCode.new("http://localhost:3000/register/#{conf_id}").as_svg(module_size: 3) %>
+</svg>
+<p><b>Scan the QR code to register for voting!</b></p>
