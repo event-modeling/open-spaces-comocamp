@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <link rel="stylesheet" href="/css/styles.css">
+
+    <meta charset="UTF-8">
+    <title>Room and Time Slot Matrix</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            text-align: center;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h2>Room and Time Slot Matrix</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Time Slots / Rooms</th>
+                {% for room in data.rooms %}
+                <th>{{ room }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for time_slot in data.timeSlots %}
+            <tr>
+                <td>{{ time_slot }}</td>
+                {% for room in rooms %}
+                    <td>Available
+                    <button id="assign_{{ room }}_{{ time_slot }}">Assign</button>
+
+                    </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
