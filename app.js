@@ -33,7 +33,7 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.engine("handlebars", engine({ defaultLayout: false }));
+app.engine("handlebars", engine({ defaultLayout: 'layout' }));
 app.set("view engine", "handlebars");
 app.set("views", "./views");
 
@@ -134,6 +134,13 @@ app.get("/conferences", (req, res) => {
   const htmlRooms = rooms.length ? `<ul>${rooms.map(r => `<li>room: ${r.room} | cap: ${r.capacity}</li>`)}</ul>` : "<div>No rooms available</div>";
 
   const page = ev?.id ? `
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/styles.css">
+    </head>
+    <body>
   <div>
     <div>
       <div><h1>${ev.name}</h1></div>
@@ -156,7 +163,7 @@ app.get("/conferences", (req, res) => {
       <p>No Time slots</p>
     </div>
       <script src="https://unpkg.com/htmx.org@2.0.2"></script>
-  </div>
+  </div></body></html>
   ` : "<h1>You don't have a conference created</h1>";
 
   res.send(page);
