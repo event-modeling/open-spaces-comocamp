@@ -62,7 +62,7 @@ def rooms_and_time_slots_view(conference_id: str):
     events_list: list = EventStore.get_all_events()
     result = {}
     for event in events_list:
-        if event.get('type') == 'ConferenceClaimed' and event.get('conferenceId') == conference_id:
+        if event.get('type') == 'ConferenceClaimedEvent' and event.get('conferenceId') == conference_id:
             result['conferenceName'] = event.get('name')
             result['conferenceId'] = event.get('conferenceId')
             break
@@ -128,7 +128,7 @@ async def add_rooms(request: Request):
     # sort by timestamp and get latest
     events = sorted(events, key=lambda x: x.get('timestamp'), reverse=True)
     for event in events:
-        if event.get('type') == 'ConferenceClaimed':
+        if event.get('type') == 'ConferenceClaimedEvent':
             conference_name = event.get('name')
             conference_id = event.get('conferenceId')
             break
@@ -204,7 +204,7 @@ async def add_rooms(request: Request):
     conference_id = None
     events = sorted(events, key=lambda x: x.get('timestamp'), reverse=True)
     for event in events:
-        if event.get('type') == 'ConferenceClaimed':
+        if event.get('type') == 'ConferenceClaimedEvent':
             conference_name = event.get('name')
             conference_id = event.get('conferenceId')
             break
