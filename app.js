@@ -60,9 +60,9 @@ function getAllEvents() {
     );
 }
 
-// app.get("/", (req, res) => {
-//   res.redirect("/setup_conf");
-// });
+app.get("/", (req, res) => {
+  res.redirect("/setup_conf");
+});
 
 app.get("/conferences", (req, res) => {
   const events = getAllEvents().filter((event) => {
