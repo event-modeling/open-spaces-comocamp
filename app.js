@@ -76,13 +76,13 @@ function rehydrate(events, firstEvent, subsquentEvents = []) {
 
   let ev = [];
   for (const event of events) {
-    const { id } = event;
+    const { id, conferenceId } = event;
     if (event.type === firstEvent) {
       ev.push(event);
     }
 
     if (subsquentEvents.includes(event.type)) {
-      const i = ev.findIndex((event) => event.id === id);
+      const i = ev.findIndex((event) => event.conferenceId === conferenceId);
       let tmp = ev[i];
 
       if (tmp) {
@@ -120,9 +120,12 @@ app.get("/conferences", (req, res) => {
     }
   });
   
+  console.log(conferenceEvents)
   const ev = rehydrate(conferenceEvents, "ConferenceClaimedEvent", [
     "ConferenceOpenedEvent",
-  ])[0];
+  ]).pop();
+
+  console.log(ev)
 
   const rooms = rehydrate(roomAddedEvents, "RoomAdded", []);
 ;
@@ -163,7 +166,7 @@ app.post("/openConference", (req, res) => {
   console.log(req.body);
   const lastEvent = getAllEvents().filter((event) => event.id === id)[0];
   if (lastEvent?.id) {
-    const event = new ConferenceOpenedEvent(id);
+    const event = new ConferenceOpenedEvent(id, uuidv4());
 
     fs.writeFileSync(
       `${EVENT_STORE_PATH}${String(event.timestamp)
