@@ -296,6 +296,23 @@ function listTopicsStateView(eventsArray) {
   return topicSubmittedEvents.map(event => ({ name: event.name, id: event.id }));
 }
 
+function VotingSV(events) {
+  return events.reduce(function(state,event) {
+    switch (event.type) {
+      case 'VoteSubmittedEvent':
+
+        break;
+
+      case 'TopicSuggestedEvent':
+        break;
+
+    }
+  },{});
+}
+
+app.get('/voting', (req, res) => {
+  res.render('voting', {});
+});
 
 
 if (process.argv.includes("--run-tests")) {
