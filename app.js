@@ -248,8 +248,14 @@ app.post('/submit_topic', (req, res) => {
 });
 
 app.get('/submit_topic', (req, res) => {
-  res.render('submit_topic', { eventName: "Your Event Name" });
+  const topics = listTopicsStateView(getAllEvents());
+  res.render('submit_topic', { eventName: "Your Event Name", topics });
 });
+
+function listTopicsStateView(eventsArray) {
+  const topicSubmittedEvents = eventsArray.filter(event => event.type === 'TopicSubmittedEvent');
+  return topicSubmittedEvents.map(event => ({ name: event.name, id: event.id }));
+}
 
 
 
