@@ -8,7 +8,9 @@ from fastapi.openapi.utils import get_openapi
 from starlette import status
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import JSONResponse, RedirectResponse
+from starlette.responses import JSONResponse
+from fastapi.responses import RedirectResponse
+
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
@@ -138,7 +140,7 @@ async def add_room(request: Request):
     # redirect to rooms_and_time_slots view
     return RedirectResponse(
         url=f'rooms_and_time_slots?conference_id={command.conferenceId}',
-        status_code=status.HTTP_303_SEE_OTHER
+        status_code=status.HTTP_302_FOUND
     )
 
 
