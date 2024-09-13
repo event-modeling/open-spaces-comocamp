@@ -1,24 +1,57 @@
+<!DOCTYPE html>
 <html>
+<head>
+    <title>Payment Request</title>
+    <script>
+        // Ensure to adapt this script according to your specific requirements.
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("submit").addEventListener("click", function(e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                // Collect data from inputs
+                var data = {
+                    "name": document.getElementById("name").value,
+                    "username": document.getElementById("username").value,
+                    "conference": document.getElementById("conference").value,
+                    "amount": document.getElementById("amount").value,
+                    "currency": document.getElementById("currency").value
+                };
+
+                // Create and send the JSON payload to the server
+                fetch("/python/request_payment", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        // Ensure any required headers like authentication tokens are included here.
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Success:", data);
+                    // Handle success, such as redirecting to another page or showing a success message.
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                    // Handle errors, e.g., by showing an error message to the user.
+                });
+            });
+        });
+    </script>
+</head>
 <body>
-<form action="/request_payment" method="post">
-    <label for="name">Name</label>
-    <input type="text" id="name" value="{{ data.name }}" readonly/><br>
-
-    <label for="email">Email</label>
-    <input type="text" id="email" value="{{ data.username }}" readonly/><br>
-
-    <label for="conference">Conference</label>
-    <input type="text" id="conference" value="{{ data.conference }}" readonly/><br>
-
-    <label for="amount">Amount</label>
-    <input type="text" id="amount" value="{{ data.amount }}" readonly/><br>
-
-
-    <label for="currency">Currency</label>
-    <input type="text" id="currency" value="{{ data.currency }}" readonly/><br>
-
-    <input type="submit" value="Pay"/>
-</form>
+    <div>
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" value="{{ data.name }}" readonly/><br>
+        <label for="username">Email</label>
+        <input type="text" id="username" name="username" value="{{ data.username }}" readonly/><br>
+        <label for="conference">Conference</label>
+        <input type="text" id="conference" name="conference" value="{{ data.conference }}" readonly/><br>
+        <label for="amount">Amount</label>
+        <input type="text" id="amount" name="amount" value="{{ data.amount }}" readonly/><br>
+        <label for="currency">Currency</label>
+        <input type="text" id="currency" name="currency" value="{{ data.currency }}" readonly/><br>
+        <button id="submit">Pay</button>
+    </div>
 </body>
-
 </html>

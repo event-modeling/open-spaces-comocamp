@@ -88,16 +88,20 @@ def get_cart(request: Request, username: str, conference: str):
 
 # command handler for request payment
 @app.post("/request_payment")
-def request_payment(command: RequestPaymentCD):
+async def request_payment(request: Request):
     """
     Command handler for request payment
 
-    :param command:
+    :param request:
+    :param payload:
     :return:
     """
+    payload = await request.json()
+    print(payload)
     handler = CommandsHandler()
     event_id: str = str(uuid.uuid4())
     timestamp = datetime.now().isoformat()
+    command = RequestPaymentCD(**payload)
     handler.request_payment_command(event_id, timestamp, command)
     return {
         'message': 'Payment requested'
