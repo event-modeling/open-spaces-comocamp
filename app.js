@@ -28,6 +28,7 @@ const app = express();
 const { engine } = require("express-handlebars");
 const { v4: uuidv4 } = require("uuid");
 const { env } = require("process");
+const e = require("express");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
@@ -297,6 +298,45 @@ function listTopicsStateView(eventsArray) {
   return topicSubmittedEvents.map(event => ({ name: event.name, id: event.id }));
 }
 
+function topicVotingSV(events) {
+  return events.reduce(function(state,event) {
+    switch (event.type) {
+      case 'ConferenceClaimedEvent':
+        return {
+          ...state,
+          conferenceId: event.conferenceId
+        };
+
+      case 'VoteSubmittedEvent':
+        const topicIndex = state.topics.find(x => x.topic === event.name);
+        const topicEl = state.topics[topicIndex];
+
+        return {
+          ...state,
+          topics: [
+            ...state.topics.slice(0,topicIndex),
+            { ...topicEl, votes: topicEl.votes + 1 },
+            ...state.topics.slice(topicIndex+1)
+          ]
+        };
+
+      case 'TopicSubmittedEvent':
+        return {
+          ...state,
+          topics: [...state.topics, { topic: event.name, votes: 0 }]
+        }
+      default:
+        return state;
+    }
+  },{ conferenceId: null, topics: [] });
+}
+
+app.get('/topic_voting', (req, res) => {
+  const conferenceId = req.query.conferenceId;
+  const filtered = getAllEvents().filter((e) => e.conferenceId === conferenceId)
+  let stateView = topicVotingSV(filtered);
+  res.render('topic_voting', stateView);
+});
 
 
 if (process.argv.includes("--run-tests")) {

@@ -20,6 +20,8 @@ from events.base import Event
 from commands.CommandsHandler import CommandsHandler
 from events_store.events_store import EventStore
 
+from read_models.hosted_conferences import HostedConferencesList
+
 app = FastAPI(docs_url=None)
 app.add_middleware(
     CORSMiddleware,
@@ -167,6 +169,39 @@ async def add_room(request: Request):
         url=f'rooms_and_time_slots?conference_id={command.conferenceId}',
         status_code=status.HTTP_302_FOUND
     )
+
+@app.get("/view_conference")
+def view_conference(request: Request, conference_id: str):
+    """
+    Endpoint to view conference
+
+    :return:
+    """
+    conference_data = HostedConferencesList.get_data(conference_id)
+    return templates.TemplateResponse(
+        request=request, name="conference_view.jinja2", context={
+            "data": conference_data
+        }
+    )
+
+
+@app.post("/open_registration")
+def open_registration(conference_id: str):
+    """
+    Command handler for open registration
+
+    :param conference_id:
+
+    :return:
+    """
+    event_id: str = str(uuid.uuid4())
+    timestamp = datetime.now().isoformat()
+    handler = CommandsHandler()
+    handler.open_registration_command(event_id, timestamp, conference_id)
+    return {
+        'message': f'Registration opened for conference {conference_id}'
+    }
+
 
 
 # Time Slots

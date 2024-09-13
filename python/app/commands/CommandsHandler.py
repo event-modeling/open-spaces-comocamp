@@ -1,3 +1,4 @@
+from events.registration_opened import RegistrationOpened
 from commands.add_room import AddRoomCD
 from commands.add_time_slot import AddTimeSlotCD
 
@@ -29,6 +30,23 @@ class CommandsHandler:
                 'capacity': command.capacity
             })
         )
+
+    def open_registration_command(self, event_id: str, timestamp: str, conference_id: str):
+        """
+        Command handler for open registration
+
+        :param conference_id:
+        :return:
+        """
+        EventStore.write_event_if_id_not_exists(
+            RegistrationOpened(**{
+                'type': 'RegistrationOpened',
+                'id': event_id,
+                'timestamp': timestamp,
+                'conferenceId': conference_id
+            })
+        )
+        return True
 
     def add_time_slot_command(
         self, event_id: str, timestamp: str, command: AddTimeSlotCD
