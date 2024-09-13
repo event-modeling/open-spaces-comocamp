@@ -149,7 +149,7 @@ app.get("/conferences", (req, res) => {
         <a href="/timeslot?"><button>Add Time Slot</button></a>
         ${
           ev.opened ?
-          "<span>Registration Opened (<a href=\"/show_registration_qr_code/${ev.conferenceId}\">QR Code</a>)</span>" :
+          `<span>Registration Opened (<a href="/show_registration_qr_code/${ev.conferenceId}">QR Code</a>)</span>` :
           `<button hx-vals='{"id": "${ev.conferenceId}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
         }
       </div>
