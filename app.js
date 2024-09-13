@@ -95,7 +95,7 @@ function rehydrate(events, firstEvent, subsquentEvents = []) {
 }
 
 app.get("/", (req, res) => {
-  res.redirect("/setup_conf");
+  res.redirect("/topsecret");
 });
 
 app.get("/conferences", (req, res) => {
