@@ -23,7 +23,7 @@ services:
 
   js:
     image: 'node:alpine'
-    command: sh -c "cd app && npm install && npm start"
+    command: sh -c "cd /app && npm install && npm start"
     volumes:
       - .:/app/
       - event_store:/data/event_store

@@ -30,7 +30,7 @@ app.set("view engine", "handlebars");
 app.set("views", "./views");
 
 
-const EVENT_STORE_PATH = __dirname + "/eventstore/";
+const EVENT_STORE_PATH = "/data/eventstore/";
 function writeEventIfIdNotExists(event) {
   if (
     fs.readdirSync(EVENT_STORE_PATH).filter((file) => file.includes(event.id))
@@ -60,9 +60,7 @@ function getAllEvents() {
     );
 }
 
-app.get("/", (req, res) => {
-  res.redirect("/setup_conf");
-});
+app.get("/", (req, res) => { res.render('shell'); });
 
 app.get("/create_space", (req, res) => {
   res.render("create_space", {
