@@ -18,6 +18,7 @@ from commands.CommandsHandler import CommandsHandler
 from events_store.events_store import EventStore
 from fastapi import Form
 
+from read_models.hosted_conferences import HostedConferencesList
 
 app = FastAPI(docs_url=None)
 app.add_middleware(
@@ -122,6 +123,39 @@ def request_payment(
     })
     handler.request_payment_command(event_id, timestamp, command)
     return templates.TemplateResponse(request=request, name="payment_requested.jinja2", context={})
+
+
+@app.get("/view_conference")
+def view_conference(request: Request, conference_id: str):
+    """
+    Endpoint to view conference
+
+    :return:
+    """
+    conference_data = HostedConferencesList.get_data(conference_id)
+    return templates.TemplateResponse(
+        request=request, name="conference_view.jinja2", context={
+            "data": conference_data
+        }
+    )
+
+
+@app.post("/open_registration")
+def open_registration(conference_id: str):
+    """
+    Command handler for open registration
+
+    :param conference_id:
+
+    :return:
+    """
+    event_id: str = str(uuid.uuid4())
+    timestamp = datetime.now().isoformat()
+    handler = CommandsHandler()
+    handler.open_registration_command(event_id, timestamp, conference_id)
+    return {
+        'message': f'Registration opened for conference {conference_id}'
+    }
 
 
 @app.get("/openapi.json", include_in_schema=False)
