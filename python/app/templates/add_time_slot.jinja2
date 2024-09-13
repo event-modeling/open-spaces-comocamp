@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Time Slot</title>
+    <script>
+      function submitTimeSlotData() {
+        // Example of collecting data and console logging it
+        // Actual implementation might involve sending this data to a server
+        var conferenceId = document.getElementById('conference_id').value;
+        var startTime = document.getElementById('start_time').value;
+        var endTime = document.getElementById('end_time').value;
+
+        console.log("Submitting:", startTime, endTime, conferenceId);
+        // Here you would typically send the data to your server using fetch() or another AJAX method
+        // Example (not executable in this environment):
+        fetch('add_time_slot', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({startTime: startTime, endTime: endTime, conferenceId: conferenceId}),
+        })
+          .then(response => {
+            if (response.redirected) {
+              // Server has initiated a redirect
+              window.location.href = response.url;
+            } else if (!response.ok) {
+              // Handle non-successful response
+              throw new Error('Server responded with an error!');
+            } else {
+              // If you expect a non-redirect successful response, handle here
+              console.log('Request successful');
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('add_time_slot').addEventListener('click', submitTimeSlotData);
+      });
+    </script>
+</head>
+
+
+<body>
+
+<h1>
+    <input hidden type="text" id="conference_id" value="{{ data.conference_id }}">
+    {{ data.conference_name }} - Add Time Slot
+</h1>
+<label for="start_time">Start Time</label>
+
+    <input type="text" id="start_time">
+
+<label for="end_time">End Time</label>
+<input type="text" id="end_time">
+<button id="add_time_slot">Add Time Slot</button>
+
+</body>
+</html>

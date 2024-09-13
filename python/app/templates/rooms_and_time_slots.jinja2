@@ -39,9 +39,6 @@
 
 <h2>Rooms</h2>
 <table>
-    <tr>
-        <th>Room</th>
-    </tr>
     {% for room in data.rooms %}
         <tr>
             <td>{{ room }}</td>
@@ -52,12 +49,9 @@
     Time Slots
 </h2>
 <table>
-    <tr>
-        <th>Room</th>
-    </tr>
-    {% for room in data.rooms %}
+    {% for time_slot in data.timeSlots %}
         <tr>
-            <td>{{ room }}</td>
+            <td>{{ time_slot }}</td>
         </tr>
     {% endfor %}
 </table>
