@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Register for Conference</title>
+  </head>
+  <body>
+    <h1>Register for Conference</h1>
+    <form action="/register" method="POST">
+      <div class="form-group"><label for="name">Your Name</label><input type="text" id="username" name="username"></div>
+      <input type="hidden" name="conferenceId" value="<%= conference_id %>" />
+      <div>
+          <button type="submit">Register</button>
+      </div>
+    </form>
+  </body>
+</html>
