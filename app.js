@@ -119,7 +119,7 @@ app.get("/conferences", (req, res) => {
       return event;
     }
   });
-  
+
   const ev = rehydrate(conferenceEvents, "ConferenceClaimedEvent", [
     "ConferenceOpenedEvent",
   ])[0];
@@ -127,7 +127,7 @@ app.get("/conferences", (req, res) => {
   const rooms = rehydrate(roomAddedEvents, "RoomAdded", []);
 ;
   const htmlRooms = rooms.length ? `<ul>${rooms.map(r => `<li>room: ${r.room} | cap: ${r.capacity}</li>`)}</ul>` : "<div>No rooms available</div>";
-  
+
   const page = ev?.id ? `
   <div>
     <div>
@@ -184,17 +184,17 @@ app.post("/openConference", (req, res) => {
 
 app.get("/attendee/conferences", (req, res) => {
   const search = req.query.search;
-  const all_conferences = ConferencesSV(getAllEvents());
+  const all_conferences = AttendeeConferencesSV(getAllEvents());
   const conferences = search ? all_conferences.filter(x => x.name.includes(search)) : all_conferences;
   return res.render('attendee_conferences', { search, conferences })
 })
-function ConferencesSV(events) {
+function AttendeeConferencesSV(events) {
   return events
     .reduce(function(sv, event) {
       switch(event.type){
-        case 'ConferenceCreated': {
-          const { id, name, capacity, amount } = event;
-          sv.push({ id, name, capacity, amount, registration_open: false, attendees: 0 });
+        case 'ConferenceClaimedEvent': {
+          const { id, name } = event;
+          sv.push({ id, name, registration_open: false, attendees: 0 });
           break;
         }
         case 'RegistrationOpened': {
@@ -203,7 +203,7 @@ function ConferencesSV(events) {
           item && (item.registration_open = true);
           break;
         }
-        case 'RegisteredUser': {
+        case 'VoterRegistered': {
           const { conference_id } = event;
           const item  = sv.find(x => x.id === conference_id);
           item && (item.attendees++);
