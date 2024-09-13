@@ -82,10 +82,13 @@ function rehydrate(events, firstEvent, subsquentEvents = []) {
     }
 
     if (subsquentEvents.includes(event.type)) {
-      const i = ev.findIndex((event) => event.conferenceId === conferenceId);
-      let tmp = ev[i];
 
+      const i = ev.findIndex((event) => event.conferenceId === conferenceId);
+      console.log(i)
+      let tmp = ev[i];
+      console.log('subev', event, tmp);
       if (tmp) {
+      
         ev[i] = { ...tmp, ...event };
       }
     }
@@ -120,17 +123,16 @@ app.get("/conferences", (req, res) => {
     }
   });
   
-  console.log(conferenceEvents)
+
   const ev = rehydrate(conferenceEvents, "ConferenceClaimedEvent", [
     "ConferenceOpenedEvent",
   ]).pop();
 
-  console.log(ev)
 
   const rooms = rehydrate(roomAddedEvents, "RoomAdded", []);
 ;
   const htmlRooms = rooms.length ? `<ul>${rooms.map(r => `<li>room: ${r.room} | cap: ${r.capacity}</li>`)}</ul>` : "<div>No rooms available</div>";
-  
+
   const page = ev?.id ? `
   <div>
     <div>
@@ -141,7 +143,7 @@ app.get("/conferences", (req, res) => {
         ${
           ev.opened ? 
           "<span>Registration Opened</span>" : 
-          `<button hx-vals='{"id": "${ev.id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
+          `<button hx-vals='{"id": "${ev.conferenceId}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
         }
       </div>
     </div>
@@ -163,8 +165,8 @@ app.get("/conferences", (req, res) => {
 app.post("/openConference", (req, res) => {
   const { id } = req.body;
 
-  console.log(req.body);
-  const lastEvent = getAllEvents().filter((event) => event.id === id)[0];
+
+  const lastEvent = getAllEvents().filter((event) => event.conferenceId === id)[0];
   if (lastEvent?.id) {
     const event = new ConferenceOpenedEvent(id, uuidv4());
 
@@ -175,7 +177,7 @@ app.post("/openConference", (req, res) => {
       JSON.stringify(event)
     );
 
-    res.send("<span>Open</span>");
+    res.send("<span>Registration Open</span>");
     return true;
   }
 
@@ -187,17 +189,17 @@ app.post("/openConference", (req, res) => {
 
 app.get("/attendee/conferences", (req, res) => {
   const search = req.query.search;
-  const all_conferences = ConferencesSV(getAllEvents());
+  const all_conferences = AttendeeConferencesSV(getAllEvents());
   const conferences = search ? all_conferences.filter(x => x.name.includes(search)) : all_conferences;
   return res.render('attendee_conferences', { search, conferences })
 })
-function ConferencesSV(events) {
+function AttendeeConferencesSV(events) {
   return events
     .reduce(function(sv, event) {
       switch(event.type){
-        case 'ConferenceCreated': {
-          const { id, name, capacity, amount } = event;
-          sv.push({ id, name, capacity, amount, registration_open: false, attendees: 0 });
+        case 'ConferenceClaimedEvent': {
+          const { id, name } = event;
+          sv.push({ id, name, registration_open: false, attendees: 0 });
           break;
         }
         case 'RegistrationOpened': {
@@ -206,7 +208,7 @@ function ConferencesSV(events) {
           item && (item.registration_open = true);
           break;
         }
-        case 'RegisteredUser': {
+        case 'VoterRegistered': {
           const { conference_id } = event;
           const item  = sv.find(x => x.id === conference_id);
           item && (item.attendees++);
