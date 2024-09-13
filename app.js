@@ -73,7 +73,7 @@ function getAllEvents() {
   @param {array} subsquentEvents
 */
 function rehydrate(events, firstEvent, subsquentEvents = []) {
-  
+
   let ev = [];
   for (const event of events) {
     const { id } = event;
@@ -109,7 +109,7 @@ app.get("/conferences", (req, res) => {
       if (event.type === "ConferenceOpenedEvent") {
         event.opened = true;
       }
-   
+
       return event;
     }
   });
@@ -188,7 +188,7 @@ function ConferencesSV(events) {
 }
 
 
-app.get('/topsecret', (req, res) => { 
+app.get('/topsecret', (req, res) => {
   res.render('claim_conf', { conferenceId: uuidv4(), organizerToken: uuidv4() })
 });
 app.post('/setup_conf', (req,res) => {
