@@ -1,62 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule Grid</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-        }
-        table {
-            display: grid;  // Changed to use grid layout for better control over schedule display
-            grid-template-columns: repeat(auto-fit, minmax(min-content, max-content));  // Columns fit content and adjust to content size
-            border-collapse: separate;
-            border-spacing: 10px 0;  // Adjusted to add spacing only horizontally between rows
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            background-color: #fff;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 16px;
-            text-align: left;
-            color: #333;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);  // Subtle shadow for each cell
-            background-color: #fff;  // Ensuring background color is consistent for shadow effect
-        }
-        th {
-Topic C4
-            background-color: #6200ea;
-            color: #fff;
-            font-weight: 500;
-        }
-        tbody tr {
-            display: contents;  // Allows rows to be part of the grid layout
-            margin-bottom: 10px;  // Added bottom margin to each row for separation
-        }
-        tbody tr:nth-child(odd) {
-            background-color: #f4f4f4;
-        }
-    </style>
-</head>
-<body>
-    <h1>Open Space Schedule</h1>
-    <table>
-        <thead>
-            <tr>
-                {{#each schedule}}
-                <th>{{day}}</th>
-                {{/each}}
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                {{#each schedule}}
-                <td>{{#each slot}}{{this}}<br>{{/each}}</td>
-                {{/each}}
-            </tr>
-        </tbody>
-    </table>
-</body>
-</html>
-
+<h1>Open Space Schedule</h1>
+<table class="schedule">
+    <thead>
+        <tr>
+            {{#each schedule}}
+            <th>{{day}}</th>
+            {{/each}}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            {{#each schedule}}
+            <td>{{#each slot}}{{this}}<br>{{/each}}</td>
+            {{/each}}
+        </tr>
+    </tbody>
+</table>

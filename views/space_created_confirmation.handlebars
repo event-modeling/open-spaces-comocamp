@@ -1,12 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Creation Status</title>
-    <link rel="stylesheet" href="/css/styles.css">
-</head>
-<body>
+
     {{#if errorMessage}}
         <h1>Space Creation Failed</h1>
         <p class="error">Error: {{errorMessage}}</p>
@@ -15,5 +7,3 @@
         <p>The space named "{{spaceName}}" has been successfully created.</p>
         <a href="/set_dates" class="continue-button" hx-get="/set_dates" hx-target="#content" hx-swap="innerHTML">Continue</a>
     {{/if}}
-</body>
-</html>

@@ -1,21 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Date Setting Confirmation</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <script src="https://unpkg.com/htmx.org@1.8.1/dist/htmx.min.js"></script>
-</head>
-<body>
-    {{#if errorMessage}}
-        <h1>Date Setting Failed</h1>
-        <p class="error">Error: {{errorMessage}}</p>
-    {{else}}
-        <h1>Dates Set Successfully!</h1>
-        <p>The dates for the event have been set from {{startDate}} to {{endDate}}.</p>
-        <a href="/rooms" hx-get="/rooms" hx-target="#content" hx-swap="innerHTML" class="continue-button">Continue</a>
-    {{/if}}
-</body>
-</html>
-
+ {{#if errorMessage}}
+    <h1>Date Setting Failed</h1>
+    <p class="error">Error: {{errorMessage}}</p>
+{{else}}
+    <h1>Dates Set Successfully!</h1>
+    <p>The dates for the event have been set from {{startDate}} to {{endDate}}.</p>
+    <a href="/rooms" hx-get="/rooms" hx-target="#content" hx-swap="innerHTML" class="continue-button">Continue</a>
+{{/if}}
