@@ -9,7 +9,7 @@ const TopicSubmittedEvent = require("./events/TopicSubmittedEvent");
 const TimeSlotAdded = require("./events/TimeSlotAdded");
 const RequestedConfIdEvent = require("./events/RequestedConfIdEvent");
 const ConferenceClaimedEvent = require("./events/ConferenceClaimedEvent");
-const ConferenceOpenedEvent = require("./events/ConferenceOpenedEvent");
+const RegistrationOpenedEvent = require("./events/RegistrationOpenedEvent");
 if (process.argv.includes("--run-tests")) {
   run_tests();
   process.exit(0);
@@ -108,9 +108,9 @@ app.get("/conferences", (req, res) => {
 
     if (
       event.type === "ConferenceClaimedEvent" ||
-      event.type === "ConferenceOpenedEvent"
+      event.type === "RegistrationOpenedEvent"
     ) {
-      if (event.type === "ConferenceOpenedEvent") {
+      if (event.type === "RegistrationOpenedEvent") {
         event.opened = true;
       }
 
@@ -118,17 +118,18 @@ app.get("/conferences", (req, res) => {
     }
   });
 
+  const ev = rehydrate(conferenceEvents, "ConferenceClaimedEvent", [
+    "RegistrationOpenedEvent",
+  ]).pop();
+
   const roomAddedEvents = getAllEvents().filter((event) => {
-    if (event.type === "RoomAdded" ) {
+    if (
+      event.type === "RoomAdded" 
+      && event.conferenceId === ev.conferenceId
+    ) {
       return event;
     }
   });
-
-
-  const ev = rehydrate(conferenceEvents, "ConferenceClaimedEvent", [
-    "ConferenceOpenedEvent",
-  ]).pop();
-
 
   const rooms = rehydrate(roomAddedEvents, "RoomAdded", []);
 ;
@@ -176,7 +177,7 @@ app.post("/openConference", (req, res) => {
 
   const lastEvent = getAllEvents().filter((event) => event.conferenceId === id)[0];
   if (lastEvent?.id) {
-    const event = new ConferenceOpenedEvent(id, uuidv4());
+    const event = new RegistrationOpenedEvent(id, uuidv4());
 
     fs.writeFileSync(
       `${EVENT_STORE_PATH}${String(event.timestamp)
