@@ -113,21 +113,46 @@ app.get("/conferences", (req, res) => {
       return event;
     }
   });
-  console.log(conferenceEvents)
+
+  const roomAddedEvents = getAllEvents().filter((event) => {
+    if (event.type === "RoomAdded" ) {
+      return event;
+    }
+  });
+  
   const ev = rehydrate(conferenceEvents, "ConferenceClaimedEvent", [
     "ConferenceOpenedEvent",
   ])[0];
-  console.log(ev)
+
+  const rooms = rehydrate(roomAddedEvents, "RoomAddedEvent", []);
+;
+  const htmlRooms = rooms.length ? `<ul>${rooms.map(r => `<li>${r.room}</li>`)}</ul>` : "<div>No rooms available</div>";
+  
   const page = ev?.id ? `
   <div>
-    <div><h1>${ev.name}</h1></div>
     <div>
-      <a href="/room?conferenceId=${ev.id}"><button>Add Room</button></a>
-      <a href="/timeslot?"><button>Add Time Slot</button></a>
-      <button hx-vals='{"id": "${ev.id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>
+      <div><h1>${ev.name}</h1></div>
+      <div>
+        <a href="/add_rooms"><button>Add Room</button></a>
+        <a href="/timeslot?"><button>Add Time Slot</button></a>
+        ${
+          ev.opened ? 
+          "<span>Registration Opened</span>" : 
+          `<button hx-vals='{"id": "${ev.id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
+        }
+      </div>
     </div>
+    <div>
+      <h2>Rooms</h2>
+      ${htmlRooms}
+    </div>
+    <div>
+      <h2>Time Slots</h2>
+      <p>No Time slots</p>
+    </div>
+      <script src="https://unpkg.com/htmx.org@2.0.2"></script>
   </div>
-  ` : "<h1>You don't have a conference created";
+  ` : "<h1>You don't have a conference created</h1>";
 
   res.send(page);
 });
@@ -155,6 +180,8 @@ app.post("/openConference", (req, res) => {
     `<button hx-vals='{"id": "${id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
   );
 });
+
+
 app.get("/attendee/conferences", (req, res) => {
   const search = req.query.search;
   const all_conferences = ConferencesSV(getAllEvents());
