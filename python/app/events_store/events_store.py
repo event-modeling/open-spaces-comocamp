@@ -5,6 +5,7 @@ from events.base import Event
 
 
 class EventStore:
+    # event_store_path = 'eventstore'
     event_store_path = '/app/eventstore'
 
     @staticmethod
