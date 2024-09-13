@@ -122,6 +122,9 @@ async def add_rooms(request: Request):
     events = EventStore.get_all_events()
     conference_name = None
     conference_id = None
+
+    # sort by timestamp and get latest
+    events = sorted(events, key=lambda x: x.get('timestamp'), reverse=True)
     for event in events:
         if event.get('type') == 'ConferenceClaimed':
             conference_name = event.get('name')
@@ -178,6 +181,7 @@ async def add_rooms(request: Request):
     events = EventStore.get_all_events()
     conference_name = None
     conference_id = None
+    events = sorted(events, key=lambda x: x.get('timestamp'), reverse=True)
     for event in events:
         if event.get('type') == 'ConferenceClaimed':
             conference_name = event.get('name')
