@@ -27,6 +27,7 @@ const express = require("express");
 const app = express();
 const { engine } = require("express-handlebars");
 const { v4: uuidv4 } = require("uuid");
+const { env } = require("process");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
@@ -72,6 +73,7 @@ function getAllEvents() {
   @param {array} subsquentEvents
 */
 function rehydrate(events, firstEvent, subsquentEvents = []) {
+  
   let ev = [];
   for (const event of events) {
     const { id } = event;
@@ -89,7 +91,6 @@ function rehydrate(events, firstEvent, subsquentEvents = []) {
     }
   }
 
-
   return ev;
 }
 
@@ -98,61 +99,37 @@ app.get("/", (req, res) => {
 });
 
 app.get("/conferences", (req, res) => {
-  const events = getAllEvents().filter((event) => {
+
+  const conferenceEvents = getAllEvents().filter((event) => {
+
     if (
-      event.type === "ConferenceCreatedEvent" ||
+      event.type === "ConferenceClaimedEvent" ||
       event.type === "ConferenceOpenedEvent"
     ) {
       if (event.type === "ConferenceOpenedEvent") {
         event.opened = true;
       }
+   
       return event;
     }
   });
-  const ev = rehydrate(events, "ConferenceCreatedEvent", [
+  console.log(conferenceEvents)
+  const ev = rehydrate(conferenceEvents, "ConferenceClaimedEvent", [
     "ConferenceOpenedEvent",
-  ]);
+  ])[0];
+  console.log(ev)
+  const page = ev?.id ? `
+  <div>
+    <div><h1>${ev.name}</h1></div>
+    <div>
+      <a href="/room?conferenceId=${ev.id}"><button>Add Room</button></a>
+      <a href="/timeslot?"><button>Add Time Slot</button></a>
+      <button hx-vals='{"id": "${ev.id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>
+    </div>
+  </div>
+  ` : "<h1>You don't have a conference created";
 
-  let tableRows = "";
-  for (const event of ev) {
-    tableRows += `<tr>
-    <td><a href="/">${event.name}</a></td>
-    <td>${event.location}</td>
-    <td>${event.capacity}</td>
-    <td>$ ${event.price}</td>
-    <td>
-      <a href="/room?conference=${event.id}"><button>Add Room</button></a>
-    </td>
-    <td>
-      ${
-        event.opened
-          ? "<span>Open</span>"
-          : `  <script src="https://unpkg.com/htmx.org@2.0.2"></script>
-              <button hx-vals='{"id": "${event.id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>
-          `
-      }
-    </td>
-    </tr>`;
-  }
-
-  const table = `
-  <table>
-    <tablehead>
-      <tr>
-        <th>Name</th>
-        <th>Location</th>
-        <th>Capacity</th>
-        <th>Price</th>
-        <th></th>
-      </tr>
-    </tablehead>
-    <tablebody>
-      ${tableRows}
-    </tablebody>
-  </table>
-  `;
-
-  res.send(table);
+  res.send(page);
 });
 
 app.post("/openConference", (req, res) => {
