@@ -28,6 +28,7 @@ const app = express();
 const { engine } = require("express-handlebars");
 const { v4: uuidv4 } = require("uuid");
 const { env } = require("process");
+const e = require("express");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
@@ -301,13 +302,23 @@ function VotingSV(events) {
     switch (event.type) {
       case 'VoteSubmittedEvent':
 
+        var i = state.findIndex(o => o.topic === event.topic);
+
+        return [...state.slice(0,index), el, ...state.slice() ]
+
         break;
 
-      case 'TopicSuggestedEvent':
+      case 'TopicSubmittedEvent':
+
+        state.push({
+          topic: event.name,
+          votes: 0
+        });
+
         break;
 
     }
-  },{});
+  },[]);
 }
 
 app.get('/voting', (req, res) => {
