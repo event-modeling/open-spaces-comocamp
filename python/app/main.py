@@ -170,20 +170,6 @@ async def add_room(request: Request):
         status_code=status.HTTP_302_FOUND
     )
 
-@app.get("/view_conference")
-def view_conference(request: Request, conference_id: str):
-    """
-    Endpoint to view conference
-
-    :return:
-    """
-    conference_data = HostedConferencesList.get_data(conference_id)
-    return templates.TemplateResponse(
-        request=request, name="conference_view.jinja2", context={
-            "data": conference_data
-        }
-    )
-
 
 @app.post("/open_registration")
 def open_registration(conference_id: str):
@@ -258,6 +244,29 @@ async def add_time_slot(request: Request):
         url=f'rooms_and_time_slots?conference_id={command.conferenceId}',
         status_code=status.HTTP_302_FOUND
     )
+
+
+@app.get('/rooms_and_time_slots_assignment')
+def get_cart(request: Request, conference_id: str):
+    """
+    Endpoint to view checkout page
+
+    :return:
+    """
+    events = rooms_and_time_slots_view(conference_id)
+
+    if not events:
+        return templates.TemplateResponse(
+            request=request, name="conference_not_found.jinja2", context={
+                "data": events
+            }
+        )
+    else:
+        return templates.TemplateResponse(
+            request=request, name="rooms_and_time_slots_assignment.jinja2", context={
+                "data": events
+            }
+        )
 
 
 @app.get("/openapi.json", include_in_schema=False)
