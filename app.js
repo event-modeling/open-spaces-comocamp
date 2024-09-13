@@ -300,20 +300,40 @@ function listTopicsStateView(eventsArray) {
 function topicVotingSV(events) {
   return events.reduce(function(state,event) {
     switch (event.type) {
+      case 'ConferenceClaimedEvent':
+        return {
+          ...state,
+          conferenceId: event.conferenceId
+        };
+
       case 'VoteSubmittedEvent':
-        const i = state.find(x => x.topic === event.name);
-        const el = state[i];
-        return [...state.slice(0,i), { ...el, votes: el.votes + 1 }, ...state.slice(i+1)]
+        const topicIndex = state.topics.find(x => x.topic === event.name);
+        const topicEl = state.topics[topicIndex];
+
+        return {
+          ...state,
+          topics: [
+            ...state.topics.slice(0,topicIndex),
+            { ...topicEl, votes: topicEl.votes + 1 },
+            ...state.topics.slice(topicIndex+1)
+          ]
+        };
+
       case 'TopicSubmittedEvent':
-        return [...state, { topic: event.name, votes: 0 }]
+        return {
+          ...state,
+          topics: [...state.topics, { topic: event.name, votes: 0 }]
+        }
       default:
         return state;
     }
-  },[]);
+  },{ conferenceId: null, topics: [] });
 }
 
-app.get('/voting', (req, res) => {
-  let stateView = topicVotingSV(getAllEvents());
+app.get('/topic_voting', (req, res) => {
+  const conferenceId = req.query.conferenceId;
+  const filtered = getAllEvents().filter((e) => e.conferenceId === conferenceId)
+  let stateView = topicVotingSV(filtered);
   res.render('topic_voting', stateView);
 });
 

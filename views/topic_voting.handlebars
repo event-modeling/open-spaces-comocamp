@@ -1,4 +1,26 @@
 <div>
     <p>You can now vote on topics</p>
     <p>You may only vote once per topic</p>
+
+    <div class="topic-list">
+        <div class="topic-header">
+            <div>Topics</div>
+            <div>Votes</div>
+            <div>Actions</div>
+        </div>
+        {{#each this.topics}}
+        <div class="topic">
+            <div>{{topic}}</div>
+            <div>{{votes}}</div>
+            <div>
+                <form method="POST" action="/submit_vote">
+                    <input type="hidden" name="conferenceId" value="{{../conferenceId}}" />
+                    <input type="hidden" name="topic" value="{{topic}}" />
+                    <button type="submit">Vote</button>
+                </form>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+    
 </div>
