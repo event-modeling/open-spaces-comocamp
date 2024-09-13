@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://unpkg.com/htmx.org@1.8.1/dist/htmx.min.js"></script>
+    <style>
+        .schedule-table {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min-content, max-content)); 
+            border-collapse: separate;
+            border-spacing: 10px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background-color: #fff;
+        }
+        .schedule-table th, td {
+            border: 1px solid #ddd;
+            padding: 16px;
+            text-align: left;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background-color: #fff;
+        }
+        .schedule-table th {
+            background-color: #6200ea;
+            color: #fff;
+            font-weight: 500;
+        }
+        tbody tr {
+            display: contents;
+            margin-bottom: 10px;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #f4f4f4;
+        }
+        .register {
+            margin-top: 10px;
+        }
+        .search-input {
+            border: solid 1px black;padding:4px;vertical-align:center;margin-bottom:5px;display:inline-flex
+        }
+        .search-input > input, .search-input > input:focus-visible { border: 0; outline: none }
+        .conferences-table { border-spacing: 0 }
+        .conferences-table th, td { min-width: 100px; text-align: left; border: solid 1px black; padding: 4px }
+    </style>
+</head>
+<body>
+    {{{body}}}
+</body>
+</html>

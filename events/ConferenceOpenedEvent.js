@@ -1,15 +1,10 @@
-class ConferenceCreatedEvent {
-    constructor(id,name,subject,startDate,endDate,location,capacity,price) {
-        this.type = 'ConferenceCreatedEvent';
+class ConferenceOpenedEvent {
+    constructor(conferenceId, id) {
+        this.type = 'ConferenceOpenedEvent';
         this.id = id;
-        this.name = name;
-        this.subject = subject;
-        this.startDate = startDate
-        this.endDate = endDate
-        this.location = location;
-        this.capacity = capacity;
-        this.price = price;
+        this.timestamp = new Date().toISOString();
+        this.conferenceId = conferenceId;
     }
 }
 
-module.exports = ConferenceCreatedEvent
+module.exports = ConferenceOpenedEvent

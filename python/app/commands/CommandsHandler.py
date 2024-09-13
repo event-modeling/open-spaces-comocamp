@@ -1,47 +1,35 @@
 from commands.request_payment import RequestPaymentCD
 from events.payment_requested import PaymentRequested
 from events.registration_opened import RegistrationOpened
+from commands.add_room import AddRoomCD
+from commands.add_time_slot import AddTimeSlotCD
+
+from events.room_added import RoomAdded
+from events.time_slot_added import TimeSlotAdded
 from events_store.events_store import EventStore
 
 
 class CommandsHandler:
-    def request_payment_command(
-            self, event_id: str, timestamp: str, command: RequestPaymentCD
+    def add_room_command(
+            self, event_id: str, timestamp: str, command: AddRoomCD
     ):
         """
-        Command handler for request payment
+        Command handler for add_room
 
         :param timestamp:
         :param event_id:
         :param command:
         :return:
         """
-        if not command.amount:
-            return {
-                'message': 'Amount is required'
-            }
-        if not command.conference:
-            return {
-                'message': 'Conference is required'
-            }
-        if not command.username:
-            return {
-                'message': 'Username is required'
-            }
-        if not command.name:
-            return {
-                'message': 'Name is required'
-            }
+
         EventStore.write_event_if_id_not_exists(
-            PaymentRequested(**{
-                'type': 'PaymentRequested',
+            RoomAdded(**{
                 'id': event_id,
+                'type': 'RoomAdded',
                 'timestamp': timestamp,
-                'amount': command.amount,
-                'currency': command.currency,
-                'conference': command.conference,
-                'username': command.username,
-                'name': command.name
+                'conferenceId': command.conferenceId,
+                'room': command.room,
+                'capacity': command.capacity
             })
         )
 
@@ -61,3 +49,25 @@ class CommandsHandler:
             })
         )
         return True
+
+    def add_time_slot_command(
+        self, event_id: str, timestamp: str, command: AddTimeSlotCD
+    ):
+        """
+        Command handler for add_time_slot
+
+        :param event_id:
+        :param timestamp:
+        :param command:
+        :return:
+        """
+        EventStore.write_event_if_id_not_exists(
+            TimeSlotAdded(**{
+                'id': event_id,
+                'type': 'TimeSlotAdded',
+                'timestamp': timestamp,
+                'conferenceId': command.conferenceId,
+                'startTime': command.startTime,
+                'endTime': command.endTime
+            })
+        )
