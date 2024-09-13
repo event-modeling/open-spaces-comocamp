@@ -146,7 +146,7 @@ app.get("/conferences", (req, res) => {
       <div><h1>${ev.name}</h1></div>
       <div>
         <a href="/add_rooms"><button>Add Room</button></a>
-        <a href="/timeslot?"><button>Add Time Slot</button></a>
+        <a href="/add_time_slots"><button>Add Time Slot</button></a>
         ${
           ev.opened ? 
           "<span>Registration Opened</span>" : 
