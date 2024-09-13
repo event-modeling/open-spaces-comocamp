@@ -297,32 +297,24 @@ function listTopicsStateView(eventsArray) {
   return topicSubmittedEvents.map(event => ({ name: event.name, id: event.id }));
 }
 
-function VotingSV(events) {
+function topicVotingSV(events) {
   return events.reduce(function(state,event) {
     switch (event.type) {
       case 'VoteSubmittedEvent':
-
-        var i = state.findIndex(o => o.topic === event.topic);
-
-        return [...state.slice(0,index), el, ...state.slice() ]
-
-        break;
-
+        const i = state.find(x => x.topic === event.name);
+        const el = state[i];
+        return [...state.slice(0,i), { ...el, votes: el.votes + 1 }, ...state.slice(i+1)]
       case 'TopicSubmittedEvent':
-
-        state.push({
-          topic: event.name,
-          votes: 0
-        });
-
-        break;
-
+        return [...state, { topic: event.name, votes: 0 }]
+      default:
+        return state;
     }
   },[]);
 }
 
 app.get('/voting', (req, res) => {
-  res.render('voting', {});
+  let stateView = topicVotingSV(getAllEvents());
+  res.render('topic_voting', stateView);
 });
 
 
