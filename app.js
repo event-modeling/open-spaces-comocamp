@@ -9,7 +9,7 @@ const TopicSubmittedEvent = require("./events/TopicSubmittedEvent");
 const TimeSlotAdded = require("./events/TimeSlotAdded");
 const RequestedConfIdEvent = require("./events/RequestedConfIdEvent");
 const ConferenceCreatedEvent = require("./events/ConferenceCreatedEvent");
-
+const ConferenceOpenedEvent = require("./events/ConferenceOpenedEvent");
 if (process.argv.includes("--run-tests")) {
   run_tests();
   process.exit(0);
@@ -24,6 +24,8 @@ const { v4: uuidv4 } = require("uuid");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 app.engine("handlebars", engine({ defaultLayout: false }));
 app.set("view engine", "handlebars");
 app.set("views", "./views");
@@ -53,6 +55,30 @@ function getAllEvents() {
       JSON.parse(fs.readFileSync(EVENT_STORE_PATH + file, "utf8"))
     );
 }
+/**
+@param {array} events
+@param {string} firstEvent
+@param {array} subsquentEvents
+*/
+function rehydrate(events, firstEvent, subsquentEvents = []) {
+  let ev = [];
+  for (const event of events) {
+    const { id } = event;
+    if (event.type === firstEvent) {
+      ev.push(event);
+    }
+
+    if (subsquentEvents.includes(event.type)) {
+      const i = ev.findIndex((event) => event.id === id);
+      let tmp = ev[i];
+
+      if (tmp) {
+        ev[i] = { ...tmp, ...event };
+      }
+    }
+  }
+  return ev;
+}
 
 app.get("/", (req, res) => {
   res.redirect("/create_space");
@@ -70,21 +96,26 @@ app.get("/conferences", (req, res) => {
       return event;
     }
   });
+  const ev = rehydrate(events, "ConferenceCreatedEvent", [
+    "ConferenceOpenedEvent",
+  ]);
 
   let tableRows = "";
-  for (const event of events) {
+  for (const event of ev) {
     tableRows += `<tr>
+    <td><a href="#">${event.name}</a></td>
     <td>${event.start_date.slice(0, 10)}</td>
     <td>${event.end_date.slice(0, 10)}</td>
-    <td>${event.name}</td>
     <td>${event.location}</td>
     <td>${event.capacity}</td>
-    <td>${event.amount}</td>
+    <td>$ ${event.amount}</td>
     <td>
       ${
-        event.open
+        event.opened
           ? "<span>Open</span>"
-          : '<button hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>'
+          : `  <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+              <button hx-vals='{"id": "${event.id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>
+          `
       }
     </td>
     </tr>`;
@@ -94,9 +125,9 @@ app.get("/conferences", (req, res) => {
   <table>
     <tablehead>
       <tr>
+        <th>Name</th>
         <th>Start</th>
         <th>End</th>
-        <th>Name</th>
         <th>Location</th>
         <th>Capacity</th>
         <th>Amount</th>
@@ -111,4 +142,27 @@ app.get("/conferences", (req, res) => {
 
   res.send(table);
 });
-module.exports = app;
+
+app.post("/openConference", (req, res) => {
+  const { id } = req.body;
+
+  console.log(req.body);
+  const lastEvent = getAllEvents().filter((event) => event.id === id)[0];
+  if (lastEvent?.id) {
+    const event = new ConferenceOpenedEvent(id);
+
+    fs.writeFileSync(
+      `${EVENT_STORE_PATH}${String(event.timestamp)
+        .replace(/:/g, "-")
+        .replace(/\..+/, "")}-${event.id}-${event.type}.json`,
+      JSON.stringify(event)
+    );
+
+    res.send("<span>Open</span>");
+    return true;
+  }
+
+  res.send(
+    `<button hx-vals='{"id": "${id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
+  );
+});
