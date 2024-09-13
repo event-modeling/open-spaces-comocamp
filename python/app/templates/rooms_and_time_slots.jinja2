@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rooms and Time Slots</title>
+    <script>
+      // Function to add event listeners to buttons
+      function setup() {
+        // Add Room button click event
+        document.getElementById('add_room').addEventListener('click', function () {
+          window.location.href = 'python/add_room'; // Navigate to the add room URL
+        });
+
+        // Add Time Slot button click event
+        document.getElementById('add_time_slot').addEventListener('click', function () {
+          window.location.href = 'python/add_time_slot'; // Navigate to the add time slot URL
+        });
+
+        // Open Registration button click event
+        document.getElementById('open_registration').addEventListener('click', function () {
+          window.location.href = 'python/open_registration'; // Navigate to the open registration URL
+        });
+      }
+
+      // Wait for the DOM to be fully loaded before setting up the event listeners
+      document.addEventListener('DOMContentLoaded', setup);
+    </script>
+</head>
+
+
+<body>
+<h1>
+    {{ data.conference_name }}
+
+</h1>
+
+<button id="add_rooms">Add Rooms</button>
+<button id="add_time_slots">Add Time Slot</button>
+<button id="open_registration">Open Registration</button>
+
+<h2>Rooms</h2>
+<table>
+    <tr>
+        <th>Room</th>
+    </tr>
+    {% for room in data.rooms %}
+        <tr>
+            <td>{{ room }}</td>
+        </tr>
+    {% endfor %}
+</table>
+<h2>
+    Time Slots
+</h2>
+<table>
+    <tr>
+        <th>Room</th>
+    </tr>
+    {% for room in data.rooms %}
+        <tr>
+            <td>{{ room }}</td>
+        </tr>
+    {% endfor %}
+</table>
+</body>
+</html>

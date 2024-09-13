@@ -8,10 +8,11 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
+from commands.add_room import AddRoomCD
 from commands.request_payment import RequestPaymentCD
 from events.base import Event
 from commands.CommandsHandler import CommandsHandler
@@ -55,50 +56,43 @@ def post_event(event: Event):
 
 
 # state view for cart
-def cart_state_view(username: str, conference: str):
+def rooms_and_time_slots_view(conference_id: str):
     events_list: list = EventStore.get_all_events()
     result = None
     for event in events_list:
-        if event.get('type') == 'UserAddedConferenceToCart' and event.get('username') == username and event.get('conference') == conference:
+        if event.get('type') == 'ConferenceClaimed' and event.get('conferenceId') == conference_id:
             result = event
             break
     return result
 
 
 # state view for payment
-@app.get('/cart')
-def get_cart(request: Request, username: str, conference: str):
+@app.get('/rooms_and_time_slots')
+def get_cart(request: Request, conference_id: str):
     """
     Endpoint to view checkout page
 
     :return:
     """
-    events = cart_state_view(username, conference)
+    events = rooms_and_time_slots_view(conference_id)
 
     if not events:
         return templates.TemplateResponse(
-            request=request, name="cart_view_empty.jinja2", context={
+            request=request, name="conference_not_found.jinja2", context={
                 "data": events
             }
         )
     else:
         return templates.TemplateResponse(
-            request=request, name="cart_view.jinja2", context={
+            request=request, name="rooms_and_time_slots.jinja2", context={
                 "data": events
             }
         )
 
 
 # command handler for request payment
-@app.post("/request_payment")
-def request_payment(
-        request: Request,
-        name: Annotated[str, Form()],
-        username: Annotated[str, Form()],
-        conference: Annotated[str, Form()],
-        amount: Annotated[float, Form()],
-        currency: Annotated[str, Form()],
-):
+@app.post("/add_room")
+async def add_room(request: Request):
     """
     Command handler for request payment
 
@@ -115,15 +109,10 @@ def request_payment(
     handler = CommandsHandler()
     event_id: str = str(uuid.uuid4())
     timestamp = datetime.now().isoformat()
-    command = RequestPaymentCD(**{
-        'name': name,
-        'username': username,
-        'conference': conference,
-        'amount': amount,
-        'currency': currency
-    })
-    handler.request_payment_command(event_id, timestamp, command)
-    return templates.TemplateResponse(request=request, name="payment_requested.jinja2", context={})
+    command = AddRoomCD(**payload)
+    handler.add_room_command(event_id, timestamp, command)
+    # redirect to rooms_and_time_slots view
+    return RedirectResponse(url=f'/rooms_and_time_slots?conference_id={command.conferenceId}')
 
 
 @app.get("/openapi.json", include_in_schema=False)

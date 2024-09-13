@@ -1,45 +1,30 @@
-from commands.request_payment import RequestPaymentCD
-from events.payment_requested import PaymentRequested
+from commands.add_room import AddRoomCD
+
+
+from events.room_added import RoomAdded
 from events_store.events_store import EventStore
 
 
 class CommandsHandler:
-    def request_payment_command(
-            self, event_id: str, timestamp: str, command: RequestPaymentCD
+    def add_room_command(
+            self, event_id: str, timestamp: str, command: AddRoomCD
     ):
         """
-        Command handler for request payment
+        Command handler for add_room
 
         :param timestamp:
         :param event_id:
         :param command:
         :return:
         """
-        if not command.amount:
-            return {
-                'message': 'Amount is required'
-            }
-        if not command.conference:
-            return {
-                'message': 'Conference is required'
-            }
-        if not command.username:
-            return {
-                'message': 'Username is required'
-            }
-        if not command.name:
-            return {
-                'message': 'Name is required'
-            }
+
         EventStore.write_event_if_id_not_exists(
-            PaymentRequested(**{
-                'type': 'PaymentRequested',
+            RoomAdded(**{
                 'id': event_id,
+                'type': 'RoomAdded',
                 'timestamp': timestamp,
-                'amount': command.amount,
-                'currency': command.currency,
-                'conference': command.conference,
-                'username': command.username,
-                'name': command.name
+                'conferenceId': command.conferenceId,
+                'room': command.room,
+                'capacity': command.capacity
             })
         )
