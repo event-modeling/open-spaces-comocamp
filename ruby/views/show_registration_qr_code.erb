@@ -8,6 +8,6 @@
 </head>
 <body>
 <svg>
-  <%= RQRCode::QRCode.new("http://localhost:3000/register/#{conf_id}").as_svg(module_size: 3) %>
+  <%= RQRCode::QRCode.new("https://unconference.eventmodeling.org/register/#{conf_id}").as_svg(module_size: 3) %>
 </svg>
 <p><b>Scan the QR code to register for voting!</b></p>

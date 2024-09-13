@@ -12,10 +12,12 @@ end
 
 require_relative 'commands/close_registration_cd'
 require_relative 'commands/open_registration_cmd'
+require_relative 'commands/register_voter_cmd'
 
 require_relative 'events/unique_id_provided_event'
 require_relative 'events/registration_opened_event'
 require_relative 'events/registration_closed_event'
+require_relative 'events/voter_registered_event'
 
 log = Logger.new(STDOUT)
 
@@ -38,6 +40,8 @@ def get_all_events
   Dir.mkdir(EVENT_STORE_PATH) unless Dir.exist?(EVENT_STORE_PATH)
   Dir.entries(EVENT_STORE_PATH).select { |file| file.end_with?('.json') }.map { |file| OpenStruct.new(JSON.parse(File.read(File.join(EVENT_STORE_PATH, file)))) }
 end
+
+## show_registration_qr_code
 
 get "/show_registration_qr_code/:uuid" do
   logger.info ">> GET /show_registration_qr_code, params[:uuid]: #{params[:uuid]}"
@@ -67,13 +71,57 @@ def handle_show_registration_qr_code_cmd(events, command)
   end
 end
 
-get "/register_for_conference/:uuid" do
-  # check for an RegistrationOpened event of the requested conference
-  events = registration_status_sv(get_all_events)
+## register (invoked by participants)
 
-  erb :register_for_conference, locals: { supplied_uuid: params[:uuid], conference_id: conference_ids_sv(get_all_events).last, registration_status: registration_status_sv(get_all_events) }
+# a user scans the qr code -> get "/register/:uuid"
+# if the qr code belongs to a valid (= registration is open) conference, the user is presented a form
+# in the form she can enter her name and submit -> RegisterVoter command
+# a random uuid is generated as user id and an event is generated -> VoterRegistered event
+# the user id is sent inside a session cookie to the user
+get "/register/:uuid" do
+  # command handler
+
+  # evaluate result
+  # check for an RegistrationOpened event of the requested conference (borrowed by show_registration_qr_code)
+  result = handle_show_registration_qr_code_cmd(get_all_events, OpenRegistrationCmd.new(params[:uuid], Time.now.utc.iso8601, SecureRandom.uuid))
+
+  # todo: how to extract the conference name? it's probably hidden in a relation of events...)
+
+  halt 400, result[:error] unless result[:error].empty?
+  erb :register_for_conference, locals: { conference_id: params[:uuid], conference_name: conference_ids_sv(get_all_events).last }
 end
 
+post "/register" do
+  # command handler
+  # question: where is the user_id (UUID) generated?
+  logger.info params
+  command = RegisterVoterCmd.new(params[:conferenceId], Time.now.utc.iso8601, SecureRandom.uuid, params[:username])
+  logger.info command
+  result = handle_register_voter_cmd(get_all_events, command)
+
+  # evaluate result
+  halt 400, result[:error] unless result[:error].empty?
+
+  # create VoterRegistered event if successful
+  # event = VoterRegisteredEvent.new(conferenceId: command.conferenceId, timestamp: command.timestamp, id: SecureRandom.uuid, userId: command.userId, username: command.username)
+  event = VoterRegisteredEvent.new(command.conferenceId, command.timestamp, SecureRandom.uuid, command.userId, command.username)
+  logger.info event
+  write_event_if_id_not_exists(event)
+  # send a cookie containing the user id and redirect
+  response.set_cookie('userId', {
+    value: command.userId,
+    expires: Time.new(2029, 6, 15),
+    path: '/'
+  })
+  redirect to('/vote')
+end
+
+def handle_register_voter_cmd(events, command)
+  # todo: fetch the username from the command for presence validation
+    return { error: [], events: [], command: command }
+end
+
+## portal_management (currently not handled)
 get "/portal_management" do erb :portal_management, locals: { conference_id: conference_ids_sv(get_all_events).last, registration_status: registration_status_sv(get_all_events) } end
 
 def conference_ids_sv(events_array)
@@ -91,6 +139,7 @@ def registration_status_sv(events_array)
   { conf_id: conf_id, status: status, error_message: '' }
 end
 
+## close_registration (currently not handled)
 post "/close_registration" do
   result = handle_close_registration_cd(get_all_events, CloseRegistrationCD.new(params[:confId], Time.now.utc.iso8601, SecureRandom.uuid))
   halt 400, result[:error] unless result[:error].empty?
