@@ -73,7 +73,7 @@ function getAllEvents() {
   @param {array} subsquentEvents
 */
 function rehydrate(events, firstEvent, subsquentEvents = []) {
-  
+
   let ev = [];
   for (const event of events) {
     const { id } = event;
@@ -95,7 +95,7 @@ function rehydrate(events, firstEvent, subsquentEvents = []) {
 }
 
 app.get("/", (req, res) => {
-  res.redirect("/setup_conf");
+  res.redirect("/topsecret");
 });
 
 app.get("/conferences", (req, res) => {
@@ -109,25 +109,50 @@ app.get("/conferences", (req, res) => {
       if (event.type === "ConferenceOpenedEvent") {
         event.opened = true;
       }
-   
+
       return event;
     }
   });
-  console.log(conferenceEvents)
+
+  const roomAddedEvents = getAllEvents().filter((event) => {
+    if (event.type === "RoomAdded" ) {
+      return event;
+    }
+  });
+
   const ev = rehydrate(conferenceEvents, "ConferenceClaimedEvent", [
     "ConferenceOpenedEvent",
   ])[0];
-  console.log(ev)
+
+  const rooms = rehydrate(roomAddedEvents, "RoomAdded", []);
+;
+  const htmlRooms = rooms.length ? `<ul>${rooms.map(r => `<li>room: ${r.room} | cap: ${r.capacity}</li>`)}</ul>` : "<div>No rooms available</div>";
+
   const page = ev?.id ? `
   <div>
-    <div><h1>${ev.name}</h1></div>
     <div>
-      <a href="/room?conferenceId=${ev.id}"><button>Add Room</button></a>
-      <a href="/timeslot?"><button>Add Time Slot</button></a>
-      <button hx-vals='{"id": "${ev.id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>
+      <div><h1>${ev.name}</h1></div>
+      <div>
+        <a href="/add_rooms"><button>Add Room</button></a>
+        <a href="/timeslot?"><button>Add Time Slot</button></a>
+        ${
+          ev.opened ? 
+          "<span>Registration Opened</span>" : 
+          `<button hx-vals='{"id": "${ev.id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
+        }
+      </div>
     </div>
+    <div>
+      <h2>Rooms</h2>
+      ${htmlRooms}
+    </div>
+    <div>
+      <h2>Time Slots</h2>
+      <p>No Time slots</p>
+    </div>
+      <script src="https://unpkg.com/htmx.org@2.0.2"></script>
   </div>
-  ` : "<h1>You don't have a conference created";
+  ` : "<h1>You don't have a conference created</h1>";
 
   res.send(page);
 });
@@ -155,19 +180,21 @@ app.post("/openConference", (req, res) => {
     `<button hx-vals='{"id": "${id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
   );
 });
+
+
 app.get("/attendee/conferences", (req, res) => {
   const search = req.query.search;
-  const all_conferences = ConferencesSV(getAllEvents());
+  const all_conferences = AttendeeConferencesSV(getAllEvents());
   const conferences = search ? all_conferences.filter(x => x.name.includes(search)) : all_conferences;
   return res.render('attendee_conferences', { search, conferences })
 })
-function ConferencesSV(events) {
+function AttendeeConferencesSV(events) {
   return events
     .reduce(function(sv, event) {
       switch(event.type){
-        case 'ConferenceCreated': {
-          const { id, name, capacity, amount } = event;
-          sv.push({ id, name, capacity, amount, registration_open: false, attendees: 0 });
+        case 'ConferenceClaimedEvent': {
+          const { id, name } = event;
+          sv.push({ id, name, registration_open: false, attendees: 0 });
           break;
         }
         case 'RegistrationOpened': {
@@ -176,7 +203,7 @@ function ConferencesSV(events) {
           item && (item.registration_open = true);
           break;
         }
-        case 'RegisteredUser': {
+        case 'VoterRegistered': {
           const { conference_id } = event;
           const item  = sv.find(x => x.id === conference_id);
           item && (item.attendees++);
@@ -188,7 +215,7 @@ function ConferencesSV(events) {
 }
 
 
-app.get('/topsecret', (req, res) => { 
+app.get('/topsecret', (req, res) => {
   res.render('claim_conf', { conferenceId: uuidv4(), organizerToken: uuidv4() })
 });
 app.post('/setup_conf', (req,res) => {
@@ -234,6 +261,30 @@ function setupEventListeners() {
     console.log(`2Event written: ${event.type} with ID: ${event.id}`);
   });
 }
+
+app.post('/submit_topic', (req, res) => {
+  const { name } = req.body;
+  const topicEvent = new TopicSubmittedEvent(name, new Date().toISOString(), uuidv4());
+  try {
+    writeEventIfIdNotExists(topicEvent);
+    res.redirect('/submit_topic');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to submit topic');
+  }
+});
+
+app.get('/submit_topic', (req, res) => {
+  const topics = listTopicsStateView(getAllEvents());
+  res.render('submit_topic', { eventName: "Your Event Name", topics });
+});
+
+function listTopicsStateView(eventsArray) {
+  const topicSubmittedEvents = eventsArray.filter(event => event.type === 'TopicSubmittedEvent');
+  return topicSubmittedEvents.map(event => ({ name: event.name, id: event.id }));
+}
+
+
 
 if (process.argv.includes("--run-tests")) {
   run_tests();
