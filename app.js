@@ -378,12 +378,11 @@ function ConferencesSV(events) {
 app.get('/setup_conf', (req, res) => { res.render('setup_conf', { id: uuidv4() })});
 app.post('/setup_conf', (req,res) => {
   const { id, name, subject, startDate, endDate, location, capacity, price } = req.body ;
-  const command = new CreateConferenceCD(id,name,subject,startDate,endDate,location,capacity,price);
-
-  const event = new ConferenceCreatedEvent(id,name,subject,startDate,endDate,location,capacity,price);
+  const event = new ConferenceCreatedEvent(id,name,subject,startDate,endDate,location,capacity,price,new Date().toISOString());
   try {
     writeEventIfIdNotExists(event);
   } catch (err) {
+    console.error(err);
     res.status(500).send('Failed to write event to the file system');
   }
 })
