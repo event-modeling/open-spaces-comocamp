@@ -8,22 +8,33 @@
 </head>
 <body>
     <div class="container">
-        <h1>Submit Your Topic for {{eventName}}</h1>
+        <h1>Topics for {{eventName}}</h1>
+
+        <div class="topics-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Topic Names</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each topics}}
+                    <tr>
+                        <td>{{this.name}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+
+
+
         <div class="form-container">
             <form action="/submit_topic" method="POST">
+                
                 <div class="form-group">
-                    <label for="name">Name:</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="type">Facilitation:</label>
-                    <input type="text" id="type" name="type" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="topic">Topic:</label>
-                    <textarea id="topic" name="topic" required rows="5"></textarea>
+                    <label for="name">Topic Name:</label>
+                    <textarea id="topic" name="name" required rows="5"></textarea>
                 </div>
 
                 <button type="submit" class="continue-button">Submit</button>

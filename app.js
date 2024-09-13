@@ -235,6 +235,24 @@ function setupEventListeners() {
   });
 }
 
+app.post('/submit_topic', (req, res) => {
+  const { name } = req.body;
+  const topicEvent = new TopicSubmittedEvent(name, new Date().toISOString(), uuidv4());
+  writeEventIfIdNotExists(topicEvent);
+  submitTopic(id, name)
+    .then(() => res.redirect('/submit_topic'))
+    .catch(err => {
+      console.error(err);
+      res.status(500).send('Failed to submit topic');
+    });
+});
+
+app.get('/submit_topic', (req, res) => {
+  res.render('submit_topic', { eventName: "Your Event Name" });
+});
+
+
+
 if (process.argv.includes("--run-tests")) {
   run_tests();
   process.exit(0);
