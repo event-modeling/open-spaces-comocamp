@@ -33,7 +33,7 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.engine("handlebars", engine({ defaultLayout: false }));
+app.engine("handlebars", engine({ defaultLayout: 'layout' }));
 app.set("view engine", "handlebars");
 app.set("views", "./views");
 
@@ -76,16 +76,19 @@ function rehydrate(events, firstEvent, subsquentEvents = []) {
 
   let ev = [];
   for (const event of events) {
-    const { id } = event;
+    const { id, conferenceId } = event;
     if (event.type === firstEvent) {
       ev.push(event);
     }
 
     if (subsquentEvents.includes(event.type)) {
-      const i = ev.findIndex((event) => event.id === id);
-      let tmp = ev[i];
 
+      const i = ev.findIndex((event) => event.conferenceId === conferenceId);
+      console.log(i)
+      let tmp = ev[i];
+      console.log('subev', event, tmp);
       if (tmp) {
+      
         ev[i] = { ...tmp, ...event };
       }
     }
@@ -119,16 +122,25 @@ app.get("/conferences", (req, res) => {
       return event;
     }
   });
+  
 
   const ev = rehydrate(conferenceEvents, "ConferenceClaimedEvent", [
     "ConferenceOpenedEvent",
-  ])[0];
+  ]).pop();
+
 
   const rooms = rehydrate(roomAddedEvents, "RoomAdded", []);
 ;
   const htmlRooms = rooms.length ? `<ul>${rooms.map(r => `<li>room: ${r.room} | cap: ${r.capacity}</li>`)}</ul>` : "<div>No rooms available</div>";
 
   const page = ev?.id ? `
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/styles.css">
+    </head>
+    <body>
   <div>
     <div>
       <div><h1>${ev.name}</h1></div>
@@ -138,7 +150,7 @@ app.get("/conferences", (req, res) => {
         ${
           ev.opened ? 
           "<span>Registration Opened</span>" : 
-          `<button hx-vals='{"id": "${ev.id}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
+          `<button hx-vals='{"id": "${ev.conferenceId}"}' hx-post="/openConference" hx-swap="outerHTML">Open Registration</button>`
         }
       </div>
     </div>
@@ -151,7 +163,7 @@ app.get("/conferences", (req, res) => {
       <p>No Time slots</p>
     </div>
       <script src="https://unpkg.com/htmx.org@2.0.2"></script>
-  </div>
+  </div></body></html>
   ` : "<h1>You don't have a conference created</h1>";
 
   res.send(page);
@@ -160,10 +172,10 @@ app.get("/conferences", (req, res) => {
 app.post("/openConference", (req, res) => {
   const { id } = req.body;
 
-  console.log(req.body);
-  const lastEvent = getAllEvents().filter((event) => event.id === id)[0];
+
+  const lastEvent = getAllEvents().filter((event) => event.conferenceId === id)[0];
   if (lastEvent?.id) {
-    const event = new ConferenceOpenedEvent(id);
+    const event = new ConferenceOpenedEvent(id, uuidv4());
 
     fs.writeFileSync(
       `${EVENT_STORE_PATH}${String(event.timestamp)
@@ -172,7 +184,7 @@ app.post("/openConference", (req, res) => {
       JSON.stringify(event)
     );
 
-    res.send("<span>Open</span>");
+    res.send("<span>Registration Open</span>");
     return true;
   }
 

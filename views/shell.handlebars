@@ -1,30 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <header>
-        <img src="/images/logo.png" alt="Generic Logo" class="logo">
-    </header>
-    <div class="container">
-        <aside class="menu">
-            <ul>
-                <li><a href="/setup_conf" hx-get="/setup_conf?_={{now}}" hx-target="#content" hx-swap="innerHTML">Setup Conference</a></li>
-                <li><a href="/create_space" hx-get="/create_space?_={{now}}" hx-target="#content" hx-swap="innerHTML">Create Space</a></li>
-                <li><a href="/set_dates" hx-get="/set_dates?_={{now}}" hx-target="#content" hx-swap="innerHTML">Set Dates</a></li>
-                <li><a href="/rooms" hx-get="/rooms?_={{now}}" hx-target="#content" hx-swap="innerHTML">Rooms</a></li>
-            </ul>
-        </aside>
-        <main id="content">
-            <!-- Content loaded dynamically with HTMX -->
-        </main>
-    </div>
-    <script src="https://unpkg.com/htmx.org@1.8.1/dist/htmx.min.js"></script>
-
-
-</body>
-</html>
+<header>
+    <img src="/images/logo.png" alt="Generic Logo" class="logo">
+</header>
+<div class="container">
+    <aside class="menu">
+        <ul>
+            <li><a href="/setup_conf" hx-get="/setup_conf?_={{now}}" hx-target="#content" hx-swap="innerHTML">Setup Conference</a></li>
+            <li><a href="/create_space" hx-get="/create_space?_={{now}}" hx-target="#content" hx-swap="innerHTML">Create Space</a></li>
+            <li><a href="/set_dates" hx-get="/set_dates?_={{now}}" hx-target="#content" hx-swap="innerHTML">Set Dates</a></li>
+            <li><a href="/rooms" hx-get="/rooms?_={{now}}" hx-target="#content" hx-swap="innerHTML">Rooms</a></li>
+        </ul>
+    </aside>
+    <main id="content">
+        <!-- Content loaded dynamically with HTMX -->
+    </main>
+</div>

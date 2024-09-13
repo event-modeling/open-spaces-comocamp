@@ -1,16 +1,4 @@
 {{#unless search}}
-<script src="https://unpkg.com/htmx.org@2.0.2" integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ" crossorigin="anonymous"></script>
-<style>
-    .register {
-        margin-top: 10px;
-    }
-    .search-input {
-        border: solid 1px black;padding:4px;vertical-align:center;margin-bottom:5px;display:inline-flex
-    }
-    .search-input > input, .search-input > input:focus-visible { border: 0; outline: none }
-    .conferences-table { border-spacing: 0 }
-    .conferences-table th, td { min-width: 100px; text-align: left; border: solid 1px black; padding: 4px }
-</style>
 <div class="search-input">
     <img alt="search" width="14px" src="/images/search-svgrepo-com.svg" />
     <input type="text" id="conferences-search" name="search" placeholder="Name"
