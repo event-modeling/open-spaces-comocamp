@@ -15,6 +15,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
 from commands.add_room import AddRoomCD
+from commands.add_time_slot import AddTimeSlotCD
 from events.base import Event
 from commands.CommandsHandler import CommandsHandler
 from events_store.events_store import EventStore
@@ -54,14 +55,35 @@ def post_event(event: Event):
     }
 
 
-# state view for cart
+# state view for rooms and time slots
 def rooms_and_time_slots_view(conference_id: str):
     events_list: list = EventStore.get_all_events()
-    result = None
+    result = {}
     for event in events_list:
         if event.get('type') == 'ConferenceClaimed' and event.get('conferenceId') == conference_id:
-            result = event
+            result['conferenceName'] = event.get('name')
+            result['conferenceId'] = event.get('conferenceId')
             break
+    for event in events_list:
+        if event.get('type') == 'RoomAdded' and event.get('conferenceId') == conference_id:
+            if 'rooms' not in result:
+                result['rooms'] = []
+            result['rooms'].append(
+                {
+                    'room': event.get('room'),
+                    'capacity': event.get('capacity')
+                }
+            )
+    for event in events_list:
+        if event.get('type') == 'TimeSlotAdded' and event.get('conferenceId') == conference_id:
+            if 'timeSlots' not in result:
+                result['timeSlots'] = []
+            result['timeSlots'].append(
+                {
+                    'startTime': event.get('startTime'),
+                    'endTime': event.get('endTime')
+                }
+            )
     return result
 
 
@@ -144,6 +166,61 @@ async def add_room(request: Request):
     )
 
 
+# Time Slots
+@app.get("/add_time_slots")
+async def add_rooms(request: Request):
+    """
+    Endpoint to add a room
+
+    :param request:
+    :return:
+    """
+    events = EventStore.get_all_events()
+    conference_name = None
+    conference_id = None
+    for event in events:
+        if event.get('type') == 'ConferenceClaimed':
+            conference_name = event.get('name')
+            conference_id = event.get('conferenceId')
+            break
+    return templates.TemplateResponse(
+        request=request, name="add_time_slot.jinja2", context={
+            "data": {
+                "conference_id": conference_id,
+                "conference_name": conference_name
+            },
+        }
+    )
+
+
+@app.post("/add_time_slot")
+async def add_time_slot(request: Request):
+    """
+
+    :param request:
+    :return:
+    """
+    payload = await request.json()
+    print(payload)
+    handler = CommandsHandler()
+    event_id: str = str(uuid.uuid4())
+    timestamp = datetime.now().isoformat()
+
+    command = AddTimeSlotCD(
+        **{
+            'conferenceId': payload.get('conferenceId'),
+            'startTime': payload.get('startTime'),
+            'endTime': payload.get('endTime')
+        }
+    )
+    handler.add_time_slot_command(event_id, timestamp, command)
+    # redirect to rooms_and_time_slots view
+    return RedirectResponse(
+        url=f'rooms_and_time_slots?conference_id={command.conferenceId}',
+        status_code=status.HTTP_302_FOUND
+    )
+
+
 @app.get("/openapi.json", include_in_schema=False)
 async def get_open_api_endpoint():
     return JSONResponse(get_openapi(
@@ -158,4 +235,4 @@ async def get_documentation(request: Request):
     return get_swagger_ui_html(openapi_url="openapi.json", title="docs")
 
 
-uvicorn.run(app, host="0.0.0.0", port=5656, root_path='/python')
+uvicorn.run(app, host="0.0.0.0", port=5656)
