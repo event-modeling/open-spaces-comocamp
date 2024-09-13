@@ -1,14 +1,14 @@
 const NameOpenSpaceCD = require("./commands/NameOpenSpaceCD");
 const AddTimeSlot = require("./commands/AddTimeSlot");
 const RequestConfIdCD = require("./commands/RequestConfIdCD");
-const CreateConferenceCD = require("./commands/CreateConferenceCD");
+const ClaimConferenceCD = require("./commands/ClaimConferenceCD");
 
 const OpenSpaceNamedEvent = require("./events/OpenSpaceNamedEvent");
 const DateRangeSetEvent = require("./events/DateRangeSetEvent");
 const TopicSubmittedEvent = require("./events/TopicSubmittedEvent");
 const TimeSlotAdded = require("./events/TimeSlotAdded");
 const RequestedConfIdEvent = require("./events/RequestedConfIdEvent");
-const ConferenceCreatedEvent = require("./events/ConferenceCreatedEvent");
+const ConferenceClaimedEvent = require("./events/ConferenceClaimedEvent");
 const ConferenceOpenedEvent = require("./events/ConferenceOpenedEvent");
 if (process.argv.includes("--run-tests")) {
   run_tests();
@@ -188,12 +188,15 @@ function ConferencesSV(events) {
 }
 
 
-app.get('/setup_conf', (req, res) => { res.render('setup_conf', { id: uuidv4() })});
+app.get('/topsecret', (req, res) => { 
+  res.render('claim_conf', { conferenceId: uuidv4(), organizerToken: uuidv4() })
+});
 app.post('/setup_conf', (req,res) => {
-  const { id, name, subject, startDate, endDate, location, capacity, price } = req.body ;
-  const event = new ConferenceCreatedEvent(id,name,subject,startDate,endDate,location,capacity,price,new Date().toISOString());
+  const { conferenceId, name, subject, organizerToken } = req.body ;
+  const event = new ConferenceClaimedEvent(conferenceId,name,subject,organizerToken,uuidv4(),new Date().toISOString());
   try {
     writeEventIfIdNotExists(event);
+    res.redirect("/conferences");
   } catch (err) {
     console.error(err);
     res.status(500).send('Failed to write event to the file system');
