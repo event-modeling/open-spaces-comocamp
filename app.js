@@ -1,14 +1,14 @@
 const NameOpenSpaceCD = require("./commands/NameOpenSpaceCD");
 const AddTimeSlot = require("./commands/AddTimeSlot");
 const RequestConfIdCD = require("./commands/RequestConfIdCD");
-const CreateConferenceCD = require("./commands/CreateConferenceCD");
+const ClaimConferenceCD = require("./commands/ClaimConferenceCD");
 
 const OpenSpaceNamedEvent = require("./events/OpenSpaceNamedEvent");
 const DateRangeSetEvent = require("./events/DateRangeSetEvent");
 const TopicSubmittedEvent = require("./events/TopicSubmittedEvent");
 const TimeSlotAdded = require("./events/TimeSlotAdded");
 const RequestedConfIdEvent = require("./events/RequestedConfIdEvent");
-const ConferenceCreatedEvent = require("./events/ConferenceCreatedEvent");
+const ConferenceClaimedEvent = require("./events/ConferenceClaimedEvent");
 const ConferenceOpenedEvent = require("./events/ConferenceOpenedEvent");
 if (process.argv.includes("--run-tests")) {
   run_tests();
@@ -73,7 +73,7 @@ function getAllEvents() {
   @param {array} subsquentEvents
 */
 function rehydrate(events, firstEvent, subsquentEvents = []) {
-  
+
   let ev = [];
   for (const event of events) {
     const { id } = event;
@@ -95,7 +95,7 @@ function rehydrate(events, firstEvent, subsquentEvents = []) {
 }
 
 app.get("/", (req, res) => {
-  res.redirect("/setup_conf");
+  res.redirect("/topsecret");
 });
 
 app.get("/conferences", (req, res) => {
@@ -109,7 +109,7 @@ app.get("/conferences", (req, res) => {
       if (event.type === "ConferenceOpenedEvent") {
         event.opened = true;
       }
-   
+
       return event;
     }
   });
@@ -215,12 +215,15 @@ function ConferencesSV(events) {
 }
 
 
-app.get('/setup_conf', (req, res) => { res.render('setup_conf', { id: uuidv4() })});
+app.get('/topsecret', (req, res) => {
+  res.render('claim_conf', { conferenceId: uuidv4(), organizerToken: uuidv4() })
+});
 app.post('/setup_conf', (req,res) => {
-  const { id, name, subject, startDate, endDate, location, capacity, price } = req.body ;
-  const event = new ConferenceCreatedEvent(id,name,subject,startDate,endDate,location,capacity,price,new Date().toISOString());
+  const { conferenceId, name, subject, organizerToken } = req.body ;
+  const event = new ConferenceClaimedEvent(conferenceId,name,subject,organizerToken,uuidv4(),new Date().toISOString());
   try {
     writeEventIfIdNotExists(event);
+    res.redirect("/conferences");
   } catch (err) {
     console.error(err);
     res.status(500).send('Failed to write event to the file system');
@@ -258,6 +261,30 @@ function setupEventListeners() {
     console.log(`2Event written: ${event.type} with ID: ${event.id}`);
   });
 }
+
+app.post('/submit_topic', (req, res) => {
+  const { name } = req.body;
+  const topicEvent = new TopicSubmittedEvent(name, new Date().toISOString(), uuidv4());
+  try {
+    writeEventIfIdNotExists(topicEvent);
+    res.redirect('/submit_topic');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to submit topic');
+  }
+});
+
+app.get('/submit_topic', (req, res) => {
+  const topics = listTopicsStateView(getAllEvents());
+  res.render('submit_topic', { eventName: "Your Event Name", topics });
+});
+
+function listTopicsStateView(eventsArray) {
+  const topicSubmittedEvents = eventsArray.filter(event => event.type === 'TopicSubmittedEvent');
+  return topicSubmittedEvents.map(event => ({ name: event.name, id: event.id }));
+}
+
+
 
 if (process.argv.includes("--run-tests")) {
   run_tests();

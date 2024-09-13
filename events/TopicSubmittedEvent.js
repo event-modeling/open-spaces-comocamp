@@ -1,8 +1,6 @@
 class TopicSubmittedEvent {
-    constructor(name, sessionType, topic, timestamp, id) {
+    constructor(name, timestamp, id) {
         this.name = name;
-        this.sessionType = sessionType;
-        this.topic = topic;
         this.timestamp = timestamp;
         this.id = id;
         this.type = 'TopicSubmittedEvent';
