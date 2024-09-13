@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Annotated
 
 import uvicorn
 from fastapi import FastAPI
@@ -15,6 +16,8 @@ from commands.request_payment import RequestPaymentCD
 from events.base import Event
 from commands.CommandsHandler import CommandsHandler
 from events_store.events_store import EventStore
+from fastapi import Form
+
 
 app = FastAPI(docs_url=None)
 app.add_middleware(
@@ -88,12 +91,23 @@ def get_cart(request: Request, username: str, conference: str):
 
 # command handler for request payment
 @app.post("/request_payment")
-async def request_payment(request: Request):
+def request_payment(
+        request: Request,
+        name: Annotated[str, Form()],
+        username: Annotated[str, Form()],
+        conference: Annotated[str, Form()],
+        amount: Annotated[float, Form()],
+        currency: Annotated[str, Form()],
+):
     """
     Command handler for request payment
 
-    :param request:
-    :param payload:
+    :param name:
+    :param username:
+    :param conference:
+    :param amount:
+    :param currency:
+
     :return:
     """
     payload = await request.json()
@@ -101,11 +115,15 @@ async def request_payment(request: Request):
     handler = CommandsHandler()
     event_id: str = str(uuid.uuid4())
     timestamp = datetime.now().isoformat()
-    command = RequestPaymentCD(**payload)
+    command = RequestPaymentCD(**{
+        'name': name,
+        'username': username,
+        'conference': conference,
+        'amount': amount,
+        'currency': currency
+    })
     handler.request_payment_command(event_id, timestamp, command)
-    return {
-        'message': 'Payment requested'
-    }
+    return templates.TemplateResponse(request=request, name="payment_requested.jinja2", context={})
 
 
 @app.get("/openapi.json", include_in_schema=False)
