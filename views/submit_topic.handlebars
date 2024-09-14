@@ -2,55 +2,21 @@
     <div class="container" style="display: flex; flex-direction: column; align-items: center;">
 
         <div class="vertical-stack">
-            <table>
-                <tr>
-                    <td>Logged in as:</td>
-                    <td>{{username}}</td>
-                </tr>
-                <tr>
-                    <td>VR Conference ID:</td>
-                    <td>{{VRconferenceId}}</td>
-                </tr>
-            </table>
-            <style>
-                .events-table table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                .events-table th, .events-table td {
-                    border: 1px solid black;
-                    padding: 8px;
-                    text-align: left;
-                }
-                .events-table th {
-                    background-color: #f2f2f2;
-                }
-            </style>
+            <div>
+                <p>Logged in as: {{username}}</p>
+                <p>VR Conference ID: {{VRconferenceId}}</p>
+            </div>
             <div class="events-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>ID</th>
-                            <th>Request ID</th>
-                            <th>Type</th>
-                            <th>Voter ID</th>
-                            <th>Open Space ID</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{#each allEventsMap}}
-                        <tr>
-                            <td>{{this.timestamp}}</td>
-                            <td>{{this.id}}</td>
-                            <td>{{this.requestId}}</td>
-                            <td>{{this.type}}</td>
-                            <td>{{this.voterId}}</td>
-                            <td>{{this.openSpaceId}}</td>
-                        </tr>
-                        {{/each}}
-                    </tbody>
-                </table>
+                {{#each allEventsMap}}
+                <div class="event-row">
+                    <p>Timestamp: {{this.timestamp}}</p>
+                    <p>ID: {{this.id}}</p>
+                    <p>Request ID: {{this.requestId}}</p>
+                    <p>Type: {{this.type}}</p>
+                    <p>Voter ID: {{this.voterId}}</p>
+                    <p>Open Space ID: {{this.openSpaceId}}</p>
+                </div>
+                {{/each}}
             </div>
         </div>
 
