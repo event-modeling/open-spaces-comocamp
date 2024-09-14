@@ -301,12 +301,12 @@ app.get('/submit_topic', (req, res) => {
     return;
   }
   const userId = req.cookies.userId;
-  const username = getVoterNameByUserId(getAllEvents(), userId);
+  const { username, VRconferenceId } = getVoterNameByUserId(getAllEvents(), userId);
   console.log(`Username retrieved: ${username}`);
 
   const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
   const topics = listTopicsStateView(getAllEvents(), conferenceId);
-  res.render('submit_topic', { eventName: conferenceName, topics, userId, username });
+  res.render('submit_topic', { eventName: conferenceName, topics, userId, username, VRconferenceId });
 });
 
 function listTopicsStateView(eventsArray, conferenceId) {
@@ -314,9 +314,11 @@ function listTopicsStateView(eventsArray, conferenceId) {
   return topicSubmittedEvents.map(event => ({ name: event.name, id: event.id }));
 }
 
+
 function getVoterNameByUserId(events, userId) {
-  const voterEvent = events.find(event => event.type === 'VoterRegisteredEvent' && event.userId === userId);
-  return voterEvent ? voterEvent.username : null;
+  const voterEvents = events.filter(event => event.type === 'VoterRegisteredEvent' && event.userId === userId);
+  const lastVoterEvent = voterEvents.reduce((latest, event) => new Date(event.timestamp) > new Date(latest.timestamp) ? event : latest, voterEvents[0]);
+  return lastVoterEvent ? { username: lastVoterEvent.username, conferenceId: lastVoterEvent.conferenceId } : null;
 }
 
 function getLastRegistrationConferenceForUser(events, userId) {
