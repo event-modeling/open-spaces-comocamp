@@ -269,6 +269,26 @@ def get_cart(request: Request, conference_id: str):
         )
 
 
+@app.get('/assign_topic')
+async def assign_topic(request: Request):
+    """
+    Endpoint to assign topic
+
+    :param request:
+    :return:
+    """
+    room = request.query_params.get('room')
+    time_slot = request.query_params.get('time_slot')
+    return templates.TemplateResponse(
+        request=request, name="assign_topic.jinja2", context={
+            "data": {
+                "room": room,
+                "time_slot": time_slot,
+            },
+        }
+    )
+
+
 @app.get("/openapi.json", include_in_schema=False)
 async def get_open_api_endpoint():
     return JSONResponse(get_openapi(

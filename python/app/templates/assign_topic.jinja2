@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+        <link rel="stylesheet" href="/css/styles.css">
+
+    <title>Add Room</title>
+    <script>
+      function submitAssignmentData() {
+        // Example of collecting data and console logging it
+        // Actual implementation might involve sending this data to a server
+        var roomName = document.getElementById('room_name').value;
+        var timeSlot = document.getElementById('time_slot').value;
+        var topic = document.getElementById('topic').value;
+
+        console.log("Submitting:", roomName, timeSlot, topic);
+        // Here you would typically send the data to your server using fetch() or another AJAX method
+        // Example (not executable in this environment):
+        fetch('assign_topic', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({roomName: roomName, timeSlot: timeSlot, topic: topic}),
+        })
+          .then(response => {
+            if (response.redirected) {
+              // Server has initiated a redirect
+              window.location.href = response.url;
+            } else if (!response.ok) {
+              // Handle non-successful response
+              throw new Error('Server responded with an error!');
+            } else {
+              // If you expect a non-redirect successful response, handle here
+              console.log('Request successful');
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('assign_topic').addEventListener('click', submitRoomData);
+      });
+    </script>
+</head>
+
+
+<body>
+
+<h1>
+    <input hidden type="text" id="roomName" value="{{ data.room }}">
+    <input hidden type="text" id="timeSlot" value="{{ data.time_slot }}">
+
+    Assign topic for {{ data.room }} at {{ data.time_slot }}
+
+</h1>
+<label>
+    Topic:
+    <input type="text" id="topic">
+</label>
+
+<button id="assign_topic">Assign</button>
+
+</body>
+</html>
