@@ -89,9 +89,66 @@ def rooms_and_time_slots_view(conference_id: str):
     return result
 
 
+# state view for assignments of topics to rooms and time slots
+def rooms_and_time_slots_view_topic_assignment(conference_id: str):
+    events_list: list = EventStore.get_all_events()
+    events_list = sorted(events_list, key=lambda x: x.get('timestamp'), reverse=True)
+
+    result = {}
+    for event in events_list:
+        if event.get('type') == 'ConferenceClaimedEvent' and event.get('conferenceId') == conference_id:
+            result['conferenceName'] = event.get('name')
+            result['conferenceId'] = event.get('conferenceId')
+            break
+
+    for event in events_list:
+        if event.get('type') == 'RoomAdded' and event.get('conferenceId') == conference_id:
+            if 'rooms' not in result:
+                result['rooms'] = []
+            result['rooms'].append(
+                {
+                    'room': event.get('room'),
+                    'capacity': event.get('capacity')
+                }
+            )
+    for event in events_list:
+        if event.get('type') == 'TimeSlotAdded' and event.get('conferenceId') == conference_id:
+            if 'timeSlots' not in result:
+                result['timeSlots'] = []
+            result['timeSlots'].append(
+                {
+                    'startTime': event.get('startTime'),
+                    'endTime': event.get('endTime')
+                }
+            )
+
+    # now we need to check for each topic, if it is assigned to a room and time slot or if it has been unassigned
+    # by a subsequent TopicUnassigned event
+    # we first create a map where key is topic name, and then we check if latest event
+    # is TopicAssigned or TopicUnassigned
+
+    topic_assignment_map = {}
+    unassigned_topics = []
+    for event in events_list:
+        if event.get('type') == 'TopicAssigned' and event.get('conferenceId') == conference_id:
+            topic_assignment_map[event.get('topic')] = {
+                'room': event.get('room'),
+                'startTime': event.get('startTime'),
+                'endTime': event.get('endTime')
+            }
+            break
+        if event.get('type') == 'TopicUnassigned' and event.get('conferenceId') == conference_id:
+            topic_assignment_map.pop(event.get('topic'), None)
+            unassigned_topics.append(event.get('topic'))
+            break
+    result['topicAssignments'] = topic_assignment_map
+    result['unassignedTopics'] = unassigned_topics
+    return result
+
+
 # state view for payment
 @app.get('/rooms_and_time_slots')
-def get_cart(request: Request, conference_id: str):
+def rooms_and_time_slots(request: Request, conference_id: str):
     """
     Endpoint to view checkout page
 
@@ -247,13 +304,13 @@ async def add_time_slot(request: Request):
 
 
 @app.get('/rooms_and_time_slots_assignment')
-def get_cart(request: Request, conference_id: str):
+def rooms_and_time_slots_assignment(request: Request, conference_id: str):
     """
     Endpoint to view checkout page
 
     :return:
     """
-    events = rooms_and_time_slots_view(conference_id)
+    events = rooms_and_time_slots_view_topic_assignment(conference_id)
 
     if not events:
         return templates.TemplateResponse(

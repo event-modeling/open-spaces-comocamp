@@ -35,9 +35,9 @@
             {% for time_slot in data.timeSlots %}
             <tr>
                 <td>{{ time_slot }}</td>
-                {% for room in rooms %}
+                {% for room in data.rooms %}
                     <td>Available
-                    <button id="assign_{{ room }}_{{ time_slot }}">Assign</button>
+                    <button id="Assign">Assign</button>
 
                     </td>
                 {% endfor %}
