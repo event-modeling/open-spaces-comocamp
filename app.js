@@ -447,7 +447,7 @@ app.post('/topic_voting2', (req, res) => {
 
   // Write the event if the ID is not null
   if (topicVoteEvent.id) {
-    writeEventIfIdNotNull(topicVoteEvent);
+    writeEventIfIdNotExists(topicVoteEvent);
     res.redirect('/topic_voting2');
   } else {
     res.status(500).send('Failed to generate a valid event ID');
