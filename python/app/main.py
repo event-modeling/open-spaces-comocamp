@@ -326,6 +326,12 @@ def rooms_and_time_slots_assignment(request: Request, conference_id: str):
 
     :return:
     """
+    if not conference_id:
+        return templates.TemplateResponse(
+            request=request, name="conference_not_found.jinja2", context={
+                "data": None
+            }
+        )
     events = rooms_and_time_slots_view_topic_assignment(conference_id)
     conference_data = HostedConferencesList.get_data(conference_id)
     conference_name = conference_data.get('name')
