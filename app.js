@@ -303,7 +303,7 @@ app.get('/submit_topic', (req, res) => {
   const userId = req.cookies.userId;
   const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
   const topics = listTopicsStateView(getAllEvents(), conferenceId);
-  res.render('submit_topic', { eventName: conferenceName, topics });
+  res.render('submit_topic', { eventName: conferenceName, topics, userId });
 });
 
 function listTopicsStateView(eventsArray, conferenceId) {
