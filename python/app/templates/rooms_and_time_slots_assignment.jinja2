@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css">
 
     <meta charset="UTF-8">
     <title>Room and Time Slot Matrix</title>
@@ -10,40 +10,50 @@
             width: 100%;
             border-collapse: collapse;
         }
+
         th, td {
             border: 1px solid black;
             text-align: center;
             padding: 8px;
         }
+
         th {
             background-color: #f2f2f2;
         }
     </style>
 </head>
 <body>
-    <h2>Room and Time Slot Matrix</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Time Slots / Rooms</th>
-                {% for room in data.rooms %}
-                <th>{{ room }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for time_slot in data.timeSlots %}
-            <tr>
-                <td>{{ time_slot }}</td>
-                {% for room in data.rooms %}
-                    <td>Available
-                    <button id="Assign">Assign</button>
-
+<h2>Room and Time Slot Matrix</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Time Slots / Rooms</th>
+        {% for room in data.rooms %}
+            <th>{{ room }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for time_slot in data.timeSlots %}
+        <tr>
+            <td>{{ time_slot }}</td>
+            {% for room in data.rooms %}
+                {#                    Here we need a dropdown showing the options coming from data.unassignedTopics #}
+                {#                    The dropdown should have a default option of "Available" #}
+                {#                    The dropdown should have an id of "assign_{topic}_{room}_{time_slot.startTime}_{time_slot.endTime}}" #}
+                {% for topic in data.unassignedTopics %}
+                    <td>
+                        <label for="assign_{{ topic }}_{{ room }}_{{ time_slot.startTime }}_{{ time_slot.endTime }}">Assign Topic
+                        </label><select id="assign_{{ topic }}_{{ room }}_{{ time_slot.startTime }}_{{ time_slot.endTime }}">
+                            <option value="Available">Available</option>
+                            <option value="{{ topic }}">{{ topic }}</option>
+                        </select>
                     </td>
                 {% endfor %}
-            </tr>
             {% endfor %}
-        </tbody>
-    </table>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
 </body>
 </html>

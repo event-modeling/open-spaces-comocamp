@@ -128,7 +128,10 @@ def rooms_and_time_slots_view_topic_assignment(conference_id: str):
     # is TopicAssigned or TopicUnassigned
 
     topic_assignment_map = {}
-    unassigned_topics = []
+    all_topics = []
+    for event in events_list:
+        if event.get('type') == 'TopicSuggested' and event.get('conferenceId') == conference_id:
+            all_topics.append(event.get('topic'))
     for event in events_list:
         if event.get('type') == 'TopicAssigned' and event.get('conferenceId') == conference_id:
             topic_assignment_map[event.get('topic')] = {
@@ -137,11 +140,15 @@ def rooms_and_time_slots_view_topic_assignment(conference_id: str):
                 'endTime': event.get('endTime')
             }
             break
-        if event.get('type') == 'TopicUnassigned' and event.get('conferenceId') == conference_id:
-            topic_assignment_map.pop(event.get('topic'), None)
-            unassigned_topics.append(event.get('topic'))
-            break
     result['topicAssignments'] = topic_assignment_map
+    result['allTopics'] = all_topics
+
+    unassigned_topics = []
+
+    # this should be all topics less the topics that are assigned
+    for topic in all_topics:
+        if topic not in topic_assignment_map:
+            unassigned_topics.append(topic)
     result['unassignedTopics'] = unassigned_topics
     return result
 
@@ -311,6 +318,7 @@ def rooms_and_time_slots_assignment(request: Request, conference_id: str):
     :return:
     """
     events = rooms_and_time_slots_view_topic_assignment(conference_id)
+    print(events)
 
     if not events:
         return templates.TemplateResponse(
