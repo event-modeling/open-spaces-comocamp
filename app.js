@@ -426,9 +426,9 @@ app.post('/topic_voting2', (req, res) => {
     return res.status(400).send('Missing topic ID');
   }
 
+  const allEvents = getAllEvents();
   const conferenceId = allEvents.find(event => event.type === 'VoterRegisteredEvent' && event.userId === userId).conferenceId;
   // Check if the user is registered
-  const allEvents = getAllEvents();
   const isRegistered = allEvents.some(event => event.type === 'VoterRegisteredEvent' && event.userId === userId);
 
   if (!isRegistered) {
