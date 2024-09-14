@@ -307,14 +307,14 @@ app.get('/submit_topic', (req, res) => {
   const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
   const topics = listTopicsStateView(getAllEvents(), conferenceId);
 
-  const voterRegisteredMap = getAllEvents().filter(event => event.type === 'VoterRegisteredEvent').reduce((map, event) => {
-    if (!map[event.voterId]) {
-      map[event.voterId] = [];
+  const allEventsMap = getAllEvents().reduce((map, event) => {
+    if (!map[event.id]) {
+      map[event.id] = [];
     }
-    map[event.voterId].push(event);
+    map[event.id].push(event);
     return map;
   }, {});
-  res.render('submit_topic', { eventName: conferenceName, topics, userId, username, VRconferenceId, voterRegisteredMap });
+  res.render('submit_topic', { eventName: conferenceName, topics, userId, username, VRconferenceId, allEventsMap });
 });
 
 function listTopicsStateView(eventsArray, conferenceId) {
