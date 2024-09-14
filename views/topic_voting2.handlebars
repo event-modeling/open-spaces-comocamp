@@ -3,7 +3,7 @@
     <ul>
         {{#each topics}}
         <li>{{this.topic}} - Votes: {{this.votes}}</li>
-        <form action="/submit_vote" method="POST">
+        <form action="/topic_voting2" method="POST">
             <input type="hidden" name="topicId" value="{{this.id}}">
             <button type="submit">Vote</button>
         </form>
