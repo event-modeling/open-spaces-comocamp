@@ -9,11 +9,14 @@
                 </tr>
             </thead>
             <tbody>
+                {{#each voterRegistrationMap}}
                 <tr>
-                    <td>{{voterRegistrationMap}}</td>
+                    <td>{{this}}</td>
                 </tr>
+                {{/each}}
             </tbody>
         </table>
+        
         <h1>Topics for {{eventName}}</h1>
 
         <div class="topics-table">
