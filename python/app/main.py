@@ -16,6 +16,7 @@ from starlette.templating import Jinja2Templates
 
 from commands.add_room import AddRoomCD
 from commands.add_time_slot import AddTimeSlotCD
+from commands.assign_topic import AssignTopicCD
 from events.base import Event
 from commands.CommandsHandler import CommandsHandler
 from events_store.events_store import EventStore
@@ -318,6 +319,10 @@ def rooms_and_time_slots_assignment(request: Request, conference_id: str):
     :return:
     """
     events = rooms_and_time_slots_view_topic_assignment(conference_id)
+    conference_data = HostedConferencesList.get_data(conference_id)
+    conference_name = conference_data.get('name')
+    events['conference'] = conference_name
+    events['conference_id'] = conference_id
     print(events)
 
     if not events:
@@ -334,23 +339,38 @@ def rooms_and_time_slots_assignment(request: Request, conference_id: str):
         )
 
 
-@app.get('/assign_topic')
+@app.post("/assign_topic")
 async def assign_topic(request: Request):
     """
-    Endpoint to assign topic
 
     :param request:
     :return:
     """
-    room = request.query_params.get('room')
-    time_slot = request.query_params.get('time_slot')
-    return templates.TemplateResponse(
-        request=request, name="assign_topic.jinja2", context={
-            "data": {
-                "room": room,
-                "time_slot": time_slot,
-            },
+    payload = await request.json()
+    topic = payload.get('topic')
+    room = payload.get('room')
+    conference = payload.get('conference')
+    startTime = payload.get('startTime')
+    endTime = payload.get('endTime')
+    conferenceId = payload.get('conferenceId')
+    command = AssignTopicCD(
+        **{
+            'conferenceId': conferenceId,
+            'room': room,
+            'conference': conference,
+            'topic': topic,
+            'startTime': startTime,
+            'endTime': endTime
         }
+    )
+    event_id: str = str(uuid.uuid4())
+    timestamp = datetime.now().isoformat()
+    handler = CommandsHandler()
+    handler.assign_topic_command(event_id, timestamp, command)
+    # redirect to rooms_and_time_slots view
+    return RedirectResponse(
+        url=f'rooms_and_time_slots_assignment?conference_id={conferenceId}',
+        status_code=status.HTTP_302_FOUND
     )
 
 
