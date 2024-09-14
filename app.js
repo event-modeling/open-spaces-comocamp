@@ -304,7 +304,7 @@ app.get('/submit_topic', (req, res) => {
   const { username, conferenceId: VRconferenceId } = getVoterNameByUserId(getAllEvents(), userId);
   console.log(`Username retrieved: ${username}`);
 
-  const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
+  const { id: conferenceId, name: conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
   const topics = listTopicsStateView(getAllEvents(), conferenceId);
 
   const allEventsMap = getAllEvents();
