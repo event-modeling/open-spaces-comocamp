@@ -10,6 +10,8 @@ const TimeSlotAdded = require("./events/TimeSlotAdded");
 const RequestedConfIdEvent = require("./events/RequestedConfIdEvent");
 const ConferenceClaimedEvent = require("./events/ConferenceClaimedEvent");
 const RegistrationOpenedEvent = require("./events/RegistrationOpenedEvent");
+const TopicVoteEvent = require("./events/TopicVoteEvent");
+
 if (process.argv.includes("--run-tests")) {
   run_tests();
   process.exit(0);
@@ -412,6 +414,41 @@ app.get('/topic_voting2', (req, res) => {
   const topicsWithVotes = generateTopicVotesStateView(conferenceId);
   res.render('topic_voting2', { topics: topicsWithVotes, userId: userId });
 });
+
+app.post('/topic_voting2', (req, res) => {
+  const { userId, topicId } = req.body;
+  if (!userId || !topicId) {
+    return res.status(400).send('Missing user ID or topic ID');
+  }
+
+  const conferenceId = allEvents.find(event => event.type === 'VoterRegisteredEvent' && event.userId === userId).conferenceId;
+  // Check if the user is registered
+  const allEvents = getAllEvents();
+  const isRegistered = allEvents.some(event => event.type === 'VoterRegisteredEvent' && event.userId === userId);
+
+  if (!isRegistered) {
+    return res.status(403).send('User not registered');
+  }
+
+  // Create the TopicVoteEvent
+  const topicVoteEvent = new TopicVoteEvent({
+    timestamp: new Date().toISOString(),
+    id: uuidv4(),
+    userId: userId,
+    topicId: topicId,
+    conferenceId: conferenceId,
+    type: 'TopicVoteEvent'
+  });
+
+  // Write the event if the ID is not null
+  if (topicVoteEvent.id) {
+    writeEventIfIdNotNull(topicVoteEvent);
+    res.redirect('/topic_voting2');
+  } else {
+    res.status(500).send('Failed to generate a valid event ID');
+  }
+});
+
 
 
 
