@@ -283,7 +283,7 @@ function setupEventListeners() {
 app.post('/submit_topic', (req, res) => {
   const { name } = req.body;
   const userId = req.cookies.userId;
-  const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
+  const { id: conferenceId, name: conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
   const topicEvent = new TopicSubmittedEvent(name, new Date().toISOString(), uuidv4(), conferenceId, conferenceName);
   try {
     writeEventIfIdNotExists(topicEvent);
