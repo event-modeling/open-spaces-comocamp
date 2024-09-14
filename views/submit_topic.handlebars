@@ -1,21 +1,45 @@
 
     <div class="container" style="display: flex; flex-direction: column; align-items: center;">
+
         <div class="vertical-stack">
-            <p>Logged in as: {{username}}</p>
-            <p>VR Conference ID: {{VRconferenceId}}</p>
+            <table>
+                <tr>
+                    <td>Logged in as:</td>
+                    <td>{{username}}</td>
+                </tr>
+                <tr>
+                    <td>VR Conference ID:</td>
+                    <td>{{VRconferenceId}}</td>
+                </tr>
+            </table>
             <div class="events-table">
-                {{#each allEventsMap}}
-                <div class="event-row">
-                    <div>{{this.timestamp}}</div>
-                    <div>{{this.id}}</div>
-                    <div>{{this.requestId}}</div>
-                    <div>{{this.type}}</div>
-                    <div>{{this.voterId}}</div>
-                    <div>{{this.openSpaceId}}</div>
-                </div>
-                {{/each}}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>ID</th>
+                            <th>Request ID</th>
+                            <th>Type</th>
+                            <th>Voter ID</th>
+                            <th>Open Space ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each allEventsMap}}
+                        <tr>
+                            <td>{{this.timestamp}}</td>
+                            <td>{{this.id}}</td>
+                            <td>{{this.requestId}}</td>
+                            <td>{{this.type}}</td>
+                            <td>{{this.voterId}}</td>
+                            <td>{{this.openSpaceId}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
             </div>
         </div>
+
         <h1>Topics for {{eventName}}</h1>
 
         <div class="topics-table">
