@@ -19,7 +19,8 @@
 
         // Open Registration button click event
         document.getElementById('open_registration').addEventListener('click', function () {
-          window.location.href = 'open_registration'; // Navigate to the open registration URL
+          var conferenceId = '{{ data.conference_id }}'; // Get the conference ID from the template data
+          window.location.href = 'open_registration?conference_id=' + conferenceId; // Navigate to the open registration URL with conferenceId
         });
       }
 
