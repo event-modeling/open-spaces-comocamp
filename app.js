@@ -381,7 +381,7 @@ app.get('/topic_voting', (req, res) => {
 
 function generateTopicVotesStateView(conferenceId) {
   const events = getAllEvents();
-  const topicEvents = events.filter(event => event.type === 'TopicSubmittedEvent' && event.conferenceId === conferenceId);
+  const topicEvents = events.filter(event => event.type === 'TopicVoteEvent' && event.conferenceId === conferenceId);
   const voteEvents = events.filter(event => event.type === 'VoteSubmittedEvent' && event.conferenceId === conferenceId);
 
   const topicsWithVotes = topicEvents.map(topicEvent => {
