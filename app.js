@@ -307,13 +307,7 @@ app.get('/submit_topic', (req, res) => {
   const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
   const topics = listTopicsStateView(getAllEvents(), conferenceId);
 
-  const allEventsMap = getAllEvents().reduce((map, event) => {
-    if (!map[event.id]) {
-      map[event.id] = [];
-    }
-    map[event.id].push(event);
-    return map;
-  }, {});
+  const allEventsMap = getAllEvents();
   res.render('submit_topic', { eventName: conferenceName, topics, userId, username, VRconferenceId, allEventsMap });
 });
 
