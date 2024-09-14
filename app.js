@@ -21,6 +21,9 @@ const EventEmitter = require('events');
 const eventEmitter = new EventEmitter();
 
 
+const cookieParser = require("cookie-parser");
+
+
 const port = 3000;
 const fs = require("fs");
 const express = require("express");
@@ -33,6 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.engine("handlebars", engine({ defaultLayout: 'layout' }));
 app.set("view engine", "handlebars");
