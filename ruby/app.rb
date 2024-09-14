@@ -54,7 +54,7 @@ def handle_show_registration_qr_code_cmd(events, command)
   # check for an RegistrationOpened event of the requested conference;
   # only show the QR code if it exists
   logger.info "events: #{events}"
-  last_event = events.select { |event| event.id == command.confId }
+  last_event = events.select { |event| event.conferenceId == command.confId }
   .select { |event| ['RegistrationOpenedEvent', 'RegistrationClosedEvent'].include?(event.type) }
   .sort_by { |event| event.timestamp }
   .last
