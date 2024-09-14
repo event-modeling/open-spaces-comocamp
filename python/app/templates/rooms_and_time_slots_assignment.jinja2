@@ -138,7 +138,7 @@
                         <td>{{ t }}
                         <select
                                 id="assign_{{ room.room }}_{{ time_slot.startTime }}_{{ time_slot.endTime }}">
-                            <option hidden value="{{ topic }}">{{ topic }}</option>
+                            <option hidden value="{{ t }}"></option>
                         </select>
 
                                                 <button onclick="unassignTopic('{{ room.room }}', '{{ time_slot.startTime }}', '{{ time_slot.endTime }}')">

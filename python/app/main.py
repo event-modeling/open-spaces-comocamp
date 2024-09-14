@@ -17,6 +17,7 @@ from starlette.templating import Jinja2Templates
 from commands.add_room import AddRoomCD
 from commands.add_time_slot import AddTimeSlotCD
 from commands.assign_topic import AssignTopicCD
+from commands.unassign_topic import UnassignTopicCD
 from events.base import Event
 from commands.CommandsHandler import CommandsHandler
 from events_store.events_store import EventStore
@@ -128,19 +129,26 @@ def rooms_and_time_slots_view_topic_assignment(conference_id: str):
     # we first create a map where key is topic name, and then we check if latest event
     # is TopicAssigned or TopicUnassigned
 
-    topic_assignment_map = {}
     all_topics = []
     for event in events_list:
         if event.get('type') == 'TopicSuggested' and event.get('conferenceId') == conference_id:
             all_topics.append(event.get('topic'))
-    for event in events_list:
-        if event.get('type') == 'TopicAssigned' and event.get('conferenceId') == conference_id:
-            topic_assignment_map[event.get('topic')] = {
-                'room': event.get('room'),
-                'startTime': event.get('startTime'),
-                'endTime': event.get('endTime')
-            }
-            break
+
+    topic_assignment_map = {}
+    for t in all_topics:
+        for event in events_list:
+            if event.get('type') == 'TopicUnassigned' and event.get('conferenceId') == conference_id and event.get('topic') == t:
+                if t in topic_assignment_map:
+                    del topic_assignment_map[t]
+                break
+            if event.get('type') == 'TopicAssigned' and event.get('conferenceId') == conference_id and event.get('topic') == t:
+                topic_assignment_map[t] = {
+                    'room': event.get('room'),
+                    'startTime': event.get('startTime'),
+                    'endTime': event.get('endTime')
+                }
+                break
+
     result['topicAssignments'] = topic_assignment_map
     result['allTopics'] = all_topics
 
