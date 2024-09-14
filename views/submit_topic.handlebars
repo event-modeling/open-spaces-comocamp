@@ -2,8 +2,18 @@
     <div class="container" style="display: flex; flex-direction: column; align-items: center;">
         <p>Logged in as: {{username}}</p>
         <p>VR Conference ID: {{VRconferenceId}}</p>
-        <p>Voter Registration Map: {{voterRegistrationMap}}</p>
-
+        <table>
+            <thead>
+                <tr>
+                    <th>Voter Registration Map</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{voterRegistrationMap}}</td>
+                </tr>
+            </tbody>
+        </table>
         <h1>Topics for {{eventName}}</h1>
 
         <div class="topics-table">
