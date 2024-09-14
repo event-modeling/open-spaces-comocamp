@@ -21,7 +21,6 @@ const EventEmitter = require('events');
 const eventEmitter = new EventEmitter();
 
 
-const cookieParser = require("cookie-parser");
 
 
 const port = 3000;
@@ -31,6 +30,7 @@ const app = express();
 const { engine } = require("express-handlebars");
 const { v4: uuidv4 } = require("uuid");
 const { env } = require("process");
+const cookieParser = require("cookie-parser");
 const e = require("express");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
