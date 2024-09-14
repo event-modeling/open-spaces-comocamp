@@ -300,8 +300,10 @@ app.get('/submit_topic', (req, res) => {
     res.status(401).send("Unauthorized: No user ID found in cookies.");
     return;
   }
+  const allCookies = req.cookies;
+  console.log("All cookies collected:", allCookies);
   const userId = req.cookies.userId;
-  const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
+  const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId, allCookies);
   const topics = listTopicsStateView(getAllEvents(), conferenceId);
   res.render('submit_topic', { eventName: conferenceName, topics, userId });
 });
