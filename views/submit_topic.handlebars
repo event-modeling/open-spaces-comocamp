@@ -11,7 +11,12 @@
             <tbody>
                 {{#each allEventsMap}}
                 <tr>
-                    <td>{{this}}</td>
+                    <td>{{this.timestamp}}</td>
+                    <td>{{this.id}}</td>
+                    <td>{{this.requestId}}</td>
+                    <td>{{this.type}}</td>
+                    <td>{{this.voterId}}</td>
+                    <td>{{this.openSpaceId}}</td>
                 </tr>
                 {{/each}}
             </tbody>
