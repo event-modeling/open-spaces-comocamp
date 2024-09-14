@@ -377,6 +377,43 @@ app.get('/topic_voting', (req, res) => {
   res.render('topic_voting', stateView);
 });
 
+function generateTopicVotesStateView(conferenceId) {
+  const events = getAllEvents();
+  const topicEvents = events.filter(event => event.type === 'TopicSubmittedEvent' && event.conferenceId === conferenceId);
+  const voteEvents = events.filter(event => event.type === 'VoteSubmittedEvent' && event.conferenceId === conferenceId);
+
+  const topicsWithVotes = topicEvents.map(topicEvent => {
+    const votes = voteEvents.filter(voteEvent => voteEvent.topicId === topicEvent.id).length;
+    return {
+      topic: topicEvent.name,
+      votes: votes
+    };
+  });
+
+  return topicsWithVotes;
+}
+
+
+app.get('/topic_voting2', (req, res) => {
+  const userId = req.cookies.userId;
+  if (!userId) {
+    return res.status(400).send('User ID missing');
+  }
+
+  // Retrieve all VoterRegisteredEvents and find the one matching the userId to get the conferenceId
+  const allEvents = getAllEvents();
+  const voterRegistrationEvent = allEvents.find(event => event.type === 'VoterRegisteredEvent' && event.voterId === userId);
+
+  if (!voterRegistrationEvent) {
+    return res.status(404).send('No registration found for this user');
+  }
+
+  const conferenceId = voterRegistrationEvent.conferenceId;
+  const topicsWithVotes = generateTopicVotesStateView(conferenceId);
+  res.render('topic_voting2', { topics: topicsWithVotes, userId: userId });
+});
+
+
 
 if (process.argv.includes("--run-tests")) {
   run_tests();
