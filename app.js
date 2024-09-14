@@ -388,6 +388,7 @@ function generateTopicVotesStateView(conferenceId) {
     const votes = voteEvents.filter(voteEvent => voteEvent.topicId === topicEvent.id).length;
     return {
       topic: topicEvent.name,
+      id: topicEvent.id,
       votes: votes
     };
   });
@@ -412,7 +413,7 @@ app.get('/topic_voting2', (req, res) => {
 
   const conferenceId = voterRegistrationEvent.conferenceId;
   const topicsWithVotes = generateTopicVotesStateView(conferenceId);
-  res.render('topic_voting2', { topics: topicsWithVotes, userId: userId, topicId: topicId });
+  res.render('topic_voting2', { topics: topicsWithVotes, userId: userId });
 });
 
 app.post('/topic_voting2', (req, res) => {
