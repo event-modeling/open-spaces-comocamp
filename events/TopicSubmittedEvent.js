@@ -4,6 +4,8 @@ class TopicSubmittedEvent {
         this.timestamp = timestamp;
         this.id = id;
         this.type = 'TopicSubmittedEvent';
+        this.conferenceId = conferenceId;
+        this.conferenceName = conferenceName;
     }
 }
 module.exports = TopicSubmittedEvent;

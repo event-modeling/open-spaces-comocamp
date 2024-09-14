@@ -278,7 +278,9 @@ function setupEventListeners() {
 
 app.post('/submit_topic', (req, res) => {
   const { name } = req.body;
-  const topicEvent = new TopicSubmittedEvent(name, new Date().toISOString(), uuidv4());
+  const userId = req.cookies.userId;
+  const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
+  const topicEvent = new TopicSubmittedEvent(name, new Date().toISOString(), uuidv4(), conferenceId, conferenceName);
   try {
     writeEventIfIdNotExists(topicEvent);
     res.redirect('/submit_topic');
@@ -289,14 +291,29 @@ app.post('/submit_topic', (req, res) => {
 });
 
 app.get('/submit_topic', (req, res) => {
-  const topics = listTopicsStateView(getAllEvents());
-  res.render('submit_topic', { eventName: "Your Event Name", topics });
+  const userId = req.cookies.userId;
+  const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
+  const topics = listTopicsStateView(getAllEvents(), conferenceId);
+  res.render('submit_topic', { eventName: conferenceName, topics });
 });
 
-function listTopicsStateView(eventsArray) {
-  const topicSubmittedEvents = eventsArray.filter(event => event.type === 'TopicSubmittedEvent');
+function listTopicsStateView(eventsArray, conferenceId) {
+  const topicSubmittedEvents = eventsArray.filter(event => event.type === 'TopicSubmittedEvent' && event.conferenceId === conferenceId);
   return topicSubmittedEvents.map(event => ({ name: event.name, id: event.id }));
 }
+
+function getLastRegistrationConferenceForUser(events, userId) {
+  const voterRegisteredEvents = events.filter(event => event.type === 'VoterRegisteredEvent' && event.userId === userId);
+  const lastEvent = voterRegisteredEvents.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+  if (lastEvent) {
+    const conferenceEvent = events.find(event => event.type === 'ConferenceClaimedEvent' && event.conferenceId === lastEvent.conferenceId);
+    return conferenceEvent ? { name: conferenceEvent.name, id: conferenceEvent.conferenceId } : null;
+  }
+  return null;
+}
+
+
+
 
 function topicVotingSV(events) {
   return events.reduce(function(state,event) {
