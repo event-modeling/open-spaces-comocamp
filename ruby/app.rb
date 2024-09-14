@@ -113,7 +113,7 @@ post "/register" do
     expires: Time.new(2029, 6, 15),
     path: '/'
   })
-  redirect to('/vote')
+  redirect to('https://unconference.eventmodeling.org/submit_topic')
 end
 
 def handle_register_voter_cmd(events, command)
