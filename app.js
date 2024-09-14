@@ -301,7 +301,7 @@ app.get('/submit_topic', (req, res) => {
     return;
   }
   const userId = req.cookies.userId;
-  const { username, VRconferenceId } = getVoterNameByUserId(getAllEvents(), userId);
+  const { username, conferenceId: VRconferenceId } = getVoterNameByUserId(getAllEvents(), userId);
   console.log(`Username retrieved: ${username}`);
 
   const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
