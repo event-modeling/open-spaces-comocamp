@@ -257,7 +257,10 @@ def open_registration(conference_id: str):
     timestamp = datetime.now().isoformat()
     handler = CommandsHandler()
     handler.open_registration_command(event_id, timestamp, conference_id)
-    return RedirectResponse(url=f'/register/{conference_id}', status_code=status.HTTP_302_FOUND)
+    return {
+        'message': f'Registration opened for conference {conference_id}'
+    }
+
 
 
 # Time Slots
