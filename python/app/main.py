@@ -244,7 +244,7 @@ async def add_room(request: Request):
     )
 
 
-@app.post("/open_registration")
+@app.get("/open_registration")
 def open_registration(conference_id: str):
     """
     Command handler for open registration
