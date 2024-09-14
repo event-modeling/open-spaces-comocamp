@@ -315,7 +315,7 @@ function topicVotingSV(events) {
           ...state,
           topics: [
             ...state.topics.slice(0,topicIndex),
-            { ...topicEl, votes: topicEl.votes + 1 },
+            { ...topicEl, votes: [...topicEl.votes, event.username ] },
             ...state.topics.slice(topicIndex+1)
           ]
         };
@@ -323,7 +323,7 @@ function topicVotingSV(events) {
       case 'TopicSubmittedEvent':
         return {
           ...state,
-          topics: [...state.topics, { topic: event.name, votes: 0 }]
+          topics: [...state.topics, { topic: event.name, votes: [] }]
         }
       default:
         return state;

@@ -11,7 +11,7 @@
         {{#each this.topics}}
         <div class="topic">
             <div>{{topic}}</div>
-            <div>{{votes}}</div>
+            <div>{{votes.length}}</div>
             <div>
                 <form method="POST" action="/submit_vote">
                     <input type="hidden" name="conferenceId" value="{{../conferenceId}}" />
