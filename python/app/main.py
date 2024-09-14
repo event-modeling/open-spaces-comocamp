@@ -374,6 +374,41 @@ async def assign_topic(request: Request):
     )
 
 
+@app.post("/unassign_topic")
+async def unassign_topic(request: Request):
+    """
+
+    :param request:
+    :return:
+    """
+    payload = await request.json()
+    topic = payload.get('topic')
+    room = payload.get('room')
+    conference = payload.get('conference')
+    startTime = payload.get('startTime')
+    endTime = payload.get('endTime')
+    conferenceId = payload.get('conferenceId')
+    command = UnassignTopicCD(
+        **{
+            'conferenceId': conferenceId,
+            'room': room,
+            'conference': conference,
+            'topic': topic,
+            'startTime': startTime,
+            'endTime': endTime
+        }
+    )
+    event_id: str = str(uuid.uuid4())
+    timestamp = datetime.now().isoformat()
+    handler = CommandsHandler()
+    handler.unassign_topic_command(event_id, timestamp, command)
+    # redirect to rooms_and_time_slots view
+    return RedirectResponse(
+        url=f'rooms_and_time_slots_assignment?conference_id={conferenceId}',
+        status_code=status.HTTP_302_FOUND
+    )
+
+
 @app.get("/openapi.json", include_in_schema=False)
 async def get_open_api_endpoint():
     return JSONResponse(get_openapi(

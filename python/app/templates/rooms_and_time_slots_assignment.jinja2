@@ -64,6 +64,48 @@
           })
           .catch(error => console.error('Error:', error));
       }
+
+      function unassignTopic(room, startTime, endTime) {
+        // Construct an ID to find the correct <select> element
+        var selectId = `assign_${room}_${startTime}_${endTime}`;
+        var selectElement = document.getElementById(selectId);
+        var topic = selectElement.value; // Retrieves the selected option value
+
+        // Assuming conferenceId and conference are available globals or derived similarly
+        var conferenceId = document.getElementById('conference_id').value;
+        var conference = document.getElementById('conference').value;
+
+        var payload = {
+          conferenceId: conferenceId,
+          room: room,
+          conference: conference,
+          topic: topic,
+          startTime: startTime,
+          endTime: endTime
+        };
+        console.log('Payload:', payload);
+        // Send this payload to your server
+        var url = "/unassign_topic";
+
+        fetch(url, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(payload),
+        })
+          .then(response => {
+            if (response.redirected) {
+              // Server has initiated a redirect
+              window.location.href = response.url;
+            } else if (!response.ok) {
+              // Handle non-successful response
+              throw new Error('Server responded with an error!');
+            } else {
+              // If you expect a non-redirect successful response, handle here
+              console.log('Request successful');
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      }
     </script>
 
 
@@ -92,12 +134,19 @@
             {% for room in data.rooms %}
                 {# we check if there is a topic assigned for this cell #}
                 {% for t, a in data.topicAssignments.items() %}
-                    {{ t, a, room.room, time_slot.startTime, time_slot.endTime }}
                     {% if a.room == room.room and a.startTime == time_slot.startTime and a.endTime == time_slot.endTime %}
-                        found
-                        <td>{{ t }}</td>
-                        {% set topic = a.topic %}
-                        {{ a.topic }}
+                        <td>{{ t }}
+                        <select
+                                id="assign_{{ room.room }}_{{ time_slot.startTime }}_{{ time_slot.endTime }}">
+                            <option hidden value="{{ topic }}">{{ topic }}</option>
+                        </select>
+
+                                                <button onclick="unassignTopic('{{ room.room }}', '{{ time_slot.startTime }}', '{{ time_slot.endTime }}')">
+                            Unassign
+                        </button>
+
+                        </td>
+
                     {% endif %}
                 {% endfor %}
 
