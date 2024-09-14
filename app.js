@@ -300,12 +300,13 @@ app.get('/submit_topic', (req, res) => {
     res.status(401).send("Unauthorized: No user ID found in cookies.");
     return;
   }
-  const allCookies = req.cookies;
-  console.log("All cookies collected:", allCookies);
   const userId = req.cookies.userId;
-  const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId, allCookies);
+  const username = getVoterNameByUserId(getAllEvents(), userId);
+  console.log(`Username retrieved: ${username}`);
+
+  const { conferenceId, conferenceName } = getLastRegistrationConferenceForUser(getAllEvents(), userId);
   const topics = listTopicsStateView(getAllEvents(), conferenceId);
-  res.render('submit_topic', { eventName: conferenceName, topics, userId });
+  res.render('submit_topic', { eventName: conferenceName, topics, userId, username });
 });
 
 function listTopicsStateView(eventsArray, conferenceId) {
@@ -313,8 +314,14 @@ function listTopicsStateView(eventsArray, conferenceId) {
   return topicSubmittedEvents.map(event => ({ name: event.name, id: event.id }));
 }
 
+function getVoterNameByUserId(events, userId) {
+  const voterEvent = events.find(event => event.type === 'VoterRegisteredEvent' && event.userId === userId);
+  return voterEvent ? voterEvent.username : null;
+}
+
 function getLastRegistrationConferenceForUser(events, userId) {
   const voterRegisteredEvents = events.filter(event => event.type === 'VoterRegisteredEvent' && event.userId === userId);
+ 
   const lastEvent = voterRegisteredEvents.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
   if (lastEvent) {
     const conferenceEvent = events.find(event => event.type === 'ConferenceClaimedEvent' && event.conferenceId === lastEvent.conferenceId);
