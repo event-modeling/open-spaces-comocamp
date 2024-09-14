@@ -1,5 +1,5 @@
 class TopicSubmittedEvent {
-    constructor(name, timestamp, id) {
+    constructor(name, timestamp, id, conferenceId, conferenceName) {
         this.name = name;
         this.timestamp = timestamp;
         this.id = id;
