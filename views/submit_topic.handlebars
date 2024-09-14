@@ -1,28 +1,6 @@
 
     <div class="container" style="display: flex; flex-direction: column; align-items: center;">
 
-        <div class="vertical-stack">
-            <div>
-                <p>Logged in as: {{username}}</p>
-                <p>VR Conference ID: {{VRconferenceId}}</p>
-            </div>
-            <div class="events-table">
-                {{#each allEventsMap}}
-                <div class="event-row">
-                    <p>Timestamp: {{this.timestamp}}</p>
-                    <p>ID: {{this.id}}</p>
-                    <p>Request ID: {{this.requestId}}</p>
-                    <p>Type: {{this.type}}</p>
-                    <p>Voter ID: {{this.voterId}}</p>
-                    <p>Open Space ID: {{this.openSpaceId}}</p>
-                <p>User ID: {{this.userId}}</p>
-                <p>Conference ID: {{this.conferenceId}}</p>
-                <p>name: {{this.name}}</p>
-                <p>username: {{this.username}}</p>
-                </div>
-                {{/each}}
-            </div>
-        </div>
 
         <h1>Topics for {{eventName}}</h1>
 
