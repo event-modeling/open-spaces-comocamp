@@ -402,7 +402,7 @@ app.get('/topic_voting2', (req, res) => {
 
   // Retrieve all VoterRegisteredEvents and find the one matching the userId to get the conferenceId
   const allEvents = getAllEvents();
-  const voterRegistrationEvent = allEvents.find(event => event.type === 'VoterRegisteredEvent' && event.voterId === userId);
+  const voterRegistrationEvent = allEvents.find(event => event.type === 'VoterRegisteredEvent' && event.userId === userId);
 
   if (!voterRegistrationEvent) {
     return res.status(404).send('No registration found for this user');
