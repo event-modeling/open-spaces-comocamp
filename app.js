@@ -417,9 +417,12 @@ app.get('/topic_voting2', (req, res) => {
 
 app.post('/topic_voting2', (req, res) => {
   const userId = req.cookies.userId;
+  if (!userId) {
+    return res.status(400).send('Missing user ID');
+  }
   const { topicId } = req.body;
-  if (!userId || !topicId) {
-    return res.status(400).send('Missing user ID or topic ID');
+  if (!topicId) {
+    return res.status(400).send('Missing topic ID');
   }
 
   const conferenceId = allEvents.find(event => event.type === 'VoterRegisteredEvent' && event.userId === userId).conferenceId;
