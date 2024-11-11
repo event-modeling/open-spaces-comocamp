@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Setup</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="primary-nav">
+            <span class="nav-item active">Setup</span> |
+            <span class="nav-item">Sessions</span> |
+            <span class="nav-item">Voting</span> |
+            <span class="nav-item">Schedule</span>
+        </nav>
+        <nav class="secondary-nav">
+            <span class="nav-item">Name</span> |
+            <span class="nav-item">Dates</span> |
+            <span class="nav-item active">Rooms</span> |
+            <span class="nav-item">Time Slots</span> |
+            <span class="nav-item">QR code</span>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1>Add a room to your event</h1>
+        
+        <section class="form-section">
+            <h2>Rooms:</h2>
+            <div class="input-group">
+                <label for="roomName">Room Name</label>
+                <input type="text" id="roomName" class="input-field" placeholder="Enter room name">
+                <button type="button" class="btn btn-secondary">Add</button>
+            </div>
+
+            <ul class="list">
+                {{#rooms}}
+                    <li class="list-item">{{.}}</li>
+                {{/rooms}}
+            </ul>
+
+            <div class="button-group">
+                <button type="button" class="btn btn-primary">Continue</button>
+            </div>
+        </section>
+    </main>
+</body>
+</html> 
