@@ -29,7 +29,7 @@
         <section class="form-section">
             <h2>Time slots:</h2>
             <div class="time-slot-list">
-                <table>
+                <table class="time-slots-table">
                     <thead>
                         <tr>
                             <th>Start</th>
@@ -43,6 +43,11 @@
                             <td>{{start}}</td>
                             <td>{{end}}</td>
                             <td>{{name}}</td>
+                        </tr>
+                        {{/time_slots}}
+                        {{^time_slots}}
+                        <tr>
+                            <td colspan="3" class="empty-message">No time slots added yet</td>
                         </tr>
                         {{/time_slots}}
                     </tbody>

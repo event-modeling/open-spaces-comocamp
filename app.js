@@ -12,21 +12,6 @@ const express = require("express"); const app = express(); const fs = require("f
 })();
 
 
-function get_events() {
-  return fs.readdirSync("./event-stream").map(file => {
-    return JSON.parse(fs.readFileSync(`./event-stream/${file}`, "utf8"));
-  });
-}
-
-function time_slots_state_view() {
-  return get_events().reduce((acc, event) => {
-    if (event.type === "time_slot_added_event") {
-      acc.push(event.time_slot);
-    }
-    return acc;
-  }, []);
-}
-
 app.get("/time-slots", (req, res) => {
-  res.render("time-slots", { time_slots: time_slots_state_view() });
+  res.render("time-slots", { time_slots: [] });
 });
