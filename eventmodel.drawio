@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="1106" dy="468" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="2578" dy="1162" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
@@ -298,7 +298,7 @@
                 <mxCell id="1254" value="" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#ffffff;" parent="109" vertex="1">
                     <mxGeometry x="22550" y="3625" width="80" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="1255" value="" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" parent="109" vertex="1">
+                <mxCell id="1255" value="" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#FFFFFF;strokeColor=#2D7600;fontColor=#ffffff;" parent="109" vertex="1">
                     <mxGeometry x="22550" y="3945" width="80" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="1263" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=16;fontColor=default;endArrow=classic;" parent="109" source="1257" target="1258" edge="1">
@@ -2035,7 +2035,7 @@
                     <mxGeometry x="4605" y="3097" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="1305" value="&lt;font color=&quot;#000000&quot;&gt;RoomRenamed:&lt;br&gt;&amp;nbsp;old: Auditorium&lt;br&gt;&amp;nbsp;new: Main Hall&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" vertex="1" parent="1">
-                    <mxGeometry x="4605" y="3207" width="180" height="70" as="geometry"/>
+                    <mxGeometry x="4605" y="3217" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="1306" value="" style="shape=flexArrow;endArrow=classic;html=1;" edge="1" parent="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -2044,7 +2044,7 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="1308" value="&lt;font color=&quot;#000000&quot;&gt;Room Deleted:&lt;br&gt;&amp;nbsp;name: CS200&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" vertex="1" parent="1">
-                    <mxGeometry x="4605" y="3327" width="180" height="70" as="geometry"/>
+                    <mxGeometry x="4605" y="3337" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="1310" value="&lt;font color=&quot;#000000&quot;&gt;Rooms:&lt;br&gt;[&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: Auditorium }&lt;br&gt;]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" vertex="1" parent="1">
                     <mxGeometry x="4825" y="2917" width="180" height="70" as="geometry"/>
@@ -2052,14 +2052,14 @@
                 <mxCell id="1311" value="&lt;font color=&quot;#000000&quot;&gt;Rooms:&lt;br&gt;[&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: Auditorium },&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: CS100 }&lt;br&gt;]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" vertex="1" parent="1">
                     <mxGeometry x="4825" y="3007" width="180" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="1312" value="&lt;font color=&quot;#000000&quot;&gt;Rooms:&lt;br&gt;[&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: Auditorium },&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: CS100 }&lt;br&gt;]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" vertex="1" parent="1">
-                    <mxGeometry x="4825" y="3097" width="180" height="83" as="geometry"/>
+                <mxCell id="1312" value="&lt;font color=&quot;#000000&quot;&gt;Rooms:&lt;br&gt;[&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: Auditorium },&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: CS100 },&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: CS200 }&lt;br&gt;]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="4825" y="3097" width="180" height="101" as="geometry"/>
                 </mxCell>
-                <mxCell id="1313" value="&lt;font color=&quot;#000000&quot;&gt;Rooms:&lt;br&gt;[&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: Auditorium },&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: CS100 },&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: CS200 }&lt;br&gt;]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" vertex="1" parent="1">
-                    <mxGeometry x="4825" y="3207" width="180" height="100" as="geometry"/>
+                <mxCell id="1313" value="&lt;font color=&quot;#000000&quot;&gt;Rooms:&lt;br&gt;[&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: Main Hall },&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: CS100 },&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: CS200 }&lt;br&gt;]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="4825" y="3217" width="180" height="100" as="geometry"/>
                 </mxCell>
-                <mxCell id="1314" value="&lt;font color=&quot;#000000&quot;&gt;Rooms:&lt;br&gt;[&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: Auditorium },&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: CS100 }&lt;br&gt;]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" vertex="1" parent="1">
-                    <mxGeometry x="4825" y="3327" width="180" height="83" as="geometry"/>
+                <mxCell id="1314" value="&lt;font color=&quot;#000000&quot;&gt;Rooms:&lt;br&gt;[&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: Main Hall },&lt;br&gt;&amp;nbsp; &amp;nbsp;{ name: CS100 }&lt;br&gt;]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="4825" y="3337" width="180" height="83" as="geometry"/>
                 </mxCell>
                 <object label="communication" id="562">
                     <mxCell parent="0"/>
