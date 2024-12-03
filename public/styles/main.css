@@ -1,0 +1,118 @@
+:root {
+  /* Light theme */
+  --color-primary: #1a73e8;
+  --color-secondary: #5f6368;
+  --color-background: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-text: #202124;
+  --color-border: #dadce0;
+  --color-active: #e8f0fe;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #8ab4f8;
+    --color-secondary: #9aa0a6;
+    --color-background: #202124;
+    --color-surface: #292a2d;
+    --color-text: #e8eaed;
+    --color-border: #5f6368;
+    --color-active: #3c4043;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.primary-nav,
+.secondary-nav {
+  padding: 0.5rem 0;
+}
+
+.nav-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.nav-item.active {
+  background-color: var(--color-active);
+  border-radius: 4px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.form-section {
+  background-color: var(--color-surface);
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.input-group {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.input-field {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.list-item {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  background-color: var(--color-background);
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: white;
+} 
