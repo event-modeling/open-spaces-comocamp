@@ -1,6 +1,6 @@
 let run_tests = false;
 let port = 3002;
-let test_collection = [];
+let slice_tests = [];
 let urls = [];
 const sync_time = 8000;
 let eventstore = "./event-stream";
@@ -63,72 +63,71 @@ function rooms_state_view(history) {
         return acc;
     }, []);
 }
-test_collection.push({
-    slice_name: "rooms state view",
-    sample_history: [         
-        { type: "room_added_event", room_name: "Auditorium", timestamp: "2024-01-23T10:00:00Z" },
-        { type: "room_added_event", room_name: "CS100", timestamp: "2024-01-23T10:01:00Z" },
-        { type: "room_added_event", room_name: "CS200", timestamp: "2024-01-23T10:02:00Z" },
-        { type: "room_renamed_event", old_name: "Auditorium", new_name: "Main Hall", timestamp: "2024-01-23T10:03:00Z" },
-        { type: "room_deleted_event", room_name: "CS200", timestamp: "2024-01-23T10:04:00Z" }
-    ],
-    tests: [
-        { test_name: "no history should return empty array",
-            event_count: 0,
-            test: (history) => {
-                const result = rooms_state_view(history);
-                assert(result.length === 0, "No rooms should be returned");
-            }
-        },
-        { test_name: "one room added should return one room in correct position",
-            event_count: 1,
-            test: (history) => {
-                const result = rooms_state_view(history);
-                assert(result.length === 1, "One room should be returned");
-                assert(result[0] === "Auditorium", "First room should be Auditorium");
-            }
-        },
-        { test_name: "two rooms added should return both rooms in correct order",
-            event_count: 2,
-            test: (history) => {
-                const result = rooms_state_view(history);
-                assert(result.length === 2, "Two rooms should be returned");
-                assert(result[0] === "Auditorium", "First room should be Auditorium");
-                assert(result[1] === "CS100", "Second room should be CS100");
-            }
-        },
-        { test_name: "three rooms added should return all rooms in correct order",
-            event_count: 3,
-            test: (history) => {
-                const result = rooms_state_view(history);
-                assert(result.length === 3, "Three rooms should be returned");
-                assert(result[0] === "Auditorium", "First room should be Auditorium");
-                assert(result[1] === "CS100", "Second room should be CS100");
-                assert(result[2] === "CS200", "Third room should be CS200");
-            }
-        },
-        { test_name: "renamed room should show new name in correct position",
-            event_count: 4,
-            test: (history) => {
-                const result = rooms_state_view(history);
-                assert(result.length === 3, "Three rooms should be returned");
-                assert(result[0] === "Main Hall", "First room should be Main Hall");
-                assert(result[1] === "CS100", "Second room should be CS100");
-                assert(result[2] === "CS200", "Third room should be CS200");
-            }
-        },
-        { test_name: "deleted room should maintain order of remaining rooms",
-            event_count: 5,
-            test: (history) => {
-                const result = rooms_state_view(history);
-                assert(result.length === 2, "Two rooms should be returned");
-                assert(result[0] === "Main Hall", "First room should be Main Hall");
-                assert(result[1] === "CS100", "Second room should be CS100");
-            }
-        }
-    ]
-});
-            
+slice_tests.push({
+    slice_name: "rooms state vieno events",
+    timelines: [
+        { timeline_name: "happy path",
+            checkpoints: [
+            { event: null,
+            state: { rooms: [] },
+            test: function no_rooms_should_be_returned_when_no_events_have_occurred(event_history, state) {
+                    const result = rooms_state_view(event_history);
+                    assert(result.length === state.rooms.length, "No rooms should be returned");
+                }
+            },
+            { event: { type: "room_added_event", room_name: "Auditorium", timestamp: "2024-01-23T10:00:00Z" },
+            state: { rooms: ["Auditorium"] },
+                test: function one_room_should_be_returned_when_one_room_has_been_added(event_history, state) {
+                    const result = rooms_state_view(event_history);
+                    assert(result.length === state.rooms.length, "One room should be returned");
+                    assert(result[0] === state.rooms[0], "First room should be Auditorium");
+                }
+            },
+            { event: { type: "room_added_event", room_name: "CS100", timestamp: "2024-01-23T10:01:00Z" },
+            state: { rooms: ["Auditorium", "CS100"] },
+                test: function two_rooms_should_be_returned_when_two_rooms_have_been_added(event_history, state) {
+                    const result = rooms_state_view(event_history);
+                    assert(result.length === state.rooms.length, "Two rooms should be returned");
+                    assert(result[0] === state.rooms[0], "First room should be Auditorium");
+                    assert(result[1] === state.rooms[1], "Second room should be CS100");
+                }
+            },
+            { event: { type: "room_added_event", room_name: "CS200", timestamp: "2024-01-23T10:02:00Z" },
+            state: { rooms: ["Auditorium", "CS100", "CS200"] },
+            test: function three_rooms_should_be_returned_when_three_rooms_have_been_added(event_history, state) {
+                    const result = rooms_state_view(event_history);
+                    assert(result.length === state.rooms.length, "Three rooms should be returned");
+                    assert(result[0] === state.rooms[0], "First room should be Auditorium");
+                    assert(result[1] === state.rooms[1], "Second room should be CS100");
+                    assert(result[2] === state.rooms[2], "Third room should be CS200");
+                }
+            },
+            { event: { type: "room_renamed_event", old_name: "Auditorium", new_name: "Main Hall", timestamp: "2024-01-23T10:03:00Z" },
+            state: { rooms: ["Main Hall", "CS100", "CS200"] },
+            test: function renamed_room_should_show_new_name_in_correct_position(event_history, state) {
+                    const result = rooms_state_view(event_history);
+                    assert(result.length === state.rooms.length, "Three rooms should be returned");
+                    assert(result[0] === state.rooms[0], "First room should be Main Hall");
+                    assert(result[1] === state.rooms[1], "Second room should be CS100");
+                    assert(result[2] === state.rooms[2], "Third room should be CS200");
+                }
+            },
+            { event: { type: "room_deleted_event", room_name: "CS200", timestamp: "2024-01-23T10:04:00Z" },
+            state: { rooms: ["Main Hall", "CS100"] },
+            test: function deleted_room_should_maintain_order_of_remaining_rooms(event_history, state) {
+                    const result = rooms_state_view(event_history);
+                    assert(result.length === state.rooms.length, "Two rooms should be returned");
+                    assert(result[0] === state.rooms[0], "First room should be Main Hall");
+                    assert(result[1] === state.rooms[1], "Second room should be CS100");
+                } // function
+            } // checkpoint
+        ] // checkpoints
+        } // timeline
+    ] // timelines
+    } // slice
+); // push
+
+
 const rooms_url = "/rooms"; urls.push(rooms_url);
 app.get(rooms_url, (req, res) => {
     //render a view of rooms. pass in a collection of rooms
@@ -197,18 +196,23 @@ function assert(condition, message) {
 function tests() {
     let summary = "";
     console.log("🧪 Tests are running...");
-    test_collection.forEach(slice => {
+    slice_tests.forEach(slice => {
         summary += `🍰 Testing slice: ${slice.slice_name}\n`;
-        
-        slice.tests.forEach(test_case => {
-            try {
-                test_case.test(slice.sample_history.slice(0,test_case.event_count));
-                summary += ` ✅ Test passed: ${test_case.test_name}\n`;
-            } catch (error) {
-                summary += ` ❌ Test failed: ${test_case.test_name}\n`;
-                console.log("💥 Test failed in Slice '" + slice.slice_name + "' with test '" + test_case.test_name + "'");
-                console.error(error);
-            }
+        slice.timelines.forEach(timeline => {
+            summary += ` ⏱️ Testing timeline: ${timeline.timeline_name}\n`;
+            timeline.checkpoints.reduce((acc, checkpoint) => {
+                if (checkpoint.test === undefined ) return acc;
+                if (checkpoint.event !== null) acc.event_stream.push(checkpoint.event);
+                try {
+                    checkpoint.test(acc.event_stream, checkpoint.state);
+                    summary += ` ✅ Test passed: ${checkpoint.test.name}\n`;
+                } catch (error) {
+                    summary += ` ❌ Test failed: ${checkpoint.test.name}\n`;
+                    console.log("💥 Test failed in Slice '" + slice.slice_name + "' with test '" + checkpoint.test.name + "'");
+                    console.error(error);
+                }
+                return acc;
+            }, { event_stream: []});
         });
     });
     console.log("🧪 Tests are finished");
