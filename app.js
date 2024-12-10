@@ -318,7 +318,7 @@ function tests() {
             summary += ` ⏱️  Testing timeline: ${timeline.timeline_name}\n`;
             timeline.checkpoints.reduce((acc, checkpoint) => {
                 if (checkpoint.event !== undefined) acc.event_stream.push(checkpoint.event);
-                summary += checkpoint.progress_marker ? `  ⏩ ${checkpoint.progress_marker}\n` : '';
+                summary += checkpoint.progress_marker ? `  🦉 ${checkpoint.progress_marker}\n` : '';
                 if (checkpoint.test === undefined ) return acc;
                 try {
                     checkpoint.test(acc.event_stream, checkpoint.state);
