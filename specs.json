@@ -1,0 +1,92 @@
+
+
+{
+	"slices": [
+		{
+			"type": "state view",
+			"name": "todo_gen_conf_id_sv",
+			"timelines": [
+				{
+					"name": "Happy Path",
+					"checkpoints": [
+						{
+							"event": null,
+							"stateView": "[ ]"
+						},
+						{
+							"event": {
+								"type": "unique_id_requested_event"
+							},
+							"stateView": "[ { value: '' } ]"
+						},
+						{
+							"event": {
+								"type": "conf_id_provided_event",
+								"value": "1111-2222-3333"
+							},
+							"stateView": "[ { value: '1111-2222-3333' } ]"
+						},
+						{ "progressMarker": "Second Request behaves the same way" },
+						{
+							"event": {
+								"type": "unique_id_requested_event"
+							},
+							"stateView": "[ { value: '1111-2222-3333' }, { value: '' } ]"
+						},
+						{
+							"event": {
+								"type": "conf_id_provided_event",
+								"value": "2222-3333-4444"
+							},
+							"stateView": " [ { value: '1111-2222-3333' }, { value: '2222-3333-4444' } ]"
+						}
+					]
+				},
+				{
+					"name": "A processor is idempotent",
+					"checkpoints": [
+						{ "event": { "type": "unique_id_requested_event" }
+						},
+						{
+							"progressMarker": "A duplicate request of an ID will be ignored"
+						},
+						{
+							"event": { "type": "unique_id_requested_event" },
+							"stateView": "TODO ConfIDs to generate [ { value: '' } ]"
+							
+						},
+						{
+							"event": {
+								"type": "conf_id_provided_event",
+								"value": "3333-4444-5555"
+							}
+						},
+						{
+							"progressMarker": "A duplicate provision of an ID will be ignored"
+						},
+						{
+							"event": {
+								"type": "conf_id_provided_event",
+								"value": "4444-5555-6666"
+							},
+							"stateView": "[ { value: '3333-4444-5555' } ]"
+						}
+					]
+				},
+				{
+					"name": "If no requests appear in the TODO list, a provided ID is ignored",
+					"checkpoints": [
+								{ "event": { "type": "conf_id_provided_event", "value": "1111-2222-3333" } },
+						{ "stateView": "[ ]" }
+					]
+				}
+			]
+		},
+		{
+			"type": "state change",
+			"name": "generate_unique_id",
+			"timelines": [
+			]
+		}
+	]
+}

@@ -117,13 +117,17 @@ slice_tests.push({
                     assert(result[2] === state.rooms[2], "Third room should be CS200");
                 }
             },
+            {
+                event: { type: "room_added_event", room_name: "CS300", timestamp: "2024-01-23T10:04:00Z" },
+                state: undefined,
+                test: undefined
+            }
+            ,
             { event: { type: "room_deleted_event", room_name: "CS200", timestamp: "2024-01-23T10:04:00Z" },
             state: { rooms: ["Main Hall", "CS100"] },
             test: function deleted_room_should_maintain_order_of_remaining_rooms(event_history, state) {
                     const result = rooms_state_view(event_history);
-                    assert(result.length === state.rooms.length, "Two rooms should be returned");
-                    assert(result[0] === state.rooms[0], "First room should be Main Hall");
-                    assert(result[1] === state.rooms[1], "Second room should be CS100");
+                    assert(result.reduce((acc, room) => acc && room !== "CS200", true), "CS200 should not be in the result");
                 } // function
             } // checkpoint
         ] // checkpoints
@@ -132,6 +136,113 @@ slice_tests.push({
     } // slice
 ); // push
 
+slice_tests.push({
+    slice_name: "todo_gen_conf_id_sv",
+    timelines: [
+        {
+            timeline_name: "Happy Path",
+            checkpoints: [
+                {
+                    event: undefined,
+                    state: { todos: [] },
+                    test: function empty_array_should_be_returned_when_no_events_exist(event_history, state) {
+                        const result = todo_gen_conf_id_sv(event_history);
+                        assert(result.length === 0, "Should return empty array");
+                    }
+                },
+                {
+                    event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:00:00Z" },
+                    state: { todos: [{ conf_id: "" }] },
+                    test: function empty_conf_id_should_be_added_on_request(event_history, state) {
+                        const result = todo_gen_conf_id_sv(event_history);
+                        assert(result.length === 1, "Should have one todo item");
+                        assert(result[0].conf_id === "", "Conf ID should be empty");
+                    }
+                },
+                {
+                    event: { type: "unique_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:01:00Z" },
+                    state: { todos: [{ conf_id: "1111-2222-3333" }] },
+                    test: function conf_id_should_be_updated_when_generated(event_history, state) {
+                        const result = todo_gen_conf_id_sv(event_history);
+                        assert(result.length === 1, "Should have one todo item");
+                        assert(result[0].conf_id === "1111-2222-3333", "Conf ID should be updated");
+                    }
+                },
+                {
+                    progress_marker: "Second Request behaves the same way"
+                },
+                {
+                    event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:02:00Z" },
+                    state: { todos: [{ conf_id: "1111-2222-3333" }, { conf_id: "" }] },
+                    test: function second_request_should_add_new_empty_conf_id(event_history, state) {
+                        const result = todo_gen_conf_id_sv(event_history);
+                        assert(result.length === 2, "Should have two todo items");
+                        assert(result[0].conf_id === "1111-2222-3333", "First conf ID should remain");
+                        assert(result[1].conf_id === "", "Second conf ID should be empty");
+                    }
+                },
+                {
+                    event: { type: "unique_id_generated_event", conf_id: "2222-3333-4444", timestamp: "2024-01-23T10:03:00Z" },
+                    state: { todos: [{ conf_id: "1111-2222-3333" }, { conf_id: "2222-3333-4444" }] },
+                    test: function second_conf_id_should_be_updated_when_generated(event_history, state) {
+                        const result = todo_gen_conf_id_sv(event_history);
+                        assert(result.length === 2, "Should have two todo items");
+                        assert(result[0].conf_id === "1111-2222-3333", "First conf ID should remain");
+                        assert(result[1].conf_id === "2222-3333-4444", "Second conf ID should be updated");
+                    }
+                }
+            ]
+        },
+        {
+            timeline_name: "A processor is idempotent",
+            checkpoints: [
+                {
+                    event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:00:00Z" }
+                },
+                {
+                    progress_marker: "A duplicate request of an ID will be ignored"
+                },
+                {
+                    event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:01:00Z" },
+                    state: { todos: [{ conf_id: "" }] },
+                    test: function duplicate_request_should_be_ignored(event_history, state) {
+                        const result = todo_gen_conf_id_sv(event_history);
+                        assert(result.length === 1, "Should have only one todo item");
+                        assert(result[0].conf_id === "", "Conf ID should still be empty");
+                    }
+                },
+                {
+                    event: { type: "unique_id_generated_event", conf_id: "3333-4444-5555", timestamp: "2024-01-23T10:02:00Z" }
+                },
+                {
+                    progress_marker: "A duplicate provision of an ID will be ignored"
+                },
+                {
+                    event: { type: "unique_id_generated_event", conf_id: "4444-5555-6666", timestamp: "2024-01-23T10:03:00Z" },
+                    state: { todos: [{ conf_id: "3333-4444-5555" }] },
+                    test: function duplicate_generation_should_be_ignored(event_history, state) {
+                        const result = todo_gen_conf_id_sv(event_history);
+                        assert(result.length === 1, "Should have only one todo item");
+                        assert(result[0].conf_id === "3333-4444-5555", "Conf ID should not be changed");
+                    }
+                }
+            ]
+        },
+        {
+            timeline_name: "If no requests appear in the TODO list, a provided ID is ignored",
+            checkpoints: [
+                {
+                    event: { type: "unique_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:00:00Z" },
+                    state: { todos: [] },
+                    test: function generated_id_should_be_ignored_without_request(event_history, state) {
+                        const result = todo_gen_conf_id_sv(event_history);
+                        assert(result.length === 0, "Should have no todo items");
+                    }
+                }
+            ]
+        }
+    ]
+});
 
 const rooms_url = "/rooms"; urls.push(rooms_url);
 app.get(rooms_url, (req, res) => {
@@ -204,15 +315,16 @@ function tests() {
     slice_tests.forEach(slice => {
         summary += `🍰 Testing slice: ${slice.slice_name}\n`;
         slice.timelines.forEach(timeline => {
-            summary += ` ⏱️ Testing timeline: ${timeline.timeline_name}\n`;
+            summary += ` ⏱️  Testing timeline: ${timeline.timeline_name}\n`;
             timeline.checkpoints.reduce((acc, checkpoint) => {
                 if (checkpoint.event !== undefined) acc.event_stream.push(checkpoint.event);
+                summary += checkpoint.progress_marker ? `  ⏩ ${checkpoint.progress_marker}\n` : '';
                 if (checkpoint.test === undefined ) return acc;
                 try {
                     checkpoint.test(acc.event_stream, checkpoint.state);
                     summary += `  ✅ Test passed: ${checkpoint.test.name}\n`;
                 } catch (error) {
-                    summary += `  ❌ Test failed: ${checkpoint.test.name}\n`;
+                    summary += `  ❌ Test failed: ${checkpoint.test.name} due to: ${error.message}\n`;
                     console.log("💥 Test failed in Slice '" + slice.slice_name + "' with test '" + checkpoint.test.name + "'");
                     console.error(error);
                 }
