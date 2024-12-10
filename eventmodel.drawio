@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="1044" dy="618" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="3068" dy="1543" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
@@ -13,7 +13,7 @@
                     <mxGeometry x="5730" y="1479" width="433" height="992" as="geometry"/>
                 </mxCell>
                 <mxCell id="1447" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF00;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
-                    <mxGeometry x="7859" y="1494" width="433" height="1287" as="geometry"/>
+                    <mxGeometry x="7403" y="1494" width="889" height="1287" as="geometry"/>
                 </mxCell>
                 <mxCell id="1446" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF00;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
                     <mxGeometry x="8316" y="1493" width="433" height="1287" as="geometry"/>
