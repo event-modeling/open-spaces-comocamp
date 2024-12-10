@@ -2,7 +2,7 @@ let run_tests = false;
 let port = 3002;
 let slice_tests = [];
 let urls = [];
-const sync_time = 8000;
+const sync_time = 0;
 let eventstore = "./event-stream";
 const event_seq_padding = '0000';
 // create the eventstore if it doesn't exist
@@ -41,6 +41,13 @@ function notify_processors(event = null) {
 
 if (sync_time > 0) setInterval(notify_processors, sync_time);
 
+
+const rooms_url = "/rooms"; urls.push(rooms_url);
+app.get(rooms_url, (req, res) => {
+    //render a view of rooms. pass in a collection of rooms
+    res.render("rooms", { rooms: rooms_state_view(get_events()) });
+});
+
 function rooms_state_view(history) {
     console.log("Processing history: " + JSON.stringify(history, null, 2));
     return history.reduce((acc, event) => {
@@ -72,17 +79,17 @@ slice_tests.push({
             checkpoints: [
             { event: undefined,
             state: { rooms: [] },
-            test: function no_rooms_should_be_returned_when_no_events_have_occurred(event_history, state) {
+            test: function no_rooms_should_be_returned_when_no_events_have_occurred(event_history, checkpoint) {
                     const result = rooms_state_view(event_history);
-                    assert(result.length === state.rooms.length, "No rooms should be returned");
+                    assert(result.length === checkpoint.state.rooms.length, "No rooms should be returned");
                 }
             },
             { event: { type: "room_added_event", room_name: "Auditorium", timestamp: "2024-01-23T10:00:00Z" },
             state: { rooms: ["Auditorium"] },
-                test: function one_room_should_be_returned_when_one_room_has_been_added(event_history, state) {
+                test: function one_room_should_be_returned_when_one_room_has_been_added(event_history,  checkpoint) {
                     const result = rooms_state_view(event_history);
-                    assert(result.length === state.rooms.length, "One room should be returned");
-                    assert(result[0] === state.rooms[0], "First room should be Auditorium");
+                    assert(result.length === checkpoint.state.rooms.length, "One room should be returned");
+                    assert(result[0] === checkpoint.state.rooms[0], "First room should be Auditorium");
                 }
             },
             {
@@ -90,31 +97,31 @@ slice_tests.push({
             },
             { event: { type: "room_added_event", room_name: "CS100", timestamp: "2024-01-23T10:01:00Z" },
             state: { rooms: ["Auditorium", "CS100"] },
-                test: function two_rooms_should_be_returned_when_two_rooms_have_been_added(event_history, state) {
+                test: function two_rooms_should_be_returned_when_two_rooms_have_been_added(event_history, checkpoint) {
                     const result = rooms_state_view(event_history);
-                    assert(result.length === state.rooms.length, "Two rooms should be returned");
-                    assert(result[0] === state.rooms[0], "First room should be Auditorium");
-                    assert(result[1] === state.rooms[1], "Second room should be CS100");
+                    assert(result.length === checkpoint.state.rooms.length, "Two rooms should be returned");
+                    assert(result[0] === checkpoint.state.rooms[0], "First room should be Auditorium");
+                    assert(result[1] === checkpoint.state.rooms[1], "Second room should be CS100");
                 }
             },
             { event: { type: "room_added_event", room_name: "CS200", timestamp: "2024-01-23T10:02:00Z" },
             state: { rooms: ["Auditorium", "CS100", "CS200"] },
-            test: function three_rooms_should_be_returned_when_three_rooms_have_been_added(event_history, state) {
+            test: function three_rooms_should_be_returned_when_three_rooms_have_been_added(event_history, checkpoint) {
                     const result = rooms_state_view(event_history);
-                    assert(result.length === state.rooms.length, "Three rooms should be returned");
-                    assert(result[0] === state.rooms[0], "First room should be Auditorium");
-                    assert(result[1] === state.rooms[1], "Second room should be CS100");
-                    assert(result[2] === state.rooms[2], "Third room should be CS200");
+                    assert(result.length === checkpoint.state.rooms.length, "Three rooms should be returned");
+                    assert(result[0] === checkpoint.state.rooms[0], "First room should be Auditorium");
+                    assert(result[1] === checkpoint.state.rooms[1], "Second room should be CS100");
+                    assert(result[2] === checkpoint.state.rooms[2], "Third room should be CS200");
                 }
             },
             { event: { type: "room_renamed_event", old_name: "Auditorium", new_name: "Main Hall", timestamp: "2024-01-23T10:03:00Z" },
             state: { rooms: ["Main Hall", "CS100", "CS200"] },
-            test: function renamed_room_should_show_new_name_in_correct_position(event_history, state) {
+            test: function renamed_room_should_show_new_name_in_correct_position(event_history, checkpoint) {
                     const result = rooms_state_view(event_history);
-                    assert(result.length === state.rooms.length, "Three rooms should be returned");
-                    assert(result[0] === state.rooms[0], "First room should be Main Hall");
-                    assert(result[1] === state.rooms[1], "Second room should be CS100");
-                    assert(result[2] === state.rooms[2], "Third room should be CS200");
+                    assert(result.length === checkpoint.state.rooms.length, "Three rooms should be returned");
+                    assert(result[0] === checkpoint.state.rooms[0], "First room should be Main Hall");
+                    assert(result[1] === checkpoint.state.rooms[1], "Second room should be CS100");
+                    assert(result[2] === checkpoint.state.rooms[2], "Third room should be CS200");
                 }
             },
             {
@@ -125,9 +132,9 @@ slice_tests.push({
             ,
             { event: { type: "room_deleted_event", room_name: "CS200", timestamp: "2024-01-23T10:04:00Z" },
             state: { rooms: ["Main Hall", "CS100"] },
-            test: function deleted_room_should_maintain_order_of_remaining_rooms(event_history, state) {
+            test: function deleted_room_should_maintain_order_of_remaining_rooms(event_history, checkpoint) {
                     const result = rooms_state_view(event_history);
-                    assert(result.reduce((acc, room) => acc && room !== "CS200", true), "CS200 should not be in the result");
+                    assert(result.reduce((acc, room) => acc && room !== checkpoint.event.room_name, true), "CS200 should not be in the result");
                 } // function
             } // checkpoint
         ] // checkpoints
@@ -135,6 +142,34 @@ slice_tests.push({
     ] // timelines
     } // slice
 ); // push
+
+const time_slots_url = "/time-slots"; urls.push(time_slots_url);
+app.get(time_slots_url, (req, res) => {
+    res.render("time-slots", { time_slots: [] });
+});
+
+const generate_conf_id_url = "/generate-conf-id";
+urls.push(generate_conf_id_url);
+app.get(generate_conf_id_url, (req, res) => {
+    res.render("generate-conf-id");
+});
+app.post(generate_conf_id_url, (req, res) => {
+    try {
+        request_unique_id(get_events());
+    } catch (error) {
+        console.error("Error generating unique ID: " + error.message);
+        res.status(500).send("Error generating unique ID");
+        return;
+    }
+    res.redirect('/todo-gen-conf-ids');
+});
+
+function request_unique_id(history) {
+    console.log("Looking for conf ID request in:");
+    const conf_ids = todo_gen_conf_id_sv(history);
+    console.log(JSON.stringify(conf_ids, null, 2));
+}
+
 
 slice_tests.push({
     slice_name: "todo_gen_conf_id_sv",
@@ -170,6 +205,9 @@ slice_tests.push({
                 },
                 {
                     progress_marker: "Second Request behaves the same way"
+                },
+                {
+                    event: { type: "some_other_event", timestamp: "2024-01-23T10:02:00Z" }
                 },
                 {
                     event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:02:00Z" },
@@ -244,22 +282,6 @@ slice_tests.push({
     ]
 });
 
-const rooms_url = "/rooms"; urls.push(rooms_url);
-app.get(rooms_url, (req, res) => {
-    //render a view of rooms. pass in a collection of rooms
-    res.render("rooms", { rooms: rooms_state_view(get_events()) });
-});
-
-const time_slots_url = "/time-slots"; urls.push(time_slots_url);
-app.get(time_slots_url, (req, res) => {
-    res.render("time-slots", { time_slots: [] });
-});
-
-const request_conf_id_url = "/request-conf-id"; urls.push(request_conf_id_url);
-app.get(request_conf_id_url, (req, res) => {
-    push_event({ type: "unique_id_requested_event", timestamp: new Date().toISOString() });
-    res.sendStatus(200);
-});
 
 function todo_gen_conf_id_sv(history) {
     return history.reduce((acc, current_event) => {
@@ -302,10 +324,87 @@ function gen_conf_id_processor(history) {
 
 function generate_unique_id() {
     const conf_id = uuidv4();
-    push_event({ type: "unique_id_generated_event", conf_id: conf_id, timestamp: new Date().toISOString() }, 'id:' + conf_id);
+    const conf_id_generated_event = provide_unique_id(get_events(), { conf_id: conf_id, timestamp: new Date().toISOString() });
+    push_event(conf_id_generated_event, 'id:' + conf_id);
     console.log("Generated unique ID: " + conf_id);
 }
 
+const error_no_request_found = "No conf ID request found.";
+function provide_unique_id(unfiltered_events, command) {
+    console.log("Providing unique ID to system: " + command.conf_id);
+    const events = unfiltered_events.filter(event => event.type === "unique_id_requested_event" || event.type === "unique_id_generated_event");
+    if (events.length === 0 || events[events.length - 1].type !== "unique_id_requested_event") {
+        console.log("No conf ID request found.");
+        throw new Error(error_no_request_found);
+    }
+    return { type: "unique_id_generated_event", conf_id: command.conf_id, timestamp: command.timestamp, event_timestamp: new Date().toISOString() };
+}
+
+function run_with_expected_error(command_handler, unfiltered_events,command) {
+    let caught_error = null;
+    try {
+        const new_event = command_handler(unfiltered_events, command);
+    } catch (error) {
+        console.log("Caught error: " + JSON.stringify(error, null, 2));
+        caught_error = error.message;
+    }
+    return caught_error;
+}
+
+slice_tests.push({
+    slice_name: "generate_unique_id_sc",
+    timelines: [
+        {
+            timeline_name: "All scenarios in one timeline",
+            checkpoints: [
+                {
+                    exception: error_no_request_found,
+                    command: { type: "generate_unique_id_command", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:00:00Z" },
+                    test: function provide_unique_id_command_should_throw_when_no_request_exists(event_history, checkpoint) {
+                        let caught_error = run_with_expected_error(provide_unique_id, event_history, checkpoint.command);
+                        assert(caught_error !== null, "Should throw " + checkpoint.exception + " but did not throw");
+                        assert(caught_error === checkpoint.exception, "Should throw " + checkpoint.exception + " but threw " + caught_error);
+                    }
+                },
+                { 
+                    event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:00:00Z" } 
+                },
+                {
+                    event: { type: "unrelated_random_event", timestamp: "2024-01-23T10:00:01Z" }
+                },
+                {
+                    progress_marker: "Test the happy path"
+                },
+                { 
+                    event: { type: "unique_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:01:00Z" },
+                    command: { type: "generate_unique_id_command", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:01:00Z" },
+                    test: function provide_unique_id_command_should_be_added_when_requested(event_history, checkpoint) {
+                        const result = provide_unique_id(rm_last(event_history), checkpoint.command);
+                        assert(result.type === checkpoint.event.type, "Should be a " + checkpoint.event.type + " event");
+                        assert(result.conf_id === checkpoint.command.conf_id, "Conf ID should be " + checkpoint.command.conf_id + " but was " + result.conf_id);
+                    }
+                },
+                {
+                    event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:02:00Z" }
+                },
+                {
+                    event: { type: "unique_id_generated_event", conf_id: "2222-3333-4444", timestamp: "2024-01-23T10:03:00Z" }
+                },
+                {
+                    exception: error_no_request_found,
+                    command: { type: "generate_unique_id_command", conf_id: "3333-4444-5555", timestamp: "2024-01-23T10:04:00Z" },
+                    test: function provide_unique_id_command_should_throw_when_no_request_exists(event_history, checkpoint) {
+                        let caught_error = run_with_expected_error(provide_unique_id, event_history, checkpoint.command);
+                        assert(caught_error !== null, "Should throw " + checkpoint.exception + " but did not throw");
+                        assert(caught_error === checkpoint.exception, "Should throw " + checkpoint.exception + " but threw " + caught_error);
+                    }
+                }
+            ]
+        }
+    ]
+});
+
+function rm_last(array) { return array.slice(0, array.length - 1); }
 function assert(condition, message) {
     if (!condition) throw new Error(message);
 }
@@ -317,13 +416,19 @@ function tests() {
         slice.timelines.forEach(timeline => {
             summary += ` ⏱️  Testing timeline: ${timeline.timeline_name}\n`;
             timeline.checkpoints.reduce((acc, checkpoint) => {
+                console.log("!!! ---- at checkingpoint: " + JSON.stringify(checkpoint, null, 2));
                 if (checkpoint.event !== undefined) acc.event_stream.push(checkpoint.event);
+                console.log("checking for progress marker");
                 summary += checkpoint.progress_marker ? `  🦉 ${checkpoint.progress_marker}\n` : '';
+                console.log("checking for test");
                 if (checkpoint.test === undefined ) return acc;
                 try {
-                    checkpoint.test(acc.event_stream, checkpoint.state);
+                    console.log("running test with the event stream: " + JSON.stringify(acc.event_stream, null, 2));
+                    checkpoint.test(acc.event_stream, checkpoint);
+                    console.log("test passed");
                     summary += `  ✅ Test passed: ${checkpoint.test.name}\n`;
                 } catch (error) {
+                    console.log("test failed");
                     summary += `  ❌ Test failed: ${checkpoint.test.name} due to: ${error.message}\n`;
                     console.log("💥 Test failed in Slice '" + slice.slice_name + "' with test '" + checkpoint.test.name + "'");
                     console.error(error);

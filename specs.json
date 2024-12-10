@@ -81,12 +81,6 @@
 					]
 				}
 			]
-		},
-		{
-			"type": "state change",
-			"name": "generate_unique_id",
-			"timelines": [
-			]
 		}
 	]
 }
