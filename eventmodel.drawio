@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="3068" dy="1543" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="1358" dy="735" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
@@ -17,6 +17,12 @@
                 </mxCell>
                 <mxCell id="1446" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF00;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
                     <mxGeometry x="8316" y="1493" width="433" height="1287" as="geometry"/>
+                </mxCell>
+                <mxCell id="1738" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF00;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
+                    <mxGeometry x="6866" y="1498" width="503" height="1287" as="geometry"/>
+                </mxCell>
+                <mxCell id="1748" value="&lt;font color=&quot;#000000&quot;&gt;UnrelatedEvent&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" vertex="1" parent="109">
+                    <mxGeometry x="8356" y="3090" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <object label="Event Model" id="1">
                     <mxCell parent="0"/>
@@ -2265,44 +2271,41 @@
                 <mxCell id="1662" value="" style="shape=flexArrow;endArrow=classic;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="8332" y="2907" as="sourcePoint"/>
-                        <mxPoint x="8332" y="3557" as="targetPoint"/>
+                        <mxPoint x="8331" y="3719" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="1663" value="&lt;font color=&quot;#000000&quot;&gt;UniqueIDRequested&lt;br&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="8353" y="2933" width="180" height="70" as="geometry"/>
+                    <mxGeometry x="8356" y="3010" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="1664" value="&lt;font color=&quot;#000000&quot;&gt;ConfIDProvided&lt;br&gt;&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- value: 1111-2222-3333&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="8355" y="3033" width="180" height="70" as="geometry"/>
+                    <mxGeometry x="8359" y="3170" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="1665" value="&lt;font color=&quot;#000000&quot;&gt;UniqueIDRequested&lt;br&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="8358" y="3156" width="180" height="70" as="geometry"/>
+                    <mxGeometry x="8364" y="3255" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="1666" value="&lt;font color=&quot;#000000&quot;&gt;ConfIDProvided&lt;br&gt;&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- value: 2222-3333-4444&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="8358" y="3245" width="180" height="70" as="geometry"/>
+                    <mxGeometry x="8360" y="3399" width="180" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="1667" value="&lt;font color=&quot;#99ccff&quot;&gt;Happy Path&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;" parent="1" vertex="1">
+                <mxCell id="1667" value="&lt;font color=&quot;#99ccff&quot;&gt;All scenarios in one timeline&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="8316" y="2867" width="300" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="1668" value="&lt;font&gt;Second Request behaves the same way&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=none;fontColor=#66FF66;" parent="1" vertex="1">
-                    <mxGeometry x="8355" y="3119" width="300" height="30" as="geometry"/>
+                    <mxGeometry x="8364" y="3341" width="300" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="1669" value="&lt;font color=&quot;#000000&quot;&gt;ProvideID&lt;br&gt;&amp;nbsp;- value: 1111-2222-3333&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="8552" y="2935" width="180" height="60" as="geometry"/>
+                    <mxGeometry x="8552" y="3168" width="193" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="1670" value="&lt;font color=&quot;#000000&quot;&gt;No Request Exists Exeption&lt;br&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#FF0000;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="8355" y="3474" width="180" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="1671" value="&lt;font color=&quot;#000000&quot;&gt;ConfIDProvided&lt;br&gt;&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- value: 3333-4444-5555&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="8355" y="3376" width="180" height="70" as="geometry"/>
+                    <mxGeometry x="8360" y="3524" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="1672" value="&lt;font color=&quot;#000000&quot;&gt;ProvideID&lt;br&gt;&amp;nbsp;- value:&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;2222-3333-4444&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="8563" y="3245" width="180" height="60" as="geometry"/>
+                    <mxGeometry x="8561" y="3402" width="180" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="1673" value="&lt;font&gt;A superflous second command&amp;nbsp;&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;fontColor=#66FF66;" parent="1" vertex="1">
-                    <mxGeometry x="8359" y="3328" width="300" height="30" as="geometry"/>
+                    <mxGeometry x="8361" y="3482" width="300" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="1677" value="&lt;font color=&quot;#000000&quot;&gt;ProvideID&lt;br&gt;&amp;nbsp;- value:&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;3333-4444-5555&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="8572" y="3373" width="180" height="60" as="geometry"/>
+                    <mxGeometry x="8560" y="3529" width="180" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="1678" value="&lt;font color=&quot;#000000&quot;&gt;TODO GenConfIDs&lt;br&gt;&amp;nbsp;[&lt;br&gt;&amp;nbsp; &amp;nbsp;{ value: &quot;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;1111-2222-3333&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&quot; }&lt;br&gt;&amp;nbsp;]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" parent="1" vertex="1">
                     <mxGeometry x="8813" y="2323" width="230" height="70" as="geometry"/>
@@ -2376,6 +2379,15 @@
                 <mxCell id="1734" value="&lt;font color=&quot;#000000&quot;&gt;TODO GenConfIDs&lt;br&gt;[&amp;nbsp;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;{ value: &quot;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;3333-4444-5555&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&quot; } ]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" parent="1" vertex="1">
                     <mxGeometry x="8117" y="3743" width="166" height="68" as="geometry"/>
                 </mxCell>
+                <mxCell id="1743" value="&lt;font&gt;No events should avoid accpting an id to the system&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=none;fontColor=#66FF66;" parent="1" vertex="1">
+                    <mxGeometry x="8356" y="2899" width="300" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="1744" value="&lt;font color=&quot;#000000&quot;&gt;ProvideID&lt;br&gt;&amp;nbsp;- value: 0000-1111-2222&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="8546" y="2936" width="180" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="1745" value="&lt;font color=&quot;#000000&quot;&gt;No Request Exists Exeption&lt;br&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#FF0000;verticalAlign=top;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="8355" y="2934" width="180" height="70" as="geometry"/>
+                </mxCell>
                 <object label="communication" id="562">
                     <mxCell parent="0"/>
                 </object>
@@ -2437,10 +2449,10 @@
                     <mxGeometry x="8328" y="1636" width="703" height="329" as="geometry"/>
                 </mxCell>
                 <mxCell id="1724" value="&lt;pre style=&quot;background-color: rgb(24, 24, 24); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; font-weight: normal; font-size: 6px; line-height: 130%;&quot;&gt;&lt;div style=&quot;line-height: 130%; font-size: 7px;&quot;&gt;&lt;div style=&quot;line-height: 130%;&quot;&gt;&lt;div style=&quot;line-height: 130%;&quot;&gt;&lt;div style=&quot;font-size: 14px; line-height: 19px;&quot;&gt;&lt;div style=&quot;line-height: 19px;&quot;&gt;&lt;div style=&quot;line-height: 19px;&quot;&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#82d2ce&quot;&gt;// fake event for demo of processor&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;color: rgb(214, 214, 221);&quot;&gt;&lt;span style=&quot;color: #82d2ce;&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;color: rgb(214, 214, 221);&quot;&gt;&lt;span style=&quot;color: #82d2ce;&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color: #d1d1d1;&quot;&gt;request_conf_id_url&lt;/span&gt; = &lt;span style=&quot;color: #e394dc;&quot;&gt;&quot;/request-conf-id&quot;&lt;/span&gt;; &lt;span style=&quot;color: #d1d1d1;&quot;&gt;urls&lt;/span&gt;.&lt;span style=&quot;color: #efb080;&quot;&gt;push&lt;/span&gt;(&lt;span style=&quot;color: #d1d1d1;&quot;&gt;request_conf_id_url&lt;/span&gt;);&lt;/div&gt;&lt;div style=&quot;color: rgb(214, 214, 221);&quot;&gt;&lt;span style=&quot;color: #d1d1d1;&quot;&gt;app&lt;/span&gt;.&lt;span style=&quot;color: #ebc88d;&quot;&gt;get&lt;/span&gt;(&lt;span style=&quot;color: #d1d1d1;&quot;&gt;request_conf_id_url&lt;/span&gt;, (&lt;span style=&quot;font-style: italic;&quot;&gt;req&lt;/span&gt;, &lt;span style=&quot;font-style: italic;&quot;&gt;res&lt;/span&gt;) &lt;span style=&quot;color: #82d2ce;&quot;&gt;=&amp;gt;&lt;/span&gt; {&lt;/div&gt;&lt;div style=&quot;color: rgb(214, 214, 221);&quot;&gt;    &lt;span style=&quot;color: #ebc88d;&quot;&gt;push_event&lt;/span&gt;({ &lt;span style=&quot;color: #aa9bf5;&quot;&gt;type&lt;/span&gt;: &lt;span style=&quot;color: #e394dc;&quot;&gt;&quot;unique_id_requested_event&quot;&lt;/span&gt;, &lt;span style=&quot;color: #aa9bf5;&quot;&gt;timestamp&lt;/span&gt;: &lt;span style=&quot;color: #83d6c5;&quot;&gt;new&lt;/span&gt; &lt;span style=&quot;color: #87c3ff;&quot;&gt;Date&lt;/span&gt;().&lt;span style=&quot;color: #efb080;&quot;&gt;toISOString&lt;/span&gt;() });&lt;/div&gt;&lt;div style=&quot;color: rgb(214, 214, 221);&quot;&gt;    &lt;span style=&quot;font-style: italic;&quot;&gt;res&lt;/span&gt;.&lt;span style=&quot;color: #ebc88d;&quot;&gt;sendStatus&lt;/span&gt;(&lt;span style=&quot;color: #ebc88d;&quot;&gt;200&lt;/span&gt;);&lt;/div&gt;&lt;div style=&quot;color: rgb(214, 214, 221);&quot;&gt;});&lt;/div&gt;&lt;font color=&quot;#d6d6dd&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/pre&gt;" style="text;whiteSpace=wrap;html=1;fontSize=13;" parent="1336" vertex="1">
-                    <mxGeometry x="7105" y="2612" width="794" height="140" as="geometry"/>
+                    <mxGeometry x="7136" y="2610" width="794" height="140" as="geometry"/>
                 </mxCell>
                 <mxCell id="1725" value="&lt;pre style=&quot;color: rgb(214, 214, 221); background-color: rgb(24, 24, 24); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; font-weight: normal; font-size: 6px; line-height: 130%;&quot;&gt;&lt;div style=&quot;line-height: 130%; font-size: 7px;&quot;&gt;&lt;div style=&quot;line-height: 130%;&quot;&gt;&lt;div style=&quot;line-height: 130%;&quot;&gt;&lt;div style=&quot;font-size: 14px; line-height: 19px;&quot;&gt;&lt;div&gt;&lt;div style=&quot;line-height: 19px;&quot;&gt;&lt;div&gt;&lt;span style=&quot;color: #82d2ce;&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color: #d1d1d1;&quot;&gt;todo_gen_conf_ids_url&lt;/span&gt; = &lt;span style=&quot;color: #e394dc;&quot;&gt;&quot;/todo-gen-conf-ids&quot;&lt;/span&gt;; &lt;span style=&quot;color: #d1d1d1;&quot;&gt;urls&lt;/span&gt;.&lt;span style=&quot;color: #efb080;&quot;&gt;push&lt;/span&gt;(&lt;span style=&quot;color: #d1d1d1;&quot;&gt;todo_gen_conf_ids_url&lt;/span&gt;);&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: #d1d1d1;&quot;&gt;app&lt;/span&gt;.&lt;span style=&quot;color: #ebc88d;&quot;&gt;get&lt;/span&gt;(&lt;span style=&quot;color: #d1d1d1;&quot;&gt;todo_gen_conf_ids_url&lt;/span&gt;, (&lt;span style=&quot;font-style: italic;&quot;&gt;req&lt;/span&gt;, &lt;span style=&quot;font-style: italic;&quot;&gt;res&lt;/span&gt;) &lt;span style=&quot;color: #82d2ce;&quot;&gt;=&amp;gt;&lt;/span&gt; {&lt;/div&gt;&lt;div&gt;    &lt;span style=&quot;font-style: italic;&quot;&gt;res&lt;/span&gt;.&lt;span style=&quot;color: #ebc88d;&quot;&gt;render&lt;/span&gt;(&lt;span style=&quot;color: #e394dc;&quot;&gt;&quot;todo-gen-conf-ids&quot;&lt;/span&gt;, { &lt;span style=&quot;color: #aa9bf5;&quot;&gt;conf_ids&lt;/span&gt;: &lt;span style=&quot;color: #ebc88d;&quot;&gt;todo_gen_conf_id_sv&lt;/span&gt;(&lt;span style=&quot;color: #ebc88d;&quot;&gt;get_events&lt;/span&gt;()) });&lt;/div&gt;&lt;div&gt;});&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/pre&gt;" style="text;whiteSpace=wrap;html=1;fontSize=13;" parent="1336" vertex="1">
-                    <mxGeometry x="8254" y="2105" width="703" height="104" as="geometry"/>
+                    <mxGeometry x="7629" y="2172" width="703" height="104" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
