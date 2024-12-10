@@ -42,7 +42,9 @@ function notify_processors(event = null) {
 if (sync_time > 0) setInterval(notify_processors, sync_time);
 
 function rooms_state_view(history) {
+    console.log("Processing history: " + JSON.stringify(history, null, 2));
     return history.reduce((acc, event) => {
+        console.log("Processing event: " + JSON.stringify(event, null, 2));
         switch(event.type) {
             case "room_added_event":
                 acc.push(event.room_name);
@@ -64,11 +66,11 @@ function rooms_state_view(history) {
     }, []);
 }
 slice_tests.push({
-    slice_name: "rooms state vieno events",
+    slice_name: "rooms state view",
     timelines: [
         { timeline_name: "happy path",
             checkpoints: [
-            { event: null,
+            { event: undefined,
             state: { rooms: [] },
             test: function no_rooms_should_be_returned_when_no_events_have_occurred(event_history, state) {
                     const result = rooms_state_view(event_history);
@@ -82,6 +84,9 @@ slice_tests.push({
                     assert(result.length === state.rooms.length, "One room should be returned");
                     assert(result[0] === state.rooms[0], "First room should be Auditorium");
                 }
+            },
+            {
+                progress_marker: "at this point, the initial room reserves the name"
             },
             { event: { type: "room_added_event", room_name: "CS100", timestamp: "2024-01-23T10:01:00Z" },
             state: { rooms: ["Auditorium", "CS100"] },
@@ -201,13 +206,13 @@ function tests() {
         slice.timelines.forEach(timeline => {
             summary += ` ⏱️ Testing timeline: ${timeline.timeline_name}\n`;
             timeline.checkpoints.reduce((acc, checkpoint) => {
+                if (checkpoint.event !== undefined) acc.event_stream.push(checkpoint.event);
                 if (checkpoint.test === undefined ) return acc;
-                if (checkpoint.event !== null) acc.event_stream.push(checkpoint.event);
                 try {
                     checkpoint.test(acc.event_stream, checkpoint.state);
-                    summary += ` ✅ Test passed: ${checkpoint.test.name}\n`;
+                    summary += `  ✅ Test passed: ${checkpoint.test.name}\n`;
                 } catch (error) {
-                    summary += ` ❌ Test failed: ${checkpoint.test.name}\n`;
+                    summary += `  ❌ Test failed: ${checkpoint.test.name}\n`;
                     console.log("💥 Test failed in Slice '" + slice.slice_name + "' with test '" + checkpoint.test.name + "'");
                     console.error(error);
                 }
