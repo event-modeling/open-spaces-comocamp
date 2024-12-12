@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="1358" dy="735" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="388" dy="259" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
@@ -21,8 +21,17 @@
                 <mxCell id="1738" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF00;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
                     <mxGeometry x="6866" y="1498" width="503" height="1287" as="geometry"/>
                 </mxCell>
-                <mxCell id="1748" value="&lt;font color=&quot;#000000&quot;&gt;UnrelatedEvent&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" vertex="1" parent="109">
+                <mxCell id="1748" value="&lt;font color=&quot;#000000&quot;&gt;UnrelatedEvent&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="109" vertex="1">
                     <mxGeometry x="8356" y="3090" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="1749" value="&lt;font color=&quot;#000000&quot;&gt;UniqueIDRequested&lt;br&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="109" vertex="1">
+                    <mxGeometry x="6901" y="2879" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="1750" value="&lt;font color=&quot;#000000&quot;&gt;RequestConfID&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="109" vertex="1">
+                    <mxGeometry x="7096" y="2959" width="180" height="64" as="geometry"/>
+                </mxCell>
+                <mxCell id="1751" value="&lt;font color=&quot;#000000&quot;&gt;ConfIDProvided&lt;br&gt;&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- value: 1111-2222-3333&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="109" vertex="1">
+                    <mxGeometry x="6903" y="3034" width="180" height="70" as="geometry"/>
                 </mxCell>
                 <object label="Event Model" id="1">
                     <mxCell parent="0"/>
@@ -2229,38 +2238,11 @@
                         <mxPoint x="6869" y="3664" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="1650" value="&lt;font color=&quot;#000000&quot;&gt;AddTimeSlot:&lt;br&gt;&amp;nbsp;- Start: 9:30&lt;br&gt;&amp;nbsp;- End: 10:30&lt;br&gt;&amp;nbsp;- Name: 1st Session&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="7098" y="3121" width="180" height="70" as="geometry"/>
+                <mxCell id="1650" value="&lt;font color=&quot;#000000&quot;&gt;RequestConfID&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="7096" y="2880" width="180" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="1651" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TimeSlotAdded:&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Start: 9:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- End: 10:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Name: 1st Session&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="6904" y="3117" width="180" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="1652" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TimeSlotAdded:&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Start: 9:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- End: 10:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Name: 1st Session&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="6904" y="3197" width="180" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="1653" value="&lt;font color=&quot;#000000&quot;&gt;TimeRestrictionFor TalkLengthSpecified&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="6901" y="3277" width="180" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="1654" value="&lt;font color=&quot;#000000&quot;&gt;AddTimeSlot:&lt;br&gt;&amp;nbsp;- Start: 9:30&lt;br&gt;&amp;nbsp;- End: 10:30&lt;br&gt;&amp;nbsp;- Name: 1st Session&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="7093" y="3280" width="180" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="1655" value="&lt;font color=&quot;#000000&quot;&gt;Slot already taken&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#FF0000;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="6904" y="3358" width="180" height="93" as="geometry"/>
-                </mxCell>
-                <mxCell id="1656" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TimeSlotAdded:&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Start: 9:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- End: 10:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Name: 1st Session&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="6904" y="3457" width="180" height="93" as="geometry"/>
-                </mxCell>
-                <mxCell id="1657" value="&lt;font color=&quot;#000000&quot;&gt;AddTimeSlot:&lt;br&gt;&amp;nbsp;- Start: 10:30&lt;br&gt;&amp;nbsp;- End: 11:30&lt;br&gt;&amp;nbsp;- Name: 1st Session&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="7098" y="3369.5" width="180" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="1658" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TimeSlotAdded:&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Start: 9:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- End: 10:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Name: 1st Session&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="6901" y="2876" width="180" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="1659" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TimeSlotAdded:&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Start: 9:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- End: 10:30&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- Name: 1st Session&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="6901" y="2956" width="180" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="1660" value="&lt;font color=&quot;#000000&quot;&gt;TimeRestrictionFor TalkLengthSpecified&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="6901" y="3036" width="180" height="70" as="geometry"/>
+                <mxCell id="1655" value="A Request Already Exists" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#FF0000;verticalAlign=top;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="6901" y="2957" width="180" height="67" as="geometry"/>
                 </mxCell>
                 <mxCell id="1661" value="" style="shape=flexArrow;endArrow=classic;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -2453,6 +2435,24 @@
                 </mxCell>
                 <mxCell id="1725" value="&lt;pre style=&quot;color: rgb(214, 214, 221); background-color: rgb(24, 24, 24); font-family: &amp;quot;Droid Sans Mono&amp;quot;, &amp;quot;monospace&amp;quot;, monospace; font-weight: normal; font-size: 6px; line-height: 130%;&quot;&gt;&lt;div style=&quot;line-height: 130%; font-size: 7px;&quot;&gt;&lt;div style=&quot;line-height: 130%;&quot;&gt;&lt;div style=&quot;line-height: 130%;&quot;&gt;&lt;div style=&quot;font-size: 14px; line-height: 19px;&quot;&gt;&lt;div&gt;&lt;div style=&quot;line-height: 19px;&quot;&gt;&lt;div&gt;&lt;span style=&quot;color: #82d2ce;&quot;&gt;const&lt;/span&gt; &lt;span style=&quot;color: #d1d1d1;&quot;&gt;todo_gen_conf_ids_url&lt;/span&gt; = &lt;span style=&quot;color: #e394dc;&quot;&gt;&quot;/todo-gen-conf-ids&quot;&lt;/span&gt;; &lt;span style=&quot;color: #d1d1d1;&quot;&gt;urls&lt;/span&gt;.&lt;span style=&quot;color: #efb080;&quot;&gt;push&lt;/span&gt;(&lt;span style=&quot;color: #d1d1d1;&quot;&gt;todo_gen_conf_ids_url&lt;/span&gt;);&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: #d1d1d1;&quot;&gt;app&lt;/span&gt;.&lt;span style=&quot;color: #ebc88d;&quot;&gt;get&lt;/span&gt;(&lt;span style=&quot;color: #d1d1d1;&quot;&gt;todo_gen_conf_ids_url&lt;/span&gt;, (&lt;span style=&quot;font-style: italic;&quot;&gt;req&lt;/span&gt;, &lt;span style=&quot;font-style: italic;&quot;&gt;res&lt;/span&gt;) &lt;span style=&quot;color: #82d2ce;&quot;&gt;=&amp;gt;&lt;/span&gt; {&lt;/div&gt;&lt;div&gt;    &lt;span style=&quot;font-style: italic;&quot;&gt;res&lt;/span&gt;.&lt;span style=&quot;color: #ebc88d;&quot;&gt;render&lt;/span&gt;(&lt;span style=&quot;color: #e394dc;&quot;&gt;&quot;todo-gen-conf-ids&quot;&lt;/span&gt;, { &lt;span style=&quot;color: #aa9bf5;&quot;&gt;conf_ids&lt;/span&gt;: &lt;span style=&quot;color: #ebc88d;&quot;&gt;todo_gen_conf_id_sv&lt;/span&gt;(&lt;span style=&quot;color: #ebc88d;&quot;&gt;get_events&lt;/span&gt;()) });&lt;/div&gt;&lt;div&gt;});&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/pre&gt;" style="text;whiteSpace=wrap;html=1;fontSize=13;" parent="1336" vertex="1">
                     <mxGeometry x="7629" y="2172" width="703" height="104" as="geometry"/>
+                </mxCell>
+                <mxCell id="1753" value="&lt;font color=&quot;#000000&quot;&gt;RequestConfID&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" vertex="1" parent="1336">
+                    <mxGeometry x="7100" y="3115" width="180" height="64" as="geometry"/>
+                </mxCell>
+                <mxCell id="1754" value="&lt;font color=&quot;#000000&quot;&gt;UniqueIDRequested&lt;br&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" vertex="1" parent="1336">
+                    <mxGeometry x="6905" y="3112" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="1756" value="&lt;font color=&quot;#000000&quot;&gt;ConfIDProvided&lt;br&gt;&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- value: 2222-3333-4444&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" vertex="1" parent="1336">
+                    <mxGeometry x="6905" y="3189" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="1757" value="&lt;font color=&quot;#000000&quot;&gt;some other event&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" vertex="1" parent="1336">
+                    <mxGeometry x="6905" y="3270" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="1758" value="&lt;font color=&quot;#000000&quot;&gt;RequestConfID&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" vertex="1" parent="1336">
+                    <mxGeometry x="7100" y="3349" width="180" height="64" as="geometry"/>
+                </mxCell>
+                <mxCell id="1759" value="&lt;font color=&quot;#000000&quot;&gt;UniqueIDRequested&lt;br&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" vertex="1" parent="1336">
+                    <mxGeometry x="6905" y="3346" width="180" height="70" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
