@@ -1,7 +1,6 @@
 let run_tests = false;
 let port = 3002;
 let slice_tests = [];
-let urls = [];
 const sync_time = 0;
 let eventstore = "./event-stream";
 const event_seq_padding = '0000';
@@ -41,9 +40,7 @@ function notify_processors(event = null) {
 
 if (sync_time > 0) setInterval(notify_processors, sync_time);
 
-
-const rooms_url = "/rooms"; urls.push(rooms_url);
-app.get(rooms_url, (req, res) => {
+app.get("/rooms", (req, res) => {
     //render a view of rooms. pass in a collection of rooms
     res.render("rooms", { rooms: rooms_state_view(get_events()) });
 });
@@ -72,8 +69,7 @@ function rooms_state_view(history) {
         return acc;
     }, []);
 }
-slice_tests.push({
-    slice_name: "rooms state view",
+slice_tests.push({ slice_name: "rooms state view",
     timelines: [
         { timeline_name: "happy path",
             checkpoints: [
@@ -143,19 +139,15 @@ slice_tests.push({
     } // slice
 ); // push
 
-const time_slots_url = "/time-slots"; urls.push(time_slots_url);
-app.get(time_slots_url, (req, res) => {
+app.get("/time-slots", (req, res) => {
     res.render("time-slots", { time_slots: [] });
 });
 
-const generate_conf_id_url = "/generate-conf-id";
-urls.push(generate_conf_id_url);
-app.get(generate_conf_id_url, (req, res) => {
-    res.render("generate-conf-id");
-});
-app.post(generate_conf_id_url, (req, res) => {
+app.get("/generate-conf-id", (req, res) => { res.render("generate-conf-id"); });
+
+app.post("/generate-conf-id", (req, res) => {
     try {
-        request_unique_id(get_events());
+        push_event(request_unique_id(get_events()));
     } catch (error) {
         console.error("Error generating unique ID: " + error.message);
         res.status(500).send("Error generating unique ID");
@@ -165,14 +157,63 @@ app.post(generate_conf_id_url, (req, res) => {
 });
 
 function request_unique_id(history) {
-    console.log("Looking for conf ID request in:");
-    const conf_ids = todo_gen_conf_id_sv(history);
-    console.log(JSON.stringify(conf_ids, null, 2));
+    if (history.length > 0 && history[history.length - 1].type === "unique_id_requested_event") throw new Error("A request already exists");
+    return { type: "unique_id_requested_event", timestamp: new Date().toISOString() };
 }
 
+slice_tests.push({ slice_name: "request_unique_id",
+    timelines: [
+        {
+            timeline_name: "Happy Path",
+            checkpoints: [
+                {
+                    event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:00:00Z" },
+                    command: { type: "request_unique_id_command", timestamp: "2024-01-23T10:00:00Z" },
+                    test: function request_unique_id_command_should_be_added_when_requested(event_history, checkpoint) {
+                        const result = request_unique_id(rm_last(event_history));
+                        assert(result.type === checkpoint.event.type, "Should be a " + checkpoint.event.type + " event");
+                    }
+                },
+                {
+                    exception: "A request already exists",
+                    command: { type: "request_unique_id_command", timestamp: "2024-01-23T10:00:00Z" },
+                    test: function request_unique_id_command_should_throw_when_request_already_exists(event_history, checkpoint) {
+                        let caught_error = run_with_expected_error(request_unique_id, event_history, checkpoint.command);
+                        assert(caught_error !== null, "Should throw " + checkpoint.exception + " but did not throw");
+                        assert(caught_error === checkpoint.exception, "Should throw " + checkpoint.exception + " but threw " + caught_error);
+                    }
+                }
+            ]
+        }
+    ]
+});
 
-slice_tests.push({
-    slice_name: "todo_gen_conf_id_sv",
+function todo_gen_conf_id_sv(history) {
+    return history.reduce((acc, current_event) => {
+        switch(current_event.type) {
+            case "unique_id_requested_event":
+                if (acc.last_event !== null && acc.last_event.type === "unique_id_requested_event") break;
+                acc.todos.push({ conf_id: "" });
+                break;
+            case "unique_id_generated_event":
+                if (   acc.last_event === null 
+                    || acc.last_event.type !== "unique_id_requested_event"
+                    || acc.todos.length === 0
+                    || acc.todos[acc.todos.length - 1].conf_id !== "") 
+                    break;
+                acc.todos[acc.todos.length - 1].conf_id = current_event.conf_id;
+                break;
+        }
+        acc.last_event = current_event;
+        return acc;
+    }, { todos: [], last_event: null }).todos;
+}
+
+app.get("/todo-gen-conf-ids", (req, res) => {
+    res.render("todo-gen-conf-ids", { conf_ids: todo_gen_conf_id_sv(get_events()) });
+});
+
+slice_tests.push({ slice_name: "todo_gen_conf_id_sv",
     timelines: [
         {
             timeline_name: "Happy Path",
@@ -282,33 +323,6 @@ slice_tests.push({
     ]
 });
 
-
-function todo_gen_conf_id_sv(history) {
-    return history.reduce((acc, current_event) => {
-        switch(current_event.type) {
-            case "unique_id_requested_event":
-                if (acc.last_event !== null && acc.last_event.type === "unique_id_requested_event") break;
-                acc.todos.push({ conf_id: "" });
-                break;
-            case "unique_id_generated_event":
-                if (   acc.last_event === null 
-                    || acc.last_event.type !== "unique_id_requested_event"
-                    || acc.todos.length === 0
-                    || acc.todos[acc.todos.length - 1].conf_id !== "") 
-                    break;
-                acc.todos[acc.todos.length - 1].conf_id = current_event.conf_id;
-                break;
-        }
-        acc.last_event = current_event;
-        return acc;
-    }, { todos: [], last_event: null }).todos;
-}
-
-const todo_gen_conf_ids_url = "/todo-gen-conf-ids"; urls.push(todo_gen_conf_ids_url);
-app.get(todo_gen_conf_ids_url, (req, res) => {
-    res.render("todo-gen-conf-ids", { conf_ids: todo_gen_conf_id_sv(get_events()) });
-});
-
 function gen_conf_id_processor(history) {
     console.log("Looking for conf ID request in:");
     const conf_ids = todo_gen_conf_id_sv(history);
@@ -340,23 +354,15 @@ function provide_unique_id(unfiltered_events, command) {
     return { type: "unique_id_generated_event", conf_id: command.conf_id, timestamp: command.timestamp, event_timestamp: new Date().toISOString() };
 }
 
-function run_with_expected_error(command_handler, unfiltered_events,command) {
-    let caught_error = null;
-    try {
-        const new_event = command_handler(unfiltered_events, command);
-    } catch (error) {
-        console.log("Caught error: " + JSON.stringify(error, null, 2));
-        caught_error = error.message;
-    }
-    return caught_error;
-}
 
-slice_tests.push({
-    slice_name: "generate_unique_id_sc",
+slice_tests.push({ slice_name: "generate_unique_id_sc",
     timelines: [
         {
             timeline_name: "All scenarios in one timeline",
             checkpoints: [
+                {
+                    progress_marker: "Test trying to generate an ID with no events at all in history"
+                },
                 {
                     exception: error_no_request_found,
                     command: { type: "generate_unique_id_command", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:00:00Z" },
@@ -405,9 +411,16 @@ slice_tests.push({
 });
 
 function rm_last(array) { return array.slice(0, array.length - 1); }
-function assert(condition, message) {
-    if (!condition) throw new Error(message);
-}
+function assert(condition, message) { if (!condition) throw new Error(message); }
+function run_with_expected_error(command_handler, unfiltered_events,command) {
+    let caught_error = null;
+    try {
+        const new_event = command_handler(unfiltered_events, command);
+    } catch (error) {
+        console.log("Caught error: " + JSON.stringify(error, null, 2));
+        caught_error = error.message;
+    }
+    return caught_error; }
 function tests() {
     let summary = "";
     console.log("🧪 Tests are running...");
@@ -446,7 +459,11 @@ function tests() {
 if (run_tests) tests();
 else app.listen(port, () => { 
     console.log("Server is running on port " + port + " click on http://localhost:" + port + "/");
-    urls.forEach(url => {
-        console.log("  http://localhost:" + port + url);
-    });
+    app._router.stack
+        .filter(r => r.route) // Filter out middleware and focus on routes
+        .map(r => r.route)
+        .reduce((acc, route) => { if (acc.find(r => r.path === route.path)) return acc; acc.push(route); return acc; }, [])
+        .forEach(route => {
+            console.log(`  http://localhost:${port}${route.path}`);
+        });
 });     
