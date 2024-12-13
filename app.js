@@ -74,14 +74,14 @@ slice_tests.push({ slice_name: "rooms state view",
         { timeline_name: "happy path",
             checkpoints: [
             { event: undefined,
-            state: { rooms: [] },
-            test: function no_rooms_should_be_returned_when_no_events_have_occurred(event_history, checkpoint) {
+                state: { rooms: [] },
+                test: function no_rooms_should_be_returned_when_no_events_have_occurred(event_history, checkpoint) {
                     const result = rooms_state_view(event_history);
                     assert(result.length === checkpoint.state.rooms.length, "No rooms should be returned");
                 }
             },
             { event: { type: "room_added_event", room_name: "Auditorium", timestamp: "2024-01-23T10:00:00Z" },
-            state: { rooms: ["Auditorium"] },
+                state: { rooms: ["Auditorium"] },
                 test: function one_room_should_be_returned_when_one_room_has_been_added(event_history,  checkpoint) {
                     const result = rooms_state_view(event_history);
                     assert(result.length === checkpoint.state.rooms.length, "One room should be returned");
@@ -92,7 +92,7 @@ slice_tests.push({ slice_name: "rooms state view",
                 progress_marker: "at this point, the initial room reserves the name"
             },
             { event: { type: "room_added_event", room_name: "CS100", timestamp: "2024-01-23T10:01:00Z" },
-            state: { rooms: ["Auditorium", "CS100"] },
+                state: { rooms: ["Auditorium", "CS100"] },
                 test: function two_rooms_should_be_returned_when_two_rooms_have_been_added(event_history, checkpoint) {
                     const result = rooms_state_view(event_history);
                     assert(result.length === checkpoint.state.rooms.length, "Two rooms should be returned");
