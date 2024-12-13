@@ -170,7 +170,7 @@ slice_tests.push({ slice_name: "request_unique_id",
                     event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:00:00Z" },
                     command: { type: "request_unique_id_command", timestamp: "2024-01-23T10:00:00Z" },
                     test: function request_unique_id_command_should_be_added_when_requested(event_history, checkpoint) {
-                        const result = request_unique_id(rm_last(event_history));
+                        const result = request_unique_id(event_history);
                         assert(result.type === checkpoint.event.type, "Should be a " + checkpoint.event.type + " event");
                     }
                 },
@@ -385,7 +385,7 @@ slice_tests.push({ slice_name: "generate_unique_id_sc",
                     event: { type: "unique_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:01:00Z" },
                     command: { type: "generate_unique_id_command", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:01:00Z" },
                     test: function provide_unique_id_command_should_be_added_when_requested(event_history, checkpoint) {
-                        const result = provide_unique_id(rm_last(event_history), checkpoint.command);
+                        const result = provide_unique_id(event_history, checkpoint.command);
                         assert(result.type === checkpoint.event.type, "Should be a " + checkpoint.event.type + " event");
                         assert(result.conf_id === checkpoint.command.conf_id, "Conf ID should be " + checkpoint.command.conf_id + " but was " + result.conf_id);
                     }
@@ -437,7 +437,7 @@ function tests() {
                 if (checkpoint.test === undefined ) return acc;
                 try {
                     console.log("running test with the event stream: " + JSON.stringify(acc.event_stream, null, 2));
-                    checkpoint.test(acc.event_stream, checkpoint);
+                    checkpoint.test(checkpoint.event && checkpoint.command ? rm_last(acc.event_stream) : acc.event_stream, checkpoint);
                     console.log("test passed");
                     summary += `  ✅ Test passed: ${checkpoint.test.name}\n`;
                 } catch (error) {
