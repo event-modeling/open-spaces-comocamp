@@ -1,0 +1,4 @@
+event-stream/
+node_modules/
+bin/*
+obj/
