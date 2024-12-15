@@ -1,14 +1,9 @@
-// First the using statements
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Stubble.Core.Builders;
-using Microsoft.AspNetCore.Http;
 using Stubble.Core;
-using System.IO;
 using Microsoft.Extensions.FileProviders;
-// Then the top-level statements
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<IViewRenderer>(new StubbleViewRenderer("views"));
 var app = builder.Build();
@@ -23,41 +18,131 @@ app.UseStaticFiles(
 
 app.MapGet("/rooms", async (IViewRenderer viewRenderer) => {
     var viewModel = new {
-        rooms = new[] {
-            "Main Hall",
-            "Room 101",
-            "Workshop Area"
-        }
+        rooms = RoomsStateView(Program.GetEvents())
     };
     
     var html = await viewRenderer.RenderViewToStringAsync("rooms", viewModel);
     return Results.Content(html, "text/html");
 });
 
-app.Run();
+app.Run("http://localhost:3002");
 
-// Finally, the type declarations
-public interface IViewRenderer
+public partial class Program
 {
-    Task<string> RenderViewToStringAsync(string viewName, object model);
-}
-
-public class StubbleViewRenderer : IViewRenderer
-{
-    private readonly StubbleVisitorRenderer _renderer;
-    private readonly string _viewsPath;
-
-    public StubbleViewRenderer(string viewsPath)
+    public interface IViewRenderer
     {
-        _renderer = new StubbleBuilder().Build();
-        _viewsPath = viewsPath;
+        Task<string> RenderViewToStringAsync(string viewName, object model);
     }
 
-    public async Task<string> RenderViewToStringAsync(string viewName, object model)
+    public class StubbleViewRenderer : IViewRenderer
     {
-        var viewPath = Path.Combine(_viewsPath, $"{viewName}.mustache");
-        var template = await File.ReadAllTextAsync(viewPath);
-        return await _renderer.RenderAsync(template, model);
+        private readonly StubbleVisitorRenderer _renderer;
+        private readonly string _viewsPath;
+
+        public StubbleViewRenderer(string viewsPath)
+        {
+            _renderer = new StubbleBuilder().Build();
+            _viewsPath = viewsPath;
+        }
+
+        public async Task<string> RenderViewToStringAsync(string viewName, object model)
+        {
+            var viewPath = Path.Combine(_viewsPath, $"{viewName}.mustache");
+            var template = await File.ReadAllTextAsync(viewPath);
+            return await _renderer.RenderAsync(template, model);
+        }
+    }
+
+    [JsonDerivedType(typeof(RoomAddedEvent), "room_added_event")]
+    [JsonDerivedType(typeof(RoomRenamedEvent), "room_renamed_event")]
+    [JsonDerivedType(typeof(RoomDeletedEvent), "room_deleted_event")]
+    public abstract class Event
+    {
+        protected Event() { }
+        
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = "";
+        [JsonPropertyName("timestamp")]
+        public string Timestamp { get; set; } = "";
+    }
+
+    public class RoomAddedEvent : Event
+    {
+        [JsonPropertyName("room_name")]
+        public string? RoomName { get; set; }
+    }
+
+    public class RoomRenamedEvent : Event
+    {
+        [JsonPropertyName("old_name")]
+        public string? OldName { get; set; }
+        [JsonPropertyName("new_name")]
+        public string? NewName { get; set; }
+    }
+
+    public class RoomDeletedEvent : Event
+    {
+        [JsonPropertyName("room_name")]
+        public string? RoomName { get; set; }
+    }
+
+    public static string[] RoomsStateView(IEnumerable<Event> history)
+    {
+        return history.Aggregate(new List<string>(), (acc, evt) => {
+            switch (evt)
+            {
+                case RoomAddedEvent addedEvent:
+                    acc.Add(addedEvent.RoomName ?? "");
+                    break;
+                case RoomRenamedEvent renamedEvent:
+                    var index = acc.IndexOf(renamedEvent.OldName ?? "");
+                    if (index != -1)
+                    {
+                        acc[index] = renamedEvent.NewName ?? "";
+                    }
+                    break;
+                case RoomDeletedEvent deletedEvent:
+                    var deleteIndex = acc.IndexOf(deletedEvent.RoomName ?? "");
+                    if (deleteIndex != -1)
+                    {
+                        acc.RemoveAt(deleteIndex);
+                    }
+                    break;
+            }
+            return acc;
+        }).ToArray();
+    }
+
+    public static IEnumerable<Event> GetEvents()
+    {
+        var eventstore = "event-stream";
+        var files = Directory.GetFiles(eventstore);
+        Console.WriteLine($"Found {files.Length} files in event store");
+        
+        var orderedFiles = files.OrderBy(f => f);
+        Console.WriteLine("Ordered files by name");
+
+        var events = orderedFiles
+            .Select<string, Event>(f => {
+                var content = File.ReadAllText(f);
+                Console.WriteLine($"Read file: {f}");
+                Console.WriteLine($"Content: {content}");
+                var type = Path.GetFileNameWithoutExtension(f).Split('-')[1];
+                Console.WriteLine($"Type: {type}");
+                
+                return type switch {
+                    "room_added_event" => JsonSerializer.Deserialize<RoomAddedEvent>(content)!,
+                    "room_renamed_event" => JsonSerializer.Deserialize<RoomRenamedEvent>(content)!,
+                    "room_deleted_event" => JsonSerializer.Deserialize<RoomDeletedEvent>(content)!,
+                    _ => throw new Exception($"Unknown event type: {type}")
+                };
+            })
+            .Where(e => e != null)
+            .Cast<Event>();
+            
+        Console.WriteLine("Finished deserializing events: " + JsonSerializer.Serialize(events));
+        return events;
     }
 }
+
 
