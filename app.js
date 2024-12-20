@@ -1,8 +1,12 @@
 let run_tests = false;
+let port = 30001;
 let test_collection = [];
+let urls = [];
+let eventstore = "./event-stream";
+// create the eventstore if it doesn't exist
 if (process.argv.some(arg => arg.startsWith('--') && arg !== '--tests')) { // bad parameters
-  console.error('Error: Unrecognized parameter(s)');
-  process.exit(1);
+    console.error('Error: Unrecognized parameter(s)');
+    process.exit(1);
 } else if (process.argv.includes('--tests')) { // run the tests
     run_tests = true;
 }// run the server
@@ -12,8 +16,9 @@ const fs = require("fs");
 app.set("view engine", "mustache");
 app.engine("mustache", require("mustache-express")());
 app.use(express.static('public'));
+if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
 
-function get_events() { return fs.readdirSync("./event-stream").map(file => { return JSON.parse(fs.readFileSync(`./event-stream/${file}`, "utf8")); }); }
+function get_events() { return fs.readdirSync(eventstore).map(file => { return JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8")); }); }
 
 function rooms_state_view(history) {
     return history.reduce((acc, event) => {
@@ -104,12 +109,14 @@ test_collection.push({
     ]
 });
             
-app.get("/rooms", (req, res) => {
+const rooms_url = "/rooms"; urls.push(rooms_url);
+app.get(rooms_url, (req, res) => {
     //render a view of rooms. pass in a collection of rooms
     res.render("rooms", { rooms: rooms_state_view(get_events()) });
 });
 
-app.get("/time-slots", (req, res) => {
+const time_slots_url = "/time-slots"; urls.push(time_slots_url);
+app.get(time_slots_url, (req, res) => {
     res.render("time-slots", { time_slots: [] });
 });
 
@@ -140,4 +147,9 @@ function tests() {
 }
             
 if (run_tests) tests();
-else app.listen(3000, () => { console.log("Server is running on port 3000"); });     
+else app.listen(port, () => { 
+    console.log("Server is running on port " + port + " click on http://localhost:" + port + "/");
+    urls.forEach(url => {
+        console.log("  http://localhost:" + port + url);
+    });
+});     
