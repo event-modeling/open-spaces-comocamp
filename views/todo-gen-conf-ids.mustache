@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conference IDs to Generate</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+
+    <main class="container">
+        <h1>Conference IDs to Generate</h1>
+        
+        <section class="form-section">
+
+            <div class="results-section">
+                <h3>Generated IDs:</h3>
+                <ul class="list">
+                    {{#conf_ids}}
+                        <li class="list-item">
+                            {{#conf_id}}
+                                {{conf_id}}
+                            {{/conf_id}}
+                            {{^conf_id}}
+                                <span class="pending">Pending generation...</span>
+                            {{/conf_id}}
+                        </li>
+                    {{/conf_ids}}
+                </ul>
+            </div>
+        </section>
+    </main>
+</body>
+</html> 
