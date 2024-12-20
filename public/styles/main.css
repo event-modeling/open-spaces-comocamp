@@ -116,3 +116,50 @@ body {
   background-color: var(--color-secondary);
   color: white;
 } 
+
+/* table styling with some background colour that goes well together with the rest of the theme. Adds a bit of padding and margin.
+   an empty table should have a light grey background and the headers should stand out more */
+.table {
+  background-color: var(--color-surface);
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 1px solid var(--color-border);
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border: 1px solid var(--color-border);
+  padding: 0.75rem;
+}
+.table th {
+  background-color: var(--color-surface);
+}
+
+.time-slots-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.time-slots-table th,
+.time-slots-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.time-slots-table th {
+    background-color: var(--secondary-color);
+    color: var(--text-light);
+}
+
+.time-slots-table tbody tr:hover {
+    background-color: var(--background-hover);
+}
+
+.empty-message {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 1rem;
+}
