@@ -1,0 +1,5 @@
+{
+    "type": "room_added_event", 
+    "room_name": "CS100",
+    "timestamp": "2024-01-23T10:01:00Z"
+} 
