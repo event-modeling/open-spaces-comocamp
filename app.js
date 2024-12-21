@@ -40,6 +40,37 @@ function notify_processors(event = null) {
 
 if (sync_time > 0) setInterval(notify_processors, sync_time);
 
+app.get("/set-name", (req, res) => {
+    res.render("set-name", { name: "" });
+});
+
+app.post("/set-name", (req, res) => {
+    // todo: fix so it's like the others 
+    push_event({
+        type: "event_name_set_event",
+        name: req.body.eventName,
+        timestamp: new Date().toISOString()
+    });
+    res.redirect('/dates');
+});
+
+//tests for set name
+slice_tests.push({ slice_name: "Set Name State Change",
+    timelines: [
+        { timeline_name: "Happy Path",
+            checkpoints: [
+                { event: { type: "event_name_set_event", name: "Test Event", timestamp: "2024-01-23T10:00:00Z" },
+                    state: { name: "Test Event" },
+                    test: function event_name_should_be_set_when_requested(events, state) {
+                        const result = rooms_state_view(events);
+                        assert(result.length === state.rooms.length, "Should return empty array");
+                    }
+                }
+            ]
+        }
+    ]
+});
+
 app.get("/rooms", (req, res) => {
     //render a view of rooms. pass in a collection of rooms
     res.render("rooms", { rooms: rooms_state_view(get_events()) });
