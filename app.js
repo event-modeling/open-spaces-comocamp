@@ -77,6 +77,17 @@ slice_tests.push({ slice_name: "Set Name State Change",
         }
     ]
 });
+app.get("/set-name-confirmation", (req, res) => {
+    res.render("set-name-confirmation", { conference_name: conference_name_state_view(get_events()) });
+});
+
+function conference_name_state_view(history) {
+    const conference_name_event = history.findLast(event => event.type === "conference_name_set_event");
+    console.log("conference_name_event: " + JSON.stringify(conference_name_event, null, 2));
+    console.log("history: " + JSON.stringify(history, null, 2));
+    if (conference_name_event === undefined) return "";
+    return conference_name_event.name;
+}
 
 app.get("/rooms", (req, res) => {
     //render a view of rooms. pass in a collection of rooms
