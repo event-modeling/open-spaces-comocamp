@@ -57,7 +57,7 @@ app.post('/set-name', upload.none(), (req, res) => {
         timestamp: new Date().toISOString()
     }
     push_event(set_name_event);
-    res.redirect('/dates');
+    res.redirect('/set-name-confirmation');
 });
 
 //tests for set name
