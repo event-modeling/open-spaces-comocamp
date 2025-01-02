@@ -12,12 +12,14 @@ if (process.argv.some(arg => arg.startsWith('--') && arg !== '--tests')) { // ba
     run_tests = true;
 }// run the server
 const { v4: uuidv4 } = require('uuid');
+
 const express = require("express");
 const app = express();
 const fs = require("fs");
 app.set("view engine", "mustache");
 app.engine("mustache", require("mustache-express")());
 app.use(express.static('public'));
+app.use(express.json());
 if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
 
 function get_events() { 
@@ -44,13 +46,17 @@ app.get("/set-name", (req, res) => {
     res.render("set-name", { name: "" });
 });
 
-app.post("/set-name", (req, res) => {
-    // todo: fix so it's like the others 
-    push_event({
-        type: "event_name_set_event",
-        name: req.body.eventName,
+const multer = require('multer');
+const upload = multer();
+
+app.post('/set-name', upload.none(), (req, res) => {
+    console.log(req.body); // Form data will be here, parsed as a regular object
+    const set_name_event = {
+        type: "conference_name_set_event",
+        name: req.body.conferenceName,
         timestamp: new Date().toISOString()
-    });
+    }
+    push_event(set_name_event);
     res.redirect('/dates');
 });
 

@@ -27,12 +27,12 @@
         <h1>What do you want to call your Open Spaces?</h1>
         
         <section class="form-section">
-            <form method="POST" action="/set-name">
+            <form method="POST" action="/set-name" enctype="multipart/form-data">
                 <div class="input-group">
-                    <label for="eventName">Name:</label>
+                    <label for="conferenceName">Name:</label>
                     <input type="text" 
-                           id="eventName" 
-                           name="eventName" 
+                           id="conferenceName" 
+                           name="conferenceName" 
                            class="input-field" 
                            value="{{name}}"
                            placeholder="Enter event name">
