@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dates Set Successfully</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="primary-nav">
+            <span class="nav-item active">Setup</span> |
+            <span class="nav-item">Sessions</span> |
+            <span class="nav-item">Voting</span> |
+            <span class="nav-item">Schedule</span>
+        </nav>
+        <nav class="secondary-nav">
+            <span class="nav-item">Name</span> |
+            <span class="nav-item active">Dates</span> |
+            <span class="nav-item">Rooms</span> |
+            <span class="nav-item">Time Slots</span> |
+            <span class="nav-item">QR code</span>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="form-section">
+            <h2>Congratulations, you set the dates for your event</h2>
+            
+            <div>
+                <label>Days:</label>
+                <div>
+                    {{start_date}} - {{end_date}}
+                </div>
+            </div>
+
+            <div class="button-group">
+                <a href="/rooms" class="btn btn-primary">Continue</a>
+            </div>
+        </section>
+    </main>
+
+    <style>
+        .date-display {
+            background-color: #e8f5e9;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+
+        .date-value {
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</body>
+</html> 
