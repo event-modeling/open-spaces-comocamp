@@ -18,6 +18,10 @@ const fs = require("fs");
 app.set("view engine", "mustache");
 app.engine("mustache", require("mustache-express")());
 app.use(express.static('public'));
+
+const multer = require('multer');
+const upload = multer();
+
 if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
 
 function get_events() { 
@@ -39,6 +43,22 @@ function notify_processors(event = null) {
     processors.forEach(processor => { if (processor.events.includes(event.type)) processor.function(get_events()); });}
 
 if (sync_time > 0) setInterval(notify_processors, sync_time);
+
+app.get("/set-dates", (req, res) => {
+    res.render("set-dates", { dates: [] });
+});
+
+app.post("/set-dates", upload.none(), (req, res) => {
+    const set_dates_event = {
+        type: "set_dates_event",
+        start_date: req.body.startDate,
+        end_date: req.body.endDate,
+        timestamp: new Date().toISOString()
+    }
+    console.log("set_dates_event: " + JSON.stringify(set_dates_event, null, 2));
+    push_event(set_dates_event);
+    res.redirect('/set-dates-confirmation');
+});
 
 app.get("/rooms", (req, res) => {
     //render a view of rooms. pass in a collection of rooms
