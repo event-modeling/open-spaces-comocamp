@@ -20,6 +20,10 @@ app.set("view engine", "mustache");
 app.engine("mustache", require("mustache-express")());
 app.use(express.static('public'));
 app.use(express.json());
+
+const multer = require('multer');
+const upload = multer();
+
 if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
 
 function get_events() { 
@@ -46,9 +50,6 @@ app.get("/set-name", (req, res) => {
     res.render("set-name", { name: "" });
 });
 
-const multer = require('multer');
-const upload = multer();
-
 app.post('/set-name', upload.none(), (req, res) => {
     console.log(req.body); // Form data will be here, parsed as a regular object
     const set_name_event = {
@@ -57,7 +58,7 @@ app.post('/set-name', upload.none(), (req, res) => {
         timestamp: new Date().toISOString()
     }
     push_event(set_name_event);
-    res.redirect('/dates');
+    res.redirect('/set-name-confirmation');
 });
 
 //tests for set name
