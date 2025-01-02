@@ -12,12 +12,18 @@ if (process.argv.some(arg => arg.startsWith('--') && arg !== '--tests')) { // ba
     run_tests = true;
 }// run the server
 const { v4: uuidv4 } = require('uuid');
+
 const express = require("express");
 const app = express();
 const fs = require("fs");
 app.set("view engine", "mustache");
 app.engine("mustache", require("mustache-express")());
 app.use(express.static('public'));
+app.use(express.json());
+
+const multer = require('multer');
+const upload = multer();
+
 if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
 
 function get_events() { 
@@ -39,6 +45,38 @@ function notify_processors(event = null) {
     processors.forEach(processor => { if (processor.events.includes(event.type)) processor.function(get_events()); });}
 
 if (sync_time > 0) setInterval(notify_processors, sync_time);
+
+app.get("/set-name", (req, res) => {
+    res.render("set-name", { name: "" });
+});
+
+app.post('/set-name', upload.none(), (req, res) => {
+    console.log(req.body); // Form data will be here, parsed as a regular object
+    const set_name_event = {
+        type: "conference_name_set_event",
+        name: req.body.conferenceName,
+        timestamp: new Date().toISOString()
+    }
+    push_event(set_name_event);
+    res.redirect('/set-name-confirmation');
+});
+
+//tests for set name
+slice_tests.push({ slice_name: "Set Name State Change",
+    timelines: [
+        { timeline_name: "Happy Path",
+            checkpoints: [
+                { event: { type: "event_name_set_event", name: "Test Event", timestamp: "2024-01-23T10:00:00Z" },
+                    state: { name: "Test Event" },
+                    test: function event_name_should_be_set_when_requested(events, state) {
+                        const result = rooms_state_view(events);
+                        assert(result.length === state.rooms.length, "Should return empty array");
+                    }
+                }
+            ]
+        }
+    ]
+});
 
 app.get("/rooms", (req, res) => {
     //render a view of rooms. pass in a collection of rooms

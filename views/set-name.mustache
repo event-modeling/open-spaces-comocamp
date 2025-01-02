@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Name Setup</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="primary-nav">
+            <span class="nav-item active">Setup</span> |
+            <span class="nav-item">Sessions</span> |
+            <span class="nav-item">Voting</span> |
+            <span class="nav-item">Schedule</span>
+        </nav>
+        <nav class="secondary-nav">
+            <span class="nav-item active">Name</span> |
+            <span class="nav-item">Dates</span> |
+            <span class="nav-item">Rooms</span> |
+            <span class="nav-item">Time Slots</span> |
+            <span class="nav-item">QR code</span>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1>What do you want to call your Open Spaces?</h1>
+        
+        <section class="form-section">
+            <form method="POST" action="/set-name" enctype="multipart/form-data">
+                <div class="input-group">
+                    <label for="conferenceName">Name:</label>
+                    <input type="text" 
+                           id="conferenceName" 
+                           name="conferenceName" 
+                           class="input-field" 
+                           value="{{name}}"
+                           placeholder="Enter event name">
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Continue</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html> 
