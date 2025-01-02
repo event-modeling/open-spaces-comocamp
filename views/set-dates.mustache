@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Setup</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="primary-nav">
+            <span class="nav-item active">Setup</span> |
+            <span class="nav-item">Sessions</span> |
+            <span class="nav-item">Voting</span> |
+            <span class="nav-item">Schedule</span>
+        </nav>
+        <nav class="secondary-nav">
+            <span class="nav-item">Name</span> |
+            <span class="nav-item active">Dates</span> |
+            <span class="nav-item">Rooms</span> |
+            <span class="nav-item">Time Slots</span> |
+            <span class="nav-item">QR code</span>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1>Set the dates for your event</h1>
+        
+        <section class="form-section">
+            <form method="POST" action="/set-dates" enctype="multipart/form-data">
+                <div class="input-group">
+                    <div class="form-row">
+                        <label for="startDate">Start:</label>
+                        <input type="date" 
+                               id="startDate" 
+                               name="startDate" 
+                               class="input-field"
+                               value="{{start_date}}"
+                               required>
+                    </div>
+                    <div class="form-row">
+                        <label for="endDate">End:</label>
+                        <input type="date" 
+                               id="endDate" 
+                               name="endDate" 
+                               class="input-field"
+                               value="{{end_date}}"
+                               required>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Set Dates</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get date input elements
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+
+            // Set min date to today for both inputs
+            const today = new Date().toISOString().split('T')[0];
+            startDateInput.min = today;
+            endDateInput.min = today;
+
+            // When start date changes, update end date minimum
+            startDateInput.addEventListener('change', function() {
+                endDateInput.min = this.value;
+                
+                // If end date is before new start date, update it
+                if (endDateInput.value < this.value) {
+                    endDateInput.value = this.value;
+                }
+            });
+
+            // When end date changes, update start date maximum
+            endDateInput.addEventListener('change', function() {
+                startDateInput.max = this.value;
+                
+                // If start date is after new end date, update it
+                if (startDateInput.value > this.value) {
+                    startDateInput.value = this.value;
+                }
+            });
+
+            // Open date picker when clicking on the input
+            [startDateInput, endDateInput].forEach(input => {
+                input.addEventListener('click', function() {
+                    this.showPicker();
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -89,6 +89,22 @@ function conference_name_state_view(history) {
     return conference_name_event.name;
 }
 
+app.get("/set-dates", (req, res) => {
+    res.render("set-dates", { dates: [] });
+});
+
+app.post("/set-dates", upload.none(), (req, res) => {
+    const set_dates_event = {
+        type: "set_dates_event",
+        start_date: req.body.startDate,
+        end_date: req.body.endDate,
+        timestamp: new Date().toISOString()
+    }
+    console.log("set_dates_event: " + JSON.stringify(set_dates_event, null, 2));
+    push_event(set_dates_event);
+    res.redirect('/set-dates-confirmation');
+});
+
 app.get("/rooms", (req, res) => {
     //render a view of rooms. pass in a collection of rooms
     res.render("rooms", { rooms: rooms_state_view(get_events()) });
