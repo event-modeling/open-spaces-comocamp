@@ -40,6 +40,17 @@ function notify_processors(event = null) {
 
 if (sync_time > 0) setInterval(notify_processors, sync_time);
 
+app.get("/set-dates-confirmation", (req, res) => {
+    res.render("set-dates-confirmation", conference_dates_state_view(get_events()));
+});
+
+function conference_dates_state_view(history) {
+    const conference_dates_event = history.findLast(event => event.type === "conference_dates_set_event");
+    console.log("conference_dates_event: " + JSON.stringify(conference_dates_event, null, 2));
+    if (conference_dates_event === undefined) return { start_date: "", end_date: "" };
+    return { start_date: conference_dates_event.start_date, end_date: conference_dates_event.end_date };
+}
+
 app.get("/rooms", (req, res) => {
     //render a view of rooms. pass in a collection of rooms
     res.render("rooms", { rooms: rooms_state_view(get_events()) });
