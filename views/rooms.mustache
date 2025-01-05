@@ -28,11 +28,11 @@
         
         <section class="form-section">
             <h2>Rooms:</h2>
-            <div class="input-group">
+            <form class="input-group" action="/rooms" method="POST" enctype="multipart/form-data">
                 <label for="roomName">Room Name</label>
-                <input type="text" id="roomName" class="input-field" placeholder="Enter room name">
-                <button type="button" class="btn btn-secondary">Add</button>
-            </div>
+                <input type="text" id="roomName" name="roomName" class="input-field" placeholder="Enter room name">
+                <button type="submit" class="btn btn-secondary">Add</button>
+            </form>
 
             <ul class="list">
                 {{#rooms}}
@@ -41,7 +41,7 @@
             </ul>
 
             <div class="button-group">
-                <button type="button" class="btn btn-primary">Continue</button>
+                <a href="/time-slots" class="btn btn-primary">Continue</a>
             </div>
         </section>
     </main>
