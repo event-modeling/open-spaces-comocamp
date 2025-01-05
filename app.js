@@ -15,9 +15,12 @@ const { v4: uuidv4 } = require('uuid');
 const express = require("express");
 const app = express();
 const fs = require("fs");
+const multer = require("multer");
+const upload = multer();
 app.set("view engine", "mustache");
 app.engine("mustache", require("mustache-express")());
 app.use(express.static('public'));
+
 if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
 
 function get_events() { 
@@ -135,6 +138,34 @@ slice_tests.push({ slice_name: "rooms state view",
     ] // timelines
     } // slice
 ); // push
+
+app.post("/rooms", upload.none(), (req, res) => {
+    const command = { type: "add_room_command", room_name: req.body.roomName, timestamp: new Date().toISOString() };
+    let event = null;
+    try {
+        event = add_room(get_events(), command);
+    } catch (error) {
+        console.error("Error adding room: " + error.message);
+        res.status(400).send("Error adding room: " + error.message);
+        return;
+    }
+    try {
+        push_event(event);
+    } catch (error) {
+        console.error("Error pushing event: " + error.message);
+        res.status(500).send("Error pushing event");
+        return;
+    }
+    res.redirect("/rooms");
+});
+
+function add_room(events, command) {
+    // check if room already exists
+    if (events.some(event => event.type === "room_added_event" && event.room_name === command.room_name)) {
+        throw new Error("Room already exists");
+    }
+    return { type: "room_added_event", room_name: command.room_name, timestamp: new Date().toISOString() };
+}
 
 app.get("/time-slots", (req, res) => {
     res.render("time-slots", { time_slots: [] });
