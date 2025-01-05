@@ -1,13 +1,13 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="1841" dy="483" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="496" dy="223" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
-                    <mxCell style="" parent="0" visible="0"/>
+                    <mxCell style="" parent="0"/>
                 </object>
                 <mxCell id="1276" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
-                    <mxGeometry x="4591" y="1486" width="399" height="989" as="geometry"/>
+                    <mxGeometry x="4591" y="1493" width="399" height="989" as="geometry"/>
                 </mxCell>
                 <mxCell id="1279" value="Joe - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF00;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
                     <mxGeometry x="5730" y="1479" width="433" height="1282" as="geometry"/>
@@ -46,10 +46,10 @@
                     <mxGeometry x="6901" y="3110" width="300" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="1770" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
-                    <mxGeometry x="1171" y="1498" width="1225" height="1215" as="geometry"/>
+                    <mxGeometry x="1171" y="1498" width="1225" height="2011" as="geometry"/>
                 </mxCell>
                 <mxCell id="1771" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
-                    <mxGeometry x="308" y="1495" width="851" height="1215" as="geometry"/>
+                    <mxGeometry x="308" y="1495" width="851" height="2014" as="geometry"/>
                 </mxCell>
                 <mxCell id="1780" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
                     <mxGeometry x="2528" y="1493" width="807" height="1215" as="geometry"/>
@@ -57,7 +57,7 @@
                 <mxCell id="1781" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
                     <mxGeometry x="3363" y="1493" width="457" height="1215" as="geometry"/>
                 </mxCell>
-                <mxCell id="1813" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF33;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
+                <mxCell id="1813" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
                     <mxGeometry x="3843" y="1493" width="731" height="1215" as="geometry"/>
                 </mxCell>
                 <object label="Event Model" id="1">
