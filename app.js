@@ -52,14 +52,30 @@ app.get("/set-name", (req, res) => {
 
 app.post('/set-name', upload.none(), (req, res) => {
     console.log(req.body); // Form data will be here, parsed as a regular object
-    const set_name_event = {
-        type: "conference_name_set_event",
+    const set_name_command = {
+        type: "set_conference_name_command",
         name: req.body.conferenceName,
         timestamp: new Date().toISOString()
     }
-    push_event(set_name_event);
+    let event = null;
+    try { event = set_conference_name(get_events(), set_name_command);
+    } catch (error) {
+        console.error("Error setting conference name: " + error.message);
+        res.status(400).send("Error setting conference name");
+        res.body = "Error setting conference name: " + error.message;
+        return;     }
+    try { push_event(event);
+    } catch (error) {
+        console.error("Error pushing event: " + error.message);
+        res.status(500).send("Error pushing event");
+        res.body = "Error pushing event: " + error.message;
+        return;}
     res.redirect('/set-name-confirmation');
 });
+
+function set_conference_name(history, command) {
+    return { type: "conference_name_set_event", name: command.name, timestamp: new Date().toISOString() };
+}
 
 //tests for set name
 slice_tests.push({ slice_name: "Set Name State Change",
@@ -67,10 +83,10 @@ slice_tests.push({ slice_name: "Set Name State Change",
         { timeline_name: "Happy Path",
             checkpoints: [
                 { event: { type: "event_name_set_event", name: "Test Event", timestamp: "2024-01-23T10:00:00Z" },
-                    state: { name: "Test Event" },
-                    test: function event_name_should_be_set_when_requested(events, state) {
-                        const result = rooms_state_view(events);
-                        assert(result.length === state.rooms.length, "Should return empty array");
+                    command: { name: "Test Event", timestamp: "2024-01-23T10:00:00Z" },
+                    test: function event_name_should_be_set_when_requested(events, command) {
+                        const result_event = set_conference_name(events, command);
+                        assert(result_event.name === command.name, "Should have an event with a name we set");
                     }
                 }
             ]
