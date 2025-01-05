@@ -74,19 +74,129 @@ app.post('/set-name', upload.none(), (req, res) => {
 });
 
 function set_conference_name(history, command) {
-    return { type: "conference_name_set_event", name: command.name, timestamp: new Date().toISOString() };
+    // Check if the name is being changed to the same value
+    const current_name = history
+        .filter(event => event.type === "conference_name_set_event")
+        .reduce((_, event) => event.name, null);
+    
+    if (current_name === command.name) {
+        throw new Error("You didn't change the name. No change registered.");
+    }
+
+    return { 
+        type: "conference_name_set_event", 
+        name: command.name, 
+        timestamp: command.timestamp || new Date().toISOString() 
+    };
 }
 
-//tests for set name
-slice_tests.push({ slice_name: "Set Name State Change",
+slice_tests.push({ 
+    slice_name: "Set Conference Name State Change",
     timelines: [
-        { timeline_name: "Happy Path",
+        {
+            timeline_name: "Happy Path",
             checkpoints: [
-                { event: { type: "event_name_set_event", name: "Test Event", timestamp: "2024-01-23T10:00:00Z" },
-                    command: { name: "Test Event", timestamp: "2024-01-23T10:00:00Z" },
-                    test: function event_name_should_be_set_when_requested(events, command) {
-                        const result_event = set_conference_name(events, command);
-                        assert(result_event.name === command.name, "Should have an event with a name we set");
+                {
+                    event: { 
+                        type: "conference_name_set_event", 
+                        name: "EM Open Spaces", 
+                        timestamp: "2024-05-21T16:30:00" 
+                    },
+                    command: { 
+                        name: "EM Open Spaces", 
+                        timestamp: "2024-05-21T16:30:00" 
+                    },
+                    test: function first_name_should_be_set_when_requested(events, command, event) {
+                        const result = set_conference_name(events, command);
+                        assert(result.type === event.type, "Should be a conference_name_set_event");
+                        assert(result.name === command.name, "Name should be set to requested value");
+                    }
+                }
+            ]
+        },
+        {
+            timeline_name: "Renames allowed",
+            checkpoints: [
+                { 
+                    event: { 
+                        type: "conference_name_set_event", 
+                        name: "EM Open Spaces", 
+                        timestamp: "2024-05-21T16:30:00" 
+                    }
+                },
+                {
+                    event: { 
+                        type: "conference_name_set_event", 
+                        name: "Event Modeling Space", 
+                        timestamp: "2024-05-22T16:30:00" 
+                    },
+                    command: { 
+                        name: "Event Modeling Space", 
+                        timestamp: "2024-05-22T16:30:00" 
+                    },
+                    test: function name_should_be_changeable(events, command, event) {
+                        const result = set_conference_name(events, command);
+                        assert(result.type === event.type, "Should be a conference_name_set_event");
+                        assert(result.name === command.name, "Name should be updated to new value");
+                    }
+                }
+            ]
+        },
+        {
+            timeline_name: "Renames allowed multiple times",
+            checkpoints: [
+                { 
+                    event: { 
+                        type: "conference_name_set_event", 
+                        name: "EM Open Spaces", 
+                        timestamp: "2024-05-21T16:30:00" 
+                    }
+                },
+                { 
+                    event: { 
+                        type: "conference_name_set_event", 
+                        name: "Event Modeling Space", 
+                        timestamp: "2024-05-22T16:30:00" 
+                    }
+                },
+                {
+                    event: { 
+                        type: "conference_name_set_event", 
+                        name: "Event Modeling Open Spaces", 
+                        timestamp: "2024-05-23T16:30:00" 
+                    },
+                    command: { 
+                        name: "Event Modeling Open Spaces", 
+                        timestamp: "2024-05-23T16:30:00" 
+                    },
+                    test: function name_should_be_changeable_multiple_times(events, command, event) {
+                        const result = set_conference_name(events, command);
+                        assert(result.type === event.type, "Should be a conference_name_set_event");
+                        assert(result.name === command.name, "Name should be updated to new value");
+                    }
+                }
+            ]
+        },
+        {
+            timeline_name: "Renames not allowed if new name is the same",
+            checkpoints: [
+                { 
+                    event: { 
+                        type: "conference_name_set_event", 
+                        name: "EM Open Spaces", 
+                        timestamp: "2024-05-21T16:30:00" 
+                    }
+                },
+                {
+                    exception: "You didn't change the name. No change registered.",
+                    command: { 
+                        name: "EM Open Spaces", 
+                        timestamp: "2024-05-22T16:30:00" 
+                    },
+                    test: function should_reject_unchanged_name(events, command, exception) {
+                        let caught_error = run_with_expected_error(set_conference_name, events, command);
+                        assert(caught_error !== null, "Should throw when name hasn't changed");
+                        assert(caught_error === exception, "Should throw correct error message");
                     }
                 }
             ]
