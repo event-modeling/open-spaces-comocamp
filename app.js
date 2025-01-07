@@ -113,10 +113,10 @@ slice_tests.push({ slice_name: "Add Time Slot State Change",
                     },
                     test: function first_time_slot_should_be_added_when_valid(events, command, event) {
                         const result = add_time_slot(events, command);
-                        assert(result.type === event.type, "Should be a time_slot_added_event");
-                        assert(result.start_time === event.start_time, "Start time should match");
-                        assert(result.end_time === event.end_time, "End time should match");
-                        assert(result.name === event.name, "Name should match");
+                        assertEqual(result.type, event.type, "Should be a time_slot_added_event");
+                        assertEqual(result.start_time, event.start_time, "Start time should match");
+                        assertEqual(result.end_time, event.end_time, "End time should match");
+                        assertEqual(result.name, event.name, "Name should match");
                     }
                 },
                 {
@@ -135,10 +135,10 @@ slice_tests.push({ slice_name: "Add Time Slot State Change",
                     },
                     test: function second_non_overlapping_slot_should_be_added(events, command, event) {
                         const result = add_time_slot(events, command);
-                        assert(result.type === event.type, "Should be a time_slot_added_event");
-                        assert(result.start_time === event.start_time, "Start time should match");
-                        assert(result.end_time === event.end_time, "End time should match");
-                        assert(result.name === event.name, "Name should match");
+                        assertEqual(result.type, event.type, "Should be a time_slot_added_event");
+                        assertEqual(result.start_time, event.start_time, "Start time should match");
+                        assertEqual(result.end_time, event.end_time, "End time should match");
+                        assertEqual(result.name, event.name, "Name should match");
                     }
                 },
                 {
@@ -151,8 +151,8 @@ slice_tests.push({ slice_name: "Add Time Slot State Change",
                     },
                     test: function overlapping_slot_should_be_rejected(events, command, exception) {
                         let caught_error = run_with_expected_error(add_time_slot, events, command);
-                        assert(caught_error !== null, "Should throw an error for overlapping slots");
-                        assert(caught_error === exception, "Should throw overlap error message");
+                        assertNotEqual(caught_error, null, "Should throw an error for overlapping slots");
+                        assertEqual(caught_error, exception, "Should throw overlap error message");
                     }
                 }
             ]
