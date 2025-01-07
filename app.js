@@ -189,6 +189,8 @@ function time_slots_state_view(history) {
 }
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
+function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
+function assertNotEqual(a, b, message) { if (a === b) throw new Error(message + ". Did not expect: '" + b + "' but got the same thing."); }
 function run_with_expected_error(command_handler, events, command) {
     let caught_error = null;
     try {
