@@ -40,8 +40,8 @@
                     <tbody>
                         {{#time_slots}}
                         <tr>
-                            <td>{{start}}</td>
-                            <td>{{end}}</td>
+                            <td>{{start_time}}</td>
+                            <td>{{end_time}}</td>
                             <td>{{name}}</td>
                         </tr>
                         {{/time_slots}}
@@ -54,7 +54,7 @@
                 </table>
             </div>
 
-            <form class="input-group" action="/time-slots" method="POST">
+            <form class="input-group" action="/time-slots" method="POST" enctype="multipart/form-data">
                 <div class="form-row">
                     <label for="startTime">Start:</label>
                     <input type="time" id="startTime" name="startTime" class="input-field">

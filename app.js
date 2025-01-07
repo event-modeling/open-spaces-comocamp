@@ -366,8 +366,149 @@ function add_room(events, command) {
 }
 
 app.get("/time-slots", (req, res) => {
-    res.render("time-slots", { time_slots: [] });
+    res.render("time-slots", { time_slots: time_slots_state_view(get_events()) });
 });
+
+function add_time_slot(history, command) {
+
+    // Helper function to convert time string (HH:mm) to minutes
+    function timeToMinutes(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+
+    // Validate required fields
+    if (!command.start_time || !command.end_time || !command.name) {
+        throw new Error("Start time, end time, and name are required");
+    }
+
+    // Convert times to minutes for easier comparison
+    const newStart = timeToMinutes(command.start_time);
+    const newEnd = timeToMinutes(command.end_time);
+
+    // Validate time order
+    if (newStart >= newEnd) {
+        throw new Error("End time must be after start time");
+    }
+
+    // Check for overlaps with existing time slots
+    const hasOverlap = history
+        .filter(event => event.type === "time_slot_added_event")
+        .some(event => {
+            const existingStart = timeToMinutes(event.start_time);
+            const existingEnd = timeToMinutes(event.end_time);
+            return (newStart < existingEnd && newEnd > existingStart);
+        });
+
+    if (hasOverlap) {
+        throw new Error("Time slot is overlapping with others that are already defined");
+    }
+
+    return {
+        type: "time_slot_added_event",
+        start_time: command.start_time,
+        end_time: command.end_time,
+        name: command.name,
+        timestamp: command.timestamp || new Date().toISOString()
+    };
+}
+
+slice_tests.push({ slice_name: "Add Time Slot State Change",
+    timelines: [
+        {
+            timeline_name: "Happy Path",
+            checkpoints: [
+                {
+                    event: {
+                        type: "time_slot_added_event",
+                        start_time: "09:30",
+                        end_time: "10:25",
+                        name: "1st Session",
+                        timestamp: "2024-01-23T10:00:00Z"
+                    },
+                    command: {
+                        start_time: "09:30",
+                        end_time: "10:25",
+                        name: "1st Session",
+                        timestamp: "2024-01-23T10:00:00Z"
+                    },
+                    test: function first_time_slot_should_be_added_when_valid(events, command, event) {
+                        const result = add_time_slot(events, command);
+                        assertEqual(result.type, event.type, "Should be a time_slot_added_event");
+                        assertEqual(result.start_time, event.start_time, "Start time should match");
+                        assertEqual(result.end_time, event.end_time, "End time should match");
+                        assertEqual(result.name, event.name, "Name should match");
+                    }
+                },
+                {
+                    event: {
+                        type: "time_slot_added_event",
+                        start_time: "10:30",
+                        end_time: "11:25",
+                        name: "2nd Session",
+                        timestamp: "2024-01-23T10:01:00Z"
+                    },
+                    command: {
+                        start_time: "10:30",
+                        end_time: "11:25",
+                        name: "2nd Session",
+                        timestamp: "2024-01-23T10:01:00Z"
+                    },
+                    test: function second_non_overlapping_slot_should_be_added(events, command, event) {
+                        const result = add_time_slot(events, command);
+                        assertEqual(result.type, event.type, "Should be a time_slot_added_event");
+                        assertEqual(result.start_time, event.start_time, "Start time should match");
+                        assertEqual(result.end_time, event.end_time, "End time should match");
+                        assertEqual(result.name, event.name, "Name should match");
+                    }
+                },
+                {
+                    exception: "Time slot is overlapping with others that are already defined",
+                    command: {
+                        start_time: "10:00",
+                        end_time: "11:00",
+                        name: "1st Session",
+                        timestamp: "2024-01-23T10:02:00Z"
+                    },
+                    test: function overlapping_slot_should_be_rejected(events, command, exception) {
+                        let caught_error = run_with_expected_error(add_time_slot, events, command);
+                        assertNotEqual(caught_error, null, "Should throw an error for overlapping slots");
+                        assertEqual(caught_error, exception, "Should throw overlap error message");
+                    }
+                }
+            ]
+        }
+    ]
+});
+
+app.post("/time-slots", upload.none(), (req, res) => {
+    const command = {
+        start_time: req.body.startTime,
+        end_time: req.body.endTime,
+        name: req.body.name,
+        timestamp: new Date().toISOString()
+    };
+
+    try {
+        const event = add_time_slot(get_events(), command);
+        push_event(event);
+        res.redirect("/time-slots");
+    } catch (error) {
+        console.error("Error adding time slot:", error.message);
+        res.status(400).send(error.message);
+    }
+});
+
+function time_slots_state_view(history) {
+    return history
+        .filter(event => event.type === "time_slot_added_event")
+        .map(event => ({
+            start_time: event.start_time,
+            end_time: event.end_time,
+            name: event.name
+        }));
+}
+
 
 app.get("/generate-conf-id", (req, res) => { res.render("generate-conf-id"); });
 
@@ -647,6 +788,8 @@ slice_tests.push({ slice_name: "generate_unique_id_sc",
 });
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
+function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
+function assertNotEqual(a, b, message) { if (a === b) throw new Error(message + ". Did not expect: '" + b + "' but got the same thing."); }
 function run_with_expected_error(command_handler, events, command) {
     let caught_error = null;
     try {
