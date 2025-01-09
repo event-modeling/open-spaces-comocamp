@@ -137,8 +137,18 @@ slice_tests.push({ slice_name: "rooms state view",
 ); // push
 
 app.get("/time-slots", (req, res) => {
-    res.render("time-slots", { time_slots: [] });
+    res.render("time-slots", { time_slots: time_slots_state_view(get_events()) });
 });
+
+function time_slots_state_view(history) {
+    return history
+        .filter(event => event.type === "time_slot_added_event")
+        .map(event => ({
+            start_time: event.start_time,
+            end_time: event.end_time,
+            name: event.name
+        }));
+}
 
 app.get("/generate-conf-id", (req, res) => { res.render("generate-conf-id"); });
 
