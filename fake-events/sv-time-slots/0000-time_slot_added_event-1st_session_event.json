@@ -1,0 +1,7 @@
+{
+    "type": "time_slot_added_event",
+    "start_time": "09:30",
+    "end_time": "10:25",
+    "name": "1st Session",
+    "timestamp": "2024-01-23T10:00:00Z"
+} 
