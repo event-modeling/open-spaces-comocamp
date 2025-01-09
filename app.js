@@ -488,6 +488,9 @@ function tests() {
     console.log("🧪 Tests are finished");
     console.log("📊 Tests summary:");
     console.log(summary);
+    const failed = (summary.match(/^.*❌/gm) || []).length;
+    const passed = (summary.match(/^.*✅/gm) || []).length;
+    console.log("\x1b[" + (failed > 0 ? "91" : "92") + "m 🧪 Tests summary: Failed: " + failed + " Passed: " + passed + " \x1b[0m");
     process.exit(0);
 }
 
