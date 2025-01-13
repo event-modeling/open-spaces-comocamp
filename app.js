@@ -786,6 +786,21 @@ slice_tests.push({ slice_name: "generate_unique_id_sc",
     ]
 });
 
+app.get("/join-conference", (req, res) => {
+    res.render("join-conference", { conf_id: join_conference_sv(get_events()).conf_id || "1234" });
+});
+
+function join_conference_sv(history) {
+    return history.reduce((acc, event) => {
+        switch(event.type) {
+            case "unique_id_generated_event":
+                acc.conf_id = event.conf_id;
+                break;
+        }
+        return acc;
+    }, { conf_id: null });
+}
+
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
 function assertNotEqual(a, b, message) { if (a === b) throw new Error(message + ". Did not expect: '" + b + "' but got the same thing."); }

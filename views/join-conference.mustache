@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Conference</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-svg@1.1.0/dist/qrcode.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <nav class="primary-nav">
+            <span class="nav-item active">Setup</span> |
+            <span class="nav-item">Sessions</span> |
+            <span class="nav-item">Voting</span> |
+            <span class="nav-item">Schedule</span>
+        </nav>
+        <nav class="secondary-nav">
+            <span class="nav-item">Name</span> |
+            <span class="nav-item">Dates</span> |
+            <span class="nav-item">Rooms</span> |
+            <span class="nav-item">Time Slots</span> |
+            <span class="nav-item active">QR code</span>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="qr-section">
+            <h2>Show this to the participants</h2>
+            <div id="qrcode"></div>
+            <div class="conference-url" id="conferenceUrl"></div>
+            <button class="btn btn-primary" onclick="closeRegistration()">Close Registration</button>
+        </div>
+    </main>
+
+    <script>
+        function generateQR() {
+            const confId = '{{conf_id}}';
+            const baseUrl = window.location.origin;
+            const registrationUrl = `${baseUrl}/register/${confId}`;
+            
+            document.getElementById('conferenceUrl').textContent = registrationUrl;
+            
+            const qr = new QRCode({
+                content: registrationUrl,
+                padding: 4,
+                width: 256,
+                height: 256,
+                color: "#000000",
+                background: "#ffffff",
+                ecl: "M"
+            });
+            
+            document.getElementById('qrcode').innerHTML = qr.svg();
+        }
+
+        function closeRegistration() {
+            // TODO: Implement close registration functionality
+            console.log('Registration closed');
+        }
+
+        // Generate QR code when page loads
+        window.onload = generateQR;
+    </script>
+</body>
+</html> 
