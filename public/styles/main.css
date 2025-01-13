@@ -163,3 +163,34 @@ body {
     color: var(--text-muted);
     padding: 1rem;
 }
+
+.qr-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background-color: var(--color-surface);
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+}
+
+#qrcode {
+    padding: 1rem;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.conference-url {
+    word-break: break-all;
+    text-align: center;
+    color: var(--color-primary);
+    font-family: monospace;
+    padding: 1rem;
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 500px;
+}
