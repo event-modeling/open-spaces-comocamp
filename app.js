@@ -150,7 +150,7 @@ app.post("/generate-conf-id", (req, res) => {
         res.status(500).send("Error generating unique ID");
         return;
     }
-    res.redirect('/todo-gen-conf-ids');
+    res.redirect('/join-conference');
 });
 
 function request_unique_id(history, command) {
