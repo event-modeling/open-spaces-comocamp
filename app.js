@@ -800,7 +800,19 @@ function join_conference_sv(history) {
     }, { conf_id: null });
 }
 
-app.get("/register", (req, res) => { res.render("register", { conference_name: conference_name_state_view(get_events()) });
+app.get("/register/:id", (req, res) => {
+    const id = req.params.id;
+    let response = {
+        not_found: false,
+        conference_name: "Not yet named"
+    };
+    if (id !== join_conference_sv(get_events()).conf_id) {
+        response.not_found = true;
+        res.status(404).render("register", response);
+        return;
+    }
+    response.conference_name = conference_name_state_view(get_events());
+    res.render("register", response);
 });
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
