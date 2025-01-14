@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register for Open Spaces</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="primary-nav">
+            <span class="nav-item">Sessions</span> |
+            <span class="nav-item">Voting</span> |
+            <span class="nav-item">Schedule</span>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="form-section">
+            <h1>Welcome to {{ conference_name }}!</h1>
+            
+            <form method="POST" action="/register" enctype="multipart/form-data">
+                <div class="input-group">
+                    <label for="participantName">Name:</label>
+                    <input type="text" 
+                           id="participantName" 
+                           name="participantName" 
+                           class="input-field" 
+                           required>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html> 

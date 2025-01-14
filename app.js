@@ -730,7 +730,6 @@ function provide_unique_id(unfiltered_events, command) {
     return { type: "unique_id_generated_event", conf_id: command.conf_id, timestamp: command.timestamp, event_timestamp: new Date().toISOString() };
 }
 
-
 slice_tests.push({ slice_name: "generate_unique_id_sc",
     timelines: [
         {
@@ -800,6 +799,9 @@ function join_conference_sv(history) {
         return acc;
     }, { conf_id: null });
 }
+
+app.get("/register", (req, res) => { res.render("register", { conference_name: conference_name_state_view(get_events()) });
+});
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
