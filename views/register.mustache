@@ -17,22 +17,29 @@
 
     <main class="container">
         <section class="form-section">
-            <h1>Welcome to {{ conference_name }}!</h1>
+            {{#not_found}}
+                <h1>Conference Not Found</h1>
+                <p>This conference doesn't exist.</p>
+            {{/not_found}}
             
-            <form method="POST" action="/register" enctype="multipart/form-data">
-                <div class="input-group">
-                    <label for="participantName">Name:</label>
-                    <input type="text" 
-                           id="participantName" 
-                           name="participantName" 
-                           class="input-field" 
-                           required>
-                </div>
+            {{^not_found}}
+                <h1>Welcome to {{ conference_name }}!</h1>
+                
+                <form method="POST" action="/register" enctype="multipart/form-data">
+                    <div class="input-group">
+                        <label for="participantName">Name:</label>
+                        <input type="text" 
+                               id="participantName" 
+                               name="participantName" 
+                               class="input-field" 
+                               required>
+                    </div>
 
-                <div class="button-group">
-                    <button type="submit" class="btn btn-primary">Register</button>
-                </div>
-            </form>
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </div>
+                </form>
+            {{/not_found}}
         </section>
     </main>
 </body>
