@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="3683" dy="1660" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="5156" dy="2324" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
@@ -44,6 +44,12 @@
                 </mxCell>
                 <mxCell id="1882" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
                     <mxGeometry x="9153" y="1477" width="615" height="1370" as="geometry"/>
+                </mxCell>
+                <mxCell id="1889" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF33;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
+                    <mxGeometry x="9788" y="1477" width="731" height="1370" as="geometry"/>
+                </mxCell>
+                <mxCell id="1891" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF33;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
+                    <mxGeometry x="10528" y="1477" width="545" height="1370" as="geometry"/>
                 </mxCell>
                 <object label="Event Model" id="1">
                     <mxCell parent="0"/>
@@ -1308,7 +1314,12 @@
                         <mxPoint x="9888.5" y="2163" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="933" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=11;fontColor=#000000;endArrow=classic;" parent="1" source="932" target="886" edge="1">
+                <mxCell id="933" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=11;fontColor=#000000;endArrow=classic;startArrow=none;" parent="1" target="886" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="10153.5" y="1477" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="1890" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=16;fontColor=#00FF00;endArrow=classic;" edge="1" parent="1" source="932" target="886">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="932" value="&lt;font color=&quot;#000000&quot;&gt;Name&lt;br&gt;&amp;nbsp; EM Open Spaces&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" parent="1" vertex="1">
@@ -1367,7 +1378,7 @@
                     <mxGeometry x="14099" y="1920" width="60" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="963" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Registrations&lt;br style=&quot;font-size: 9px;&quot;&gt;&amp;nbsp;[&lt;br style=&quot;font-size: 9px;&quot;&gt;&amp;nbsp; { ConfID: 1111-2222-333, SessionID: eeeee-fffff-00000, Name: Adam },&lt;br style=&quot;font-size: 9px;&quot;&gt;&amp;nbsp;]&lt;br style=&quot;font-size: 9px;&quot;&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=9;fillColor=#cdeb8b;verticalAlign=top;align=left;fontColor=#000000;" parent="1" vertex="1">
-                    <mxGeometry x="10816" y="2403" width="200" height="100" as="geometry"/>
+                    <mxGeometry x="12014" y="2392" width="200" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="989" value="&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;Create Conference URL and QR code&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;align=left;verticalAlign=top;" parent="1" vertex="1">
                     <mxGeometry x="6919" y="1545" width="290" height="270" as="geometry"/>
