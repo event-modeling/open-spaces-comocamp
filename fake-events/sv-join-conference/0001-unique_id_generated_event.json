@@ -1,5 +1,5 @@
 {
-    "type": "unique_id_generated_event",
+    "type": "conference_id_generated_event",
     "conf_id": "5555-6666-7777",
     "timestamp": "2024-01-24T09:00:01Z"
 } 
