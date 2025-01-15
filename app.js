@@ -550,7 +550,7 @@ slice_tests.push({ slice_name: "request_unique_id_sc",
                     }
                 },
                 {
-                    event: { type: "unique_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:00:00Z" }
+                    event: { type: "conference_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:00:00Z" }
                 },
                 {
                     event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:00:00Z" },
@@ -572,7 +572,7 @@ function todo_gen_conf_id_sv(history) {
                 if (acc.last_event !== null && acc.last_event.type === "unique_id_requested_event") break;
                 acc.todos.push({ conf_id: "" });
                 break;
-            case "unique_id_generated_event":
+            case "conference_id_generated_event":
                 if (   acc.last_event === null 
                     || acc.last_event.type !== "unique_id_requested_event"
                     || acc.todos.length === 0
@@ -604,7 +604,7 @@ slice_tests.push({ slice_name: "todo_gen_conf_id_sv",
                     }
                 },
                 {
-                    event: { type: "unique_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:01:00Z" },
+                    event: { type: "conference_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:01:00Z" },
                     state: { todos: [{ conf_id: "" }] },
                     test: function empty_conf_id_should_be_added_on_request(event_history, state) {
                         const result = todo_gen_conf_id_sv(event_history);
@@ -628,7 +628,7 @@ slice_tests.push({ slice_name: "todo_gen_conf_id_sv",
                     event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:02:00Z" }
                 },
                 {
-                    event: { type: "unique_id_generated_event", conf_id: "2222-3333-4444", timestamp: "2024-01-23T10:03:00Z" },
+                    event: { type: "conference_id_generated_event", conf_id: "2222-3333-4444", timestamp: "2024-01-23T10:03:00Z" },
                     state: { todos: [{ conf_id: "1111-2222-3333" }, { conf_id: "" }] },
                     test: function second_request_should_add_new_empty_conf_id(event_history, state) {
                         const result = todo_gen_conf_id_sv(event_history);
@@ -667,13 +667,13 @@ slice_tests.push({ slice_name: "todo_gen_conf_id_sv",
                     }
                 },
                 {
-                    event: { type: "unique_id_generated_event", conf_id: "3333-4444-5555", timestamp: "2024-01-23T10:02:00Z" }
+                    event: { type: "conference_id_generated_event", conf_id: "3333-4444-5555", timestamp: "2024-01-23T10:02:00Z" }
                 },
                 {
                     progress_marker: "A duplicate provision of an ID will be ignored"
                 },
                 {
-                    event: { type: "unique_id_generated_event", conf_id: "4444-5555-6666", timestamp: "2024-01-23T10:03:00Z" },
+                    event: { type: "conference_id_generated_event", conf_id: "4444-5555-6666", timestamp: "2024-01-23T10:03:00Z" },
                     state: { todos: [{ conf_id: "3333-4444-5555" }] },
                     test: function duplicate_generation_should_be_ignored(event_history, state) {
                         const result = todo_gen_conf_id_sv(event_history);
@@ -687,7 +687,7 @@ slice_tests.push({ slice_name: "todo_gen_conf_id_sv",
             timeline_name: "If no requests appear in the TODO list, a provided ID is ignored",
             checkpoints: [
                 {
-                    event: { type: "unique_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:00:00Z" },
+                    event: { type: "conference_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:00:00Z" },
                     state: { todos: [] },
                     test: function generated_id_should_be_ignored_without_request(event_history, state) {
                         const result = todo_gen_conf_id_sv(event_history);
@@ -709,7 +709,7 @@ function gen_conf_id_processor(history) {
         return;
     }
     console.log("Found conf ID request.");
-    conf_ids.forEach(todo => { if (todo.conf_id === "") generate_unique_id(); });
+    if (conf_ids[conf_ids.length - 1].conf_id === "") generate_unique_id();
 }
 
 function generate_unique_id() {
@@ -722,12 +722,12 @@ function generate_unique_id() {
 const error_no_request_found = "No conf ID request found.";
 function provide_unique_id(unfiltered_events, command) {
     console.log("Providing unique ID to system: " + command.conf_id);
-    const events = unfiltered_events.filter(event => event.type === "unique_id_requested_event" || event.type === "unique_id_generated_event");
+    const events = unfiltered_events.filter(event => event.type === "unique_id_requested_event" || event.type === "conference_id_generated_event");
     if (events.length === 0 || events[events.length - 1].type !== "unique_id_requested_event") {
         console.log("No conf ID request found.");
         throw new Error(error_no_request_found);
     }
-    return { type: "unique_id_generated_event", conf_id: command.conf_id, timestamp: command.timestamp, event_timestamp: new Date().toISOString() };
+    return { type: "conference_id_generated_event", conf_id: command.conf_id, timestamp: command.timestamp, event_timestamp: new Date().toISOString() };
 }
 
 slice_tests.push({ slice_name: "generate_unique_id_sc",
@@ -757,7 +757,7 @@ slice_tests.push({ slice_name: "generate_unique_id_sc",
                     progress_marker: "Test the happy path"
                 },
                 { 
-                    event: { type: "unique_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:01:00Z" },
+                    event: { type: "conference_id_generated_event", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:01:00Z" },
                     command: { type: "generate_unique_id_command", conf_id: "1111-2222-3333", timestamp: "2024-01-23T10:01:00Z" },
                     test: function provide_unique_id_command_should_be_added_when_requested(event_history, command, event) {
                         const result = provide_unique_id(event_history, command);
@@ -769,7 +769,7 @@ slice_tests.push({ slice_name: "generate_unique_id_sc",
                     event: { type: "unique_id_requested_event", timestamp: "2024-01-23T10:02:00Z" }
                 },
                 {
-                    event: { type: "unique_id_generated_event", conf_id: "2222-3333-4444", timestamp: "2024-01-23T10:03:00Z" }
+                    event: { type: "conference_id_generated_event", conf_id: "2222-3333-4444", timestamp: "2024-01-23T10:03:00Z" }
                 },
                 {
                     exception: error_no_request_found,
@@ -792,7 +792,7 @@ app.get("/join-conference", (req, res) => {
 function join_conference_sv(history) {
     return history.reduce((acc, event) => {
         switch(event.type) {
-            case "unique_id_generated_event":
+            case "conference_id_generated_event":
                 acc.conf_id = event.conf_id;
                 break;
         }
@@ -812,7 +812,228 @@ app.get("/register/:id", (req, res) => {
         return;
     }
     response.conference_name = conference_name_state_view(get_events());
+    response.conference_id = id;
     res.render("register", response);
+});
+
+app.post("/register/:id", multer().none(), (req, res) => {
+    const id = req.params.id;
+    const name = req.body.participantName;
+    const registration_id = uuidv4();
+    const register_command = { type: "register_command", conference_id: id, registration_id: registration_id, name: name, timestamp: new Date().toISOString() };
+    let register_event = null;
+    try {
+        register_event = register_state_change(get_events(), register_command);
+    }
+    catch (error) {
+        console.error("Error registering participant: " + error.message);
+        res.status(422).send("Error registering participant. " + error.message);
+        return;
+    }
+    try {
+        push_event(register_event, 'name:' + name + '-registrationId:' + registration_id.slice(0, 8) + '-conferenceId:' + id.slice(0, 8));
+    }
+    catch (error) {
+        console.error("Error pushing event: " + error.message);
+        res.status(500).send("Something went wrong. Please try again.");
+        return;
+    }
+    res.status(201).redirect("/register-success/" + registration_id);
+});
+
+const error_registration_closed = "Registration is closed.";
+const error_already_registered = "You are already registered.";
+function register_state_change(history, command) {
+    const registration_state = history.reduce((acc, event) => {
+        switch(event.type) {
+            case "registration_closed_event":
+                acc.conference_id = null;
+                acc.names = new Set();
+                break;
+            case "registered_event":
+                if (acc.conference_id === null) break; // this should not happen
+                acc.names.add(event.name);
+                break;
+            case "conference_id_generated_event":
+                acc.conference_id = event.conf_id;
+                acc.names = new Set();
+                break;
+            default:
+                break;
+        }
+        return acc;
+    }, { 
+        conference_id: null,
+        names: new Set(),
+    });
+
+    if (   registration_state.conference_id === null 
+        || registration_state.conference_id !== command.conference_id) throw new Error(error_registration_closed);
+    if (registration_state.names?.has(command.name)) throw new Error(error_already_registered);
+
+    return { 
+        type: "registered_event", 
+        conference_id: command.conference_id, 
+        registration_id: command.registration_id, 
+        name: command.name, 
+        timestamp: command.timestamp 
+    };
+}
+
+slice_tests.push({ 
+    slice_name: "Registration State Change",
+    timelines: [
+        {
+            timeline_name: "First Timeline",
+            checkpoints: [
+                {
+                    exception: error_registration_closed,
+                    command: { 
+                        type: "register_command",
+                        name: "Adam",
+                        registration_id: "eeee-ffff-00000",
+                        conference_id: "1111-2222-3333",
+                        timestamp: "2024-01-23T10:00:00Z"
+                    },
+                    test: function should_reject_registration_when_conference_does_not_exist(events, command, exception) {
+                        let caught_error = run_with_expected_error(register_state_change, events, command);
+                        assert(caught_error !== null, "Should throw when conference doesn't exist");
+                        assert(caught_error === exception, "Should throw correct error message");
+                    }
+                },
+                {
+                    event: { 
+                        type: "conference_id_generated_event",
+                        conf_id: "1111-2222-3333",
+                        timestamp: "2024-01-23T10:01:00Z"
+                    }
+                },
+                {
+                    event: { 
+                        type: "registered_event",
+                        name: "Adam",
+                        registration_id: "eeee-ffff-00000",
+                        conference_id: "1111-2222-3333",
+                        timestamp: "2024-01-23T10:02:00Z"
+                    },
+                    command: {
+                        type: "register_command",
+                        name: "Adam",
+                        registration_id: "eeee-ffff-00000",
+                        conference_id: "1111-2222-3333",
+                        timestamp: "2024-01-23T10:02:00Z"
+                    },
+                    test: function should_allow_first_registration(events, command, event) {
+                        const result = register_state_change(events, command);
+                        assert(result.type === event.type, "Should be a registered_event");
+                        assert(result.registration_id === event.registration_id, "Should have correct registration ID");
+                    }
+                },
+                {
+                    exception: error_already_registered,
+                    command: {
+                        type: "register_command",
+                        name: "Adam",
+                        registration_id: "cccc-dddd-1111",
+                        conference_id: "1111-2222-3333",
+                        timestamp: "2024-01-23T10:03:00Z"
+                    },
+                    test: function should_reject_duplicate_registration(events, command, exception) {
+                        let caught_error = run_with_expected_error(register_state_change, events, command);
+                        assertNotEqual(caught_error, null, "Should throw when already registered");
+                        assertEqual(caught_error, exception, "Should throw correct error message");
+                    }
+                },
+                {
+                    event: {
+                        type: "registration_closed_event",
+                        conference_id: "1111-2222-3333",
+                        timestamp: "2024-01-23T10:04:00Z"
+                    }
+                },
+                {
+                    progress_marker: "A second conference is started"
+                },
+                {
+                    event: {
+                        type: "conference_id_generated_event",
+                        conf_id: "2222-3333-4444",
+                        timestamp: "2024-01-23T10:05:00Z"
+                    }
+                },
+                {
+                    exception: error_registration_closed,
+                    command: {
+                        type: "register_command",
+                        name: "Adam",
+                        registration_id: "eeee-ffff-00000",
+                        conference_id: "1111-2222-3333",
+                        timestamp: "2024-01-23T10:06:00Z"
+                    },
+                    test: function should_reject_registration_for_old_conference(events, command, exception) {
+                        let caught_error = run_with_expected_error(register_state_change, events, command);
+                        assert(caught_error !== null, "Should throw when using old conference ID");
+                        assert(caught_error === exception, "Should throw correct error message");
+                    }
+                },
+                {
+                    event: {
+                        type: "registered_event",
+                        name: "Adam",
+                        registration_id: "aaaa-bbbb-00000",
+                        conference_id: "2222-3333-4444",
+                        timestamp: "2024-01-23T10:07:00Z"
+                    },
+                    command: {
+                        type: "register_command",
+                        name: "Adam",
+                        registration_id: "aaaa-bbbb-00000",
+                        conference_id: "2222-3333-4444",
+                        timestamp: "2024-01-23T10:07:00Z"
+                    },
+                    test: function should_allow_registration_for_new_conference(events, command, event) {
+                        const result = register_state_change(events, command);
+                        assert(result.type === event.type, "Should be a registered_event");
+                        assert(result.registration_id === event.registration_id, "Should have correct registration ID");
+                    }
+                }
+            ]
+        },
+        {
+            timeline_name: "Registration is closed",
+            checkpoints: [
+                {
+                    event: {
+                        type: "conference_id_generated_event",
+                        conf_id: "1111-2222-3333",
+                        timestamp: "2024-01-23T11:00:00Z"
+                    }
+                },
+                {
+                    event: {
+                        type: "registration_closed_event",
+                        conference_id: "1111-2222-3333",
+                        timestamp: "2024-01-23T11:01:00Z"
+                    }
+                },
+                {
+                    exception: error_registration_closed,
+                    command: {
+                        type: "register_command",
+                        name: "Adam",
+                        registration_id: "eeee-ffff-00000",
+                        conference_id: "1111-2222-3333",
+                        timestamp: "2024-01-23T11:02:00Z"
+                    },
+                    test: function should_reject_registration_when_closed(events, command, exception) {
+                        let caught_error = run_with_expected_error(register_state_change, events, command);
+                        assert(caught_error !== null, "Should throw when registration is closed");
+                        assert(caught_error === exception, "Should throw correct error message");
+                    }
+                }
+            ]
+        }
+    ]
 });
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
