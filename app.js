@@ -727,7 +727,7 @@ function provide_unique_id(unfiltered_events, command) {
         console.log("No conf ID request found.");
         throw new Error(error_no_request_found);
     }
-    return { type: "unique_id_generated_event", conf_id: command.conf_id, timestamp: command.timestamp, event_timestamp: new Date().toISOString() };
+    return { type: "unique_id_generated_event", conf_id: command.conf_id, timestamp: command.timestamp, timestamp: new Date().toISOString() };
 }
 
 
