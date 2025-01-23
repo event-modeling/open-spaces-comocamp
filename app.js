@@ -802,18 +802,7 @@ function join_conference_sv(history) {
 
 app.get("/register/:id", (req, res) => {
     const id = req.params.id;
-    let response = {
-        not_found: false,
-        conference_name: "Not yet named"
-    };
-    if (id !== join_conference_sv(get_events()).conf_id) {
-        response.not_found = true;
-        res.status(404).render("register", response);
-        return;
-    }
-    response.conference_name = conference_name_state_view(get_events());
-    response.conference_id = id;
-    res.render("register", response);
+    res.render("register", { conference_name: conference_name_state_view(get_events()), conference_id: id });
 });
 
 app.post("/register/:id", multer().none(), (req, res) => {
@@ -838,8 +827,44 @@ app.post("/register/:id", multer().none(), (req, res) => {
         res.status(500).send("Something went wrong. Please try again.");
         return;
     }
-    res.status(201).redirect("/register-success/" + registration_id);
+    res.redirect(`/register-success/${registration_id}`);    
 });
+
+app.get("/register-success/:id", (req, res) => {
+    const registration_id = req.params.id;
+    const registration_sv = registration_state_view(get_events());
+    const registered_name = registration_sv.registrations[registration_id];
+    if (!registered_name) {
+        res.status(404).send("Registration not found");
+        return;
+    }
+    console.log("Registration found, state view: " + JSON.stringify(registration_sv, null, 2));
+    console.log("Registration found, registration map: " + JSON.stringify(registration_sv.registrations, null, 2));
+    res.render("register-success", {
+        participant_name: registered_name,
+        conference_name: registration_sv.conference_name
+    });
+});
+
+function registration_state_view(history) {
+    return history.reduce((acc, event) => {
+        switch(event.type) {
+            case "conference_id_generated_event":
+                acc.conference_id = event.conf_id;
+                acc.registrations = new Map();
+                break;
+            case "conference_name_set_event":
+                acc.conference_name = event.name;
+                break;
+            case "registered_event":
+                acc.registrations[event.registration_id] = event.name;
+                break;
+            default:
+                break;
+        }
+        return acc;
+    }, { conference_id: null, conference_name: "-- not named yet --", registrations: new Map() });
+}
 
 const error_registration_closed = "Registration is closed.";
 const error_already_registered = "You are already registered.";

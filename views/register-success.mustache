@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="primary-nav">
+            <span class="nav-item">Sessions</span> |
+            <span class="nav-item">Voting</span> |
+            <span class="nav-item">Schedule</span>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="form-section">
+            <h2>Thank you {{participant_name}}</h2>
+            <p>for registering at {{conference_name}}!</p>
+            
+            <div class="button-group">
+                <a href="/sessions" class="btn btn-primary">Continue</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html> 
