@@ -822,6 +822,18 @@ app.post("/close-registration", (req, res) => {
 });
 
 function close_registration_state_change(history, command) {
+    const state = history.reduce((acc, event) => {
+        switch(event.type) {
+            case "unique_id_generated_event":
+                acc.closed = false;
+                break;
+            case "close_registration_event":
+                acc.closed = true;
+                break;
+        }
+        return acc;
+    }, { closed: true });
+    if (state.closed) throw new Error("Registration is already closed");
     return { type: "close_registration_event", timestamp: new Date().toISOString() };
 }
 
