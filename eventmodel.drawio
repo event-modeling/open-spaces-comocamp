@@ -1,10 +1,10 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="1474" dy="583" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="2656" dy="1162" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
-                    <mxCell style="locked=1;" parent="0"/>
+                    <mxCell style="" parent="0"/>
                 </object>
                 <mxCell id="1276" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
                     <mxGeometry x="4591" y="1493" width="473" height="2557" as="geometry"/>
@@ -51,7 +51,7 @@
                 <mxCell id="1891" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
                     <mxGeometry x="10968" y="1477" width="545" height="2982" as="geometry"/>
                 </mxCell>
-                <mxCell id="1905" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF33;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
+                <mxCell id="1905" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
                     <mxGeometry x="11540" y="1477" width="545" height="2531" as="geometry"/>
                 </mxCell>
                 <mxCell id="1945" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF33;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
@@ -1370,9 +1370,13 @@
                 <mxCell id="950" value="&lt;font color=&quot;#000000&quot;&gt;RegisterParticipant&lt;br&gt;&amp;nbsp;- name: Adam&lt;br&gt;&amp;nbsp;- registartion_id: eeee-fffff-00000&lt;br&gt;&amp;nbsp;- conf_id: 1111-2222-3333&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
                     <mxGeometry x="11222" y="2657" width="188" height="100" as="geometry"/>
                 </mxCell>
-                <mxCell id="956" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=11;fontColor=#000000;endArrow=classic;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="952" target="963" edge="1">
+                <mxCell id="956" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=11;fontColor=#000000;endArrow=classic;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="952" target="963" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="11676" y="2763" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="11327" y="3017"/>
+                            <mxPoint x="13601" y="3017"/>
+                        </Array>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="1964" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;entryX=0.25;entryY=1;entryDx=0;entryDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=16;fontColor=#00FF00;endArrow=classic;exitX=1;exitY=0.25;exitDx=0;exitDy=0;" parent="1" source="952" target="1962" edge="1">
@@ -1436,13 +1440,13 @@
                 <mxCell id="1028" value="&lt;font color=&quot;#000000&quot;&gt;Close Registration&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#CCE5FF;" parent="1" vertex="1">
                     <mxGeometry x="12342" y="1770" width="90" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="1029" value="&lt;font color=&quot;#000000&quot;&gt;RegistrationClosed&lt;br&gt;&amp;nbsp;- confId: 1111-2222-3333&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
+                <mxCell id="1029" value="&lt;font color=&quot;#000000&quot;&gt;RegistrationClosed&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
                     <mxGeometry x="12352" y="2857.5" width="190" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="1031" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=9;fontColor=#000000;endArrow=classic;" parent="1" source="1030" target="1029" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="1030" value="&lt;font color=&quot;#000000&quot;&gt;CloseRegistration&lt;br&gt;&amp;nbsp;- conf id: 1111-2222-3333&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
+                <mxCell id="1030" value="&lt;font color=&quot;#000000&quot;&gt;CloseRegistration&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;verticalAlign=top;align=left;" parent="1" vertex="1">
                     <mxGeometry x="12292" y="2667.5" width="170" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="1034" value="&lt;span style=&quot;font-size: 72px;&quot;&gt;Ruby setup instructions&lt;/span&gt;&lt;span style=&quot;color: rgba(0, 0, 0, 0); font-family: monospace; font-size: 0px;&quot;&gt;%3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22%26lt%3Bfont%20style%3D%26quot%3B%26quot%3B%26gt%3B%26lt%3Bfont%20style%3D%26quot%3Bfont-size%3A%2072px%3B%26quot%3B%26gt%3BContributing%20to%20the%20project%3A%26lt%3B%2Ffont%26gt%3B%26lt%3Bbr%26gt%3B%26lt%3B%2Ffont%26gt%3B%26lt%3Bdiv%20style%3D%26quot%3Bfont-size%3A%2028px%3B%26quot%3B%26gt%3B%26lt%3Bdiv%20style%3D%26quot%3B%26quot%3B%26gt%3B%26lt%3Bfont%20style%3D%26quot%3Bfont-size%3A%2060px%3B%26quot%3B%26gt%3B%26lt%3Bbr%26gt%3B%26lt%3B%2Ffont%26gt%3B%26lt%3B%2Fdiv%26gt%3B%26lt%3Bdiv%20style%3D%26quot%3B%26quot%3B%26gt%3B%26lt%3Bfont%20style%3D%26quot%3Bfont-size%3A%2028px%3B%26quot%3B%26gt%3B1.%20Update%20the%20EM%20in%20the%20first%20commit%20of%20you%20slice%20branch.%20Name%20the%20branch%20to%20reflect%20the%20Command%20or%20the%20State%20View%20you%20are%20working%20on.%26lt%3B%2Ffont%26gt%3B%26lt%3B%2Fdiv%26gt%3B%26lt%3Bdiv%20style%3D%26quot%3B%26quot%3B%26gt%3B%26lt%3Bfont%20style%3D%26quot%3Bfont-size%3A%2028px%3B%26quot%3B%26gt%3B2.%20Make%20PR%20for%20the%20change%20into%20main%20branch%20so%20that%20others%20can%20see%20that%20you're%20working%20on%20that%20slice%26lt%3B%2Ffont%26gt%3B%26lt%3B%2Fdiv%26gt%3B%26lt%3Bdiv%20style%3D%26quot%3B%26quot%3B%26gt%3B%26lt%3Bfont%20style%3D%26quot%3Bfont-size%3A%2028px%3B%26quot%3B%26gt%3B3.%20Implement%20the%20slice%26lt%3B%2Ffont%26gt%3B%26lt%3B%2Fdiv%26gt%3B%26lt%3Bdiv%20style%3D%26quot%3B%26quot%3B%26gt%3B%26lt%3Bfont%20style%3D%26quot%3Bfont-size%3A%2028px%3B%26quot%3B%26gt%3B4.%20Make%20PR%20for%20the%20new%20version%20of%20the%20branch%20to%20complete%20the%20slice%20work%20into%20main.%26lt%3B%2Ffont%26gt%3B%26lt%3B%2Fdiv%26gt%3B%26lt%3B%2Fdiv%26gt%3B%22%20style%3D%22rounded%3D0%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3Balign%3Dleft%3BverticalAlign%3Dtop%3BfontSize%3D3%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%22310%22%20y%3D%22300%22%20width%3D%221000%22%20height%3D%22490%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E&lt;/span&gt;&lt;br&gt;&lt;div style=&quot;&quot;&gt;&lt;div style=&quot;font-size: 28px;&quot;&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;1. Install Ruby 3.2.1&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 28px;&quot;&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;2. gem install bundler&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 28px;&quot;&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;3. Navigate to the ruby folder and run&amp;nbsp; bundle install&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 28px;&quot;&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;4. ruby app.rb to start the app&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 28px;&quot;&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;5.&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Open your web browser and navigate to http://localhost:4567/portal_management.&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 28px;&quot;&gt;&lt;font style=&quot;font-size: 28px;&quot;&gt;6. ruby run_tests.rb to run tests&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=3;" parent="1" vertex="1">
