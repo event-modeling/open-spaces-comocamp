@@ -802,18 +802,109 @@ function join_conference_sv(history) {
 
 app.get("/register/:id", (req, res) => {
     const id = req.params.id;
-    let response = {
-        not_found: false,
-        conference_name: "Not yet named"
-    };
-    if (id !== join_conference_sv(get_events()).conf_id) {
-        response.not_found = true;
-        res.status(404).render("register", response);
+    res.render("register", { conference_name: conference_name_state_view(get_events()), conference_id: id });
+});
+
+app.post("/register/:id", multer().none(), (req, res) => {
+    const id = req.params.id;
+    const name = req.body.participantName;
+    const registration_id = uuidv4();
+    const register_command = { type: "register_command", conference_id: id, registration_id: registration_id, name: name, timestamp: new Date().toISOString() };
+    let register_event = null;
+    try {
+        register_event = register_state_change(get_events(), register_command);
+    }
+    catch (error) {
+        console.error("Error registering participant: " + error.message);
+        res.status(422).send("Error registering participant. " + error.message);
         return;
     }
-    response.conference_name = conference_name_state_view(get_events());
-    res.render("register", response);
+    try {
+        push_event(register_event, 'name:' + name + '-registrationId:' + registration_id.slice(0, 8) + '-conferenceId:' + id.slice(0, 8));
+    }
+    catch (error) {
+        console.error("Error pushing event: " + error.message);
+        res.status(500).send("Something went wrong. Please try again.");
+        return;
+    }
+    res.redirect(`/register-success/${registration_id}`);    
 });
+
+app.get("/register-success/:id", (req, res) => {
+    const registration_id = req.params.id;
+    const registration_sv = registration_state_view(get_events());
+    const registered_name = registration_sv.registrations[registration_id];
+    if (!registered_name) {
+        res.status(404).send("Registration not found");
+        return;
+    }
+    console.log("Registration found, state view: " + JSON.stringify(registration_sv, null, 2));
+    console.log("Registration found, registration map: " + JSON.stringify(registration_sv.registrations, null, 2));
+    res.render("register-success", {
+        participant_name: registered_name,
+        conference_name: registration_sv.conference_name
+    });
+});
+
+function registration_state_view(history) {
+    return history.reduce((acc, event) => {
+        switch(event.type) {
+            case "conference_id_generated_event":
+                acc.conference_id = event.conf_id;
+                acc.conference_name = "-- not named yet --";
+                acc.names = new Map();
+                break;
+            case "conference_name_set_event":
+                acc.conference_name = event.name;
+                break;
+            case "registered_event":
+                acc.registrations[event.registration_id] = event.name;
+                break;
+            default:
+                break;
+        }
+        return acc;
+    }, { conference_id: null, conference_name: null, registrations: new Map() });
+}
+
+const error_registration_closed = "Registration is closed.";
+const error_already_registered = "You are already registered.";
+function register_state_change(history, command) {
+    const registration_state = history.reduce((acc, event) => {
+        switch(event.type) {
+            case "registration_closed_event":
+                acc.conference_id = null;
+                acc.names = new Set();
+                break;
+            case "registered_event":
+                if (acc.conference_id === null) break; // this should not happen
+                acc.names.add(event.name);
+                break;
+            case "conference_id_generated_event":
+                acc.conference_id = event.conf_id;
+                acc.names = new Set();
+                break;
+            default:
+                break;
+        }
+        return acc;
+    }, { 
+        conference_id: null,
+        names: new Set(),
+    });
+
+    if (   registration_state.conference_id === null 
+        || registration_state.conference_id !== command.conference_id) throw new Error(error_registration_closed);
+    if (registration_state.names?.has(command.name)) throw new Error(error_already_registered);
+
+    return { 
+        type: "registered_event", 
+        conference_id: command.conference_id, 
+        registration_id: command.registration_id, 
+        name: command.name, 
+        timestamp: command.timestamp 
+    };
+};
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
