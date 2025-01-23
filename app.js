@@ -727,7 +727,7 @@ function provide_unique_id(unfiltered_events, command) {
         console.log("No conf ID request found.");
         throw new Error(error_no_request_found);
     }
-    return { type: "conference_id_generated_event", conf_id: command.conf_id, timestamp: command.timestamp, event_timestamp: new Date().toISOString() };
+    return { type: "conference_id_generated_event", conf_id: command.conf_id, timestamp: command.timestamp, timestamp: new Date().toISOString() };
 }
 
 slice_tests.push({ slice_name: "generate_unique_id_sc",
@@ -827,8 +827,29 @@ app.post("/register/:id", multer().none(), (req, res) => {
         res.status(500).send("Something went wrong. Please try again.");
         return;
     }
-    res.redirect(`/register-success/${registration_id}`);    
+        res.redirect(`/register-success/${registration_id}`);    
 });
+        
+app.post("/close-registration", (req, res) => {
+    const close_registration_command = { type: "close_registration_command", timestamp: new Date().toISOString() };
+    let close_registration_event = null;
+    try {
+        close_registration_event = close_registration_state_change(get_events(), close_registration_command);
+    } catch (error) {
+        console.error("Error closing registration: " + error.message);
+        res.status(422).send("Error closing registration. " + error.message);
+        return;
+    }
+    try {
+        push_event(close_registration_event, 'close-registration');
+    } catch (error) {
+        console.error("Error pushing event: " + error.message);
+        res.status(500).send("Something went wrong. Please try again.");
+        return;
+    }
+    res.redirect("/sessions");
+});
+
 
 app.get("/register-success/:id", (req, res) => {
     const registration_id = req.params.id;
@@ -865,6 +886,7 @@ function registration_state_view(history) {
         return acc;
     }, { conference_id: null, conference_name: "-- not named yet --", registrations: new Map() });
 }
+
 
 const error_registration_closed = "Registration is closed.";
 const error_already_registered = "You are already registered.";
@@ -1060,6 +1082,22 @@ slice_tests.push({
         }
     ]
 });
+
+function close_registration_state_change(history, command) {
+    const state = history.reduce((acc, event) => {
+        switch(event.type) {
+            case "conference_id_generated_event":
+                acc.closed = false;
+                break;
+            case "registration_closed_event":
+                acc.closed = true;
+                break;
+        }
+        return acc;
+    }, { closed: true });
+    if (state.closed) throw new Error("Registration is already closed");
+    return { type: "registration_closed_event", timestamp: new Date().toISOString() };
+}
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
