@@ -851,8 +851,7 @@ function registration_state_view(history) {
         switch(event.type) {
             case "conference_id_generated_event":
                 acc.conference_id = event.conf_id;
-                acc.conference_name = "-- not named yet --";
-                acc.names = new Map();
+                acc.registrations = new Map();
                 break;
             case "conference_name_set_event":
                 acc.conference_name = event.name;
@@ -864,7 +863,7 @@ function registration_state_view(history) {
                 break;
         }
         return acc;
-    }, { conference_id: null, conference_name: null, registrations: new Map() });
+    }, { conference_id: null, conference_name: "-- not named yet --", registrations: new Map() });
 }
 
 const error_registration_closed = "Registration is closed.";
