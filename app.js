@@ -801,6 +801,30 @@ function join_conference_sv(history) {
     }, { conf_id: null });
 }
 
+app.post("/close-registration", (req, res) => {
+    const close_registration_command = { type: "close_registration_command", timestamp: new Date().toISOString() };
+    let close_registration_event = null;
+    try {
+        close_registration_event = close_registration_state_change(get_events(), close_registration_command);
+    } catch (error) {
+        console.error("Error closing registration: " + error.message);
+        res.status(422).send("Error closing registration. " + error.message);
+        return;
+    }
+    try {
+        push_event(close_registration_event, 'close-registration');
+    } catch (error) {
+        console.error("Error pushing event: " + error.message);
+        res.status(500).send("Something went wrong. Please try again.");
+        return;
+    }
+    res.redirect("/sessions");
+});
+
+function close_registration_state_change(history, command) {
+    return { type: "close_registration_event", timestamp: new Date().toISOString() };
+}
+
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
 function assertNotEqual(a, b, message) { if (a === b) throw new Error(message + ". Did not expect: '" + b + "' but got the same thing."); }

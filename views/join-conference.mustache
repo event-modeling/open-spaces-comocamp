@@ -29,7 +29,9 @@
             <h2>Show this to the participants</h2>
             <div id="qrcode"></div>
             <div class="conference-url" id="conferenceUrl"></div>
-            <button class="btn btn-primary" onclick="closeRegistration()">Close Registration</button>
+            <form action="/close-registration" method="post">
+                <button class="btn btn-primary">Close Registration</button>
+            </form>
         </div>
     </main>
 
@@ -52,11 +54,6 @@
             });
             
             document.getElementById('qrcode').innerHTML = qr.svg();
-        }
-
-        function closeRegistration() {
-            // TODO: Implement close registration functionality
-            console.log('Registration closed');
         }
 
         // Generate QR code when page loads
