@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Session Proposal</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="primary-nav">
+            <span class="nav-item">Setup</span> |
+            <span class="nav-item active">Sessions</span> |
+            <span class="nav-item">Voting</span> |
+            <span class="nav-item">Schedule</span>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1>Submit Your Session Proposal</h1>
+        
+        <section class="form-section">
+            <form method="POST" action="/submit-session" enctype="multipart/form-data">
+                <div class="input-group">
+                    <div class="name-display">{{name}}</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="facilitation">Facilitation:</label>
+                    <input type="text" 
+                           id="facilitation" 
+                           name="facilitation" 
+                           class="input-field" 
+                           placeholder="How will you facilitate this session?"
+                           required>
+                </div>
+
+                <div class="input-group">
+                    <label for="topic">Topic:</label>
+                    <textarea id="topic" 
+                            name="topic" 
+                            class="input-field" 
+                            rows="4" 
+                            placeholder="What would you like to discuss?"
+                            required></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Submit Topic</button>
+                    <a href="/sessions" class="btn btn-secondary">Skip</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html> 
