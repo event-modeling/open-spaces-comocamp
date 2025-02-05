@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="3683" dy="1660" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="990" dy="430" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
@@ -60,7 +60,7 @@
                 <mxCell id="1993" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" parent="109" vertex="1">
                     <mxGeometry x="12702" y="1473" width="777" height="2531" as="geometry"/>
                 </mxCell>
-                <mxCell id="2016" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF33;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
+                <mxCell id="2016" value="Adam - done" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#00FF00;strokeWidth=5;fillStyle=solid;fontColor=#00FF00;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
                     <mxGeometry x="13502" y="1473" width="612" height="2531" as="geometry"/>
                 </mxCell>
                 <mxCell id="2017" value="Adam - in progress" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=#FFFF33;strokeWidth=5;fillStyle=solid;fontColor=#FFFF33;fontSize=16;spacingLeft=9;" vertex="1" parent="109">
@@ -182,7 +182,7 @@
                 <mxCell id="58" value="&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;br&gt;Adam, Submit Your Session Proposal&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;align=left;verticalAlign=top;" parent="1" vertex="1">
                     <mxGeometry x="14174" y="1800" width="330" height="260" as="geometry"/>
                 </mxCell>
-                <mxCell id="59" value="&lt;font color=&quot;#000000&quot;&gt;Name:&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;horizontal=1;align=left;verticalAlign=top;spacingTop=7;" parent="1" vertex="1">
+                <mxCell id="59" value="&lt;font color=&quot;#000000&quot;&gt;Name:&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=none;horizontal=1;align=left;verticalAlign=top;spacingTop=7;" parent="1" vertex="1">
                     <mxGeometry x="14194" y="1870" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="71" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=12;fontColor=#000000;endArrow=classic;" parent="1" source="60" target="67" edge="1">
@@ -191,7 +191,7 @@
                 <mxCell id="60" value="&lt;font color=&quot;#000000&quot;&gt;Submit Topic&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cce5ff;" parent="1" vertex="1">
                     <mxGeometry x="14364" y="2020" width="60" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="61" value="Adam" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#CCFF99;fontColor=#000000;" parent="1" vertex="1">
+                <mxCell id="61" value="Adam" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fontFamily=Helvetica;fontSize=12;fillColor=#CCFF99;fontColor=#000000;" parent="1" vertex="1">
                     <mxGeometry x="14234" y="1880" width="70" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="62" value="&lt;font color=&quot;#000000&quot;&gt;Topic:&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;horizontal=1;align=left;verticalAlign=top;spacingTop=7;" parent="1" vertex="1">
@@ -2056,6 +2056,9 @@
                 <mxCell id="1946" value="&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;align=left;verticalAlign=top;" parent="1" vertex="1">
                     <mxGeometry x="11597" y="1813" width="330" height="260" as="geometry"/>
                 </mxCell>
+                <mxCell id="2019" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=11;fontColor=#FFFF33;endArrow=classic;" edge="1" parent="1" source="1947" target="2003">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
                 <mxCell id="1947" value="&lt;font color=&quot;#000000&quot;&gt;Continue&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="11806" y="2033" width="90" height="30" as="geometry"/>
                 </mxCell>
@@ -2193,13 +2196,13 @@
                 <mxCell id="2003" value="&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;br&gt;Adam, Submit Your Session Proposal&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;align=left;verticalAlign=top;" vertex="1" parent="1">
                     <mxGeometry x="13623" y="1800" width="330" height="260" as="geometry"/>
                 </mxCell>
-                <mxCell id="2004" value="&lt;font color=&quot;#000000&quot;&gt;Name:&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;horizontal=1;align=left;verticalAlign=top;spacingTop=7;" vertex="1" parent="1">
+                <mxCell id="2004" value="&lt;font color=&quot;#000000&quot;&gt;Name:&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=none;horizontal=1;align=left;verticalAlign=top;spacingTop=7;" vertex="1" parent="1">
                     <mxGeometry x="13643" y="1870" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="2005" value="&lt;font color=&quot;#000000&quot;&gt;Submit Topic&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=none;" vertex="1" parent="1">
                     <mxGeometry x="13813" y="2020" width="60" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="2006" value="Adam" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#CCFF99;fontColor=#000000;" vertex="1" parent="1">
+                <mxCell id="2006" value="Adam" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fontFamily=Helvetica;fontSize=12;fillColor=#CCFF99;fontColor=#000000;" vertex="1" parent="1">
                     <mxGeometry x="13683" y="1880" width="70" height="20" as="geometry"/>
                 </mxCell>
                 <mxCell id="2007" value="&lt;font color=&quot;#000000&quot;&gt;Topic:&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f7ed;strokeColor=#36393d;horizontal=1;align=left;verticalAlign=top;spacingTop=7;" vertex="1" parent="1">
@@ -2220,7 +2223,7 @@
                 <mxCell id="2012" value="&lt;font color=&quot;#000000&quot;&gt;Skip&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=none;" vertex="1" parent="1">
                     <mxGeometry x="13883" y="2020" width="60" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="2013" value="&lt;span style=&quot;background-color: rgb(205, 235, 139);&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;span style=&quot;font-size: 12px;&quot;&gt;https://openspace.eventmodeling.org/topic-suggestion/?regid=eeee-fffff-00000&lt;/span&gt;&lt;/font&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;strokeColor=none;fontFamily=Helvetica;fontSize=16;fontColor=#00FF00;fillColor=none;align=left;verticalAlign=top;" vertex="1" parent="1">
+                <mxCell id="2013" value="&lt;font style=&quot;&quot; color=&quot;#000000&quot;&gt;&lt;span style=&quot;font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;https://openspace.eventmodeling.org/topic-suggestion/?regid=eeee-fffff-00000&lt;/span&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;strokeColor=none;fontFamily=Helvetica;fontSize=16;fontColor=#00FF00;fillColor=none;align=left;verticalAlign=top;" vertex="1" parent="1">
                     <mxGeometry x="13620" y="1775" width="435" height="32" as="geometry"/>
                 </mxCell>
                 <mxCell id="957" style="edgeStyle=orthogonalEdgeStyle;shape=connector;rounded=1;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;labelBackgroundColor=default;strokeColor=#808080;fontFamily=Helvetica;fontSize=11;fontColor=#000000;endArrow=classic;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" parent="1" source="963" target="2006" edge="1">
