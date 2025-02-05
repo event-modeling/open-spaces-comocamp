@@ -1,0 +1,29 @@
+/* Inherit theme variables from main.css */
+@import url('/styles/main.css');
+
+/* Style the error page */
+body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+pre {
+    color: var(--color-text);
+    background-color: var(--color-background-alt);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+h1 {
+    color: var(--color-primary);
+    margin-bottom: 2rem;
+} 
