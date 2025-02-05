@@ -1098,6 +1098,37 @@ function close_registration_state_change(history, command) {
     if (state.closed) throw new Error("Registration is already closed");
     return { type: "registration_closed_event", timestamp: new Date().toISOString() };
 }
+app.get("/topic-suggestion", (req, res) => {
+    const registration_id = req.query.registration_id;
+    let state = undefined;
+    try {
+        state = registration_name_for_suggestion_sv(get_events());
+    } catch (error) {
+        console.error("Error getting registration name: " + error.message);
+        res.status(500).send("Something went wrong.");
+        return;
+    }
+    const name = state.registration_to_name[registration_id];
+    if (name === undefined) {
+        res.status(404).send("Registration ID not found");
+        return;
+    }
+    res.render("submit-session", { name });
+}); // app.get("/topic-suggestion", (req, res) => {
+
+function registration_name_for_suggestion_sv(history) {
+    return history.reduce((acc, event) => {
+        switch(event.type) {
+            case "unique_id_generated_event":
+                acc.registration_to_name = {};
+                break;
+            case "registered_event":
+                acc.registration_to_name[event.registration_id] = event.name;
+                break;
+        }
+        return acc;
+    }, { registration_to_name: {} });
+} // function registration_name_for_suggestion_sv(history)
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
