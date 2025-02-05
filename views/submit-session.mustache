@@ -20,7 +20,7 @@
         <h1>Submit Your Session Proposal</h1>
         
         <section class="form-section">
-            <form method="POST" action="/submit-session" enctype="multipart/form-data">
+            <form method="POST" action="/topic-suggestion{{#registration_id}}?registration_id={{registration_id}}{{/registration_id}}" enctype="multipart/form-data">
                 <div class="input-group">
                     <div class="name-display">{{name}}</div>
                 </div>
