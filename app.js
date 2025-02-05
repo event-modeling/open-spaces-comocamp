@@ -801,6 +801,38 @@ function join_conference_sv(history) {
     }, { conf_id: null });
 }
 
+app.get("/topic-suggestion", (req, res) => {
+    const registration_id = req.query.registration_id;
+    let state = undefined;
+    try {
+        state = registration_name_for_suggestion_sv(get_events());
+    } catch (error) {
+        console.error("Error getting registration name: " + error.message);
+        res.status(500).send("Something went wrong.");
+        return;
+    }
+    const name = state.registration_to_name[registration_id];
+    if (name === undefined) {
+        res.status(404).send("Registration ID not found");
+        return;
+    }
+    res.render("submit-session", { name });
+});
+
+function registration_name_for_suggestion_sv(history) {
+    return history.reduce((acc, event) => {
+        switch(event.type) {
+            case "unique_id_generated_event":
+                acc.registration_to_name = {};
+                break;
+            case "registered_event":
+                acc.registration_to_name[event.registration_id] = event.name;
+                break;
+        }
+        return acc;
+    }, { registration_to_name: {} });
+}
+
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
 function assertNotEqual(a, b, message) { if (a === b) throw new Error(message + ". Did not expect: '" + b + "' but got the same thing."); }
