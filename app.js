@@ -801,6 +801,91 @@ function join_conference_sv(history) {
     }, { conf_id: null });
 }
 
+app.get("/topic-suggestion", (req, res) => {
+    const registration_id = req.query.registration_id;
+    let state = undefined;
+    try {
+        state = registration_name_for_suggestion_sv(get_events());
+    } catch (error) {
+        console.error("Error getting registration name: " + error.message);
+        res.status(500).send("Something went wrong.");
+        return;
+    }
+    const name = state.registration_to_name[registration_id];
+    if (name === undefined) {
+        res.status(404).send("Registration ID not found");
+        return;
+    }
+    res.render("submit-session", { name, registration_id });
+}); // app.get("/topic-suggestion", (req, res) => {
+
+function registration_name_for_suggestion_sv(history) {
+    return history.reduce((acc, event) => {
+        switch(event.type) {
+            case "unique_id_generated_event":
+                acc.registration_to_name = {};
+                break;
+            case "registered_event":
+                acc.registration_to_name[event.registration_id] = event.name;
+                break;
+        }
+        return acc;
+    }, { registration_to_name: {} });
+} // function registration_name_for_suggestion_sv(history)
+
+app.post("/topic-suggestion", multer().none(), (req, res) => {
+    const registration_id = req.query.registration_id;
+    const topic = req.body.topic;
+    const facilitation = req.body.facilitation;
+    console.log("Submitting session with topic: " + topic);
+    let events = undefined;
+    try {
+        events = get_events();
+    } catch (error) {
+        console.error("Error getting events: " + error.message);
+        res.status(500).send("Something went wrong.");
+        return;
+    }
+    let session_submitted_event = undefined;
+    try {
+        session_submitted_event = submit_session(events, { topic, facilitation, timestamp: new Date().toISOString() });
+    } catch (error) {
+        console.error("Error submitting session: " + error.message);
+        res.status(400).send("Something went wrong.");
+        return;
+    }
+    console.log("Pushing event: " + JSON.stringify(session_submitted_event, null, 2));
+    try {
+        push_event(session_submitted_event, 'topic:' + topic + '_facilitation:' + facilitation);
+    } catch (error) {
+        console.error("Error pushing event: " + error.message);
+        res.status(500).send("Something went wrong.");
+        return;
+    }
+
+    res.redirect("/topic-suggestion?registration_id=" + registration_id);
+}); // app.post("/topic-suggestion", (req, res) => {
+
+function submit_session(events, command) {
+    const existingTopics = events.reduce((acc, event) => {
+        switch(event.type) {
+            case "unique_id_generated_event":
+                // Reset topics for new conference
+                acc.topics = new Set();
+                break;
+            case "session_submitted_event":
+                acc.topics.add(event.topic.toLowerCase());
+                break;
+        }
+        return acc;
+    }, { topics: new Set() }).topics;
+
+    if (existingTopics.has(command.topic.toLowerCase())) {
+        throw new Error("A session with this topic has already been suggested");
+    }
+    return { type: "session_submitted_event", topic: command.topic, facilitation: command.facilitation, timestamp: new Date().toISOString(), meta: { command: command }};
+} // function submit_session(events, command)
+
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
 function assertNotEqual(a, b, message) { if (a === b) throw new Error(message + ". Did not expect: '" + b + "' but got the same thing."); }
