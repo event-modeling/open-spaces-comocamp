@@ -802,6 +802,35 @@ function join_conference_sv(history) {
     }, { conf_id: null });
 }
 
+app.get("/sessions", (req, res) => {
+    res.render("topics", { topics: topics_sv(get_events()), registration_id: req.query.registration_id });
+});
+
+function topics_sv(history) {
+    const topics = history.reduce((acc, event) => {
+        console.log("Processing event: " + JSON.stringify(event, null, 2));
+        console.log("Current state: " + JSON.stringify(acc, null, 2));
+        switch(event.type) { 
+            case "unique_id_generated_event":
+                acc.registrations = {};
+                acc.topics = [];
+                break;
+            case "registered_event":
+                acc.registrations[event.registration_id] = event.name;
+                break;
+            case "session_submitted_event":
+                try {
+                    acc.topics.push({ topic: event.topic, facilitation: event.facilitation, name: acc.registrations[event.registration_id] });
+                } catch (error) {
+                    console.log("Error adding topic: " + error.message);
+                }
+                break;
+        }
+        return acc;
+    }, { registrations: {}, topics: [] }).topics;
+    return topics;
+}
+
 // Custom error handler for 404s
 app.use((req, res, next) => {
     const err = new Error('Not Found');
