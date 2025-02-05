@@ -802,20 +802,21 @@ function join_conference_sv(history) {
     }, { conf_id: null });
 }
 
-app.get("/topic-suggestion", (req, res) => {
+app.get("/topic-suggestion", (req, res, next) => {
     const registration_id = req.query.registration_id;
     let state = undefined;
     try {
         state = registration_name_for_suggestion_sv(get_events());
     } catch (error) {
         console.error("Error getting registration name: " + error.message);
-        res.status(500).send("Something went wrong.");
-        return;
+        error.status = 500;
+        return next(error);
     }
     const name = state.registration_to_name[registration_id];
     if (name === undefined) {
-        res.status(404).send("Registration ID not found");
-        return;
+        const error = new Error("Registration ID not found");
+        error.status = 404;
+        return next(error);
     }
     res.render("submit-session", { name, registration_id });
 }); // app.get("/topic-suggestion", (req, res) => {
@@ -834,7 +835,7 @@ function registration_name_for_suggestion_sv(history) {
     }, { registration_to_name: {} });
 } // function registration_name_for_suggestion_sv(history)
 
-app.post("/topic-suggestion", multer().none(), (req, res) => {
+app.post("/topic-suggestion", multer().none(), (req, res, next) => {
     const registration_id = req.query.registration_id;
     const topic = req.body.topic;
     const facilitation = req.body.facilitation;
@@ -844,24 +845,24 @@ app.post("/topic-suggestion", multer().none(), (req, res) => {
         events = get_events();
     } catch (error) {
         console.error("Error getting events: " + error.message);
-        res.status(500).send("Something went wrong.");
-        return;
+        error.status = 500;
+        return next(error);
     }
     let session_submitted_event = undefined;
     try {
         session_submitted_event = submit_session(events, { topic, facilitation, timestamp: new Date().toISOString() });
     } catch (error) {
         console.error("Error submitting session: " + error.message);
-        res.status(400).send("Something went wrong.");
-        return;
+        error.status = 404;
+        return next(error);
     }
     console.log("Pushing event: " + JSON.stringify(session_submitted_event, null, 2));
     try {
         push_event(session_submitted_event, 'topic:' + topic + '_facilitation:' + facilitation);
     } catch (error) {
         console.error("Error pushing event: " + error.message);
-        res.status(500).send("Something went wrong.");
-        return;
+        error.status = 500;
+        return next(error);
     }
 
     res.redirect("/topic-suggestion?registration_id=" + registration_id);
