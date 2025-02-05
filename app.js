@@ -22,6 +22,7 @@ app.set("view engine", "mustache");
 app.engine("mustache", require("mustache-express")());
 app.use(express.static('public'));
 app.use(express.json());
+app.use('/error.css', express.static('public/styles/error.css'));
 
 if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
 
@@ -1098,22 +1099,24 @@ function close_registration_state_change(history, command) {
     if (state.closed) throw new Error("Registration is already closed");
     return { type: "registration_closed_event", timestamp: new Date().toISOString() };
 }
-app.get("/topic-suggestion", (req, res) => {
+
+app.get("/topic-suggestion", (req, res, next) => {
     const registration_id = req.query.registration_id;
     let state = undefined;
     try {
         state = registration_name_for_suggestion_sv(get_events());
     } catch (error) {
         console.error("Error getting registration name: " + error.message);
-        res.status(500).send("Something went wrong.");
-        return;
+        error.status = 500;
+        return next(error);
     }
     const name = state.registration_to_name[registration_id];
     if (name === undefined) {
-        res.status(404).send("Registration ID not found");
-        return;
+        const error = new Error("Registration ID not found");
+        error.status = 404;
+        return next(error);
     }
-    res.render("submit-session", { name });
+    res.render("submit-session", { name, registration_id });
 }); // app.get("/topic-suggestion", (req, res) => {
 
 function registration_name_for_suggestion_sv(history) {
@@ -1129,6 +1132,93 @@ function registration_name_for_suggestion_sv(history) {
         return acc;
     }, { registration_to_name: {} });
 } // function registration_name_for_suggestion_sv(history)
+
+app.post("/topic-suggestion", multer().none(), (req, res, next) => {
+    const registration_id = req.query.registration_id;
+    const topic = req.body.topic;
+    const facilitation = req.body.facilitation;
+    console.log("Submitting session with topic: " + topic);
+    let events = undefined;
+    try {
+        events = get_events();
+    } catch (error) {
+        console.error("Error getting events: " + error.message);
+        error.status = 500;
+        return next(error);
+    }
+    let session_submitted_event = undefined;
+    try {
+        session_submitted_event = submit_session(events, { topic, facilitation, timestamp: new Date().toISOString() });
+    } catch (error) {
+        console.error("Error submitting session: " + error.message);
+        error.status = 404;
+        return next(error);
+    }
+    console.log("Pushing event: " + JSON.stringify(session_submitted_event, null, 2));
+    try {
+        push_event(session_submitted_event, 'topic:' + topic + '_facilitation:' + facilitation);
+    } catch (error) {
+        console.error("Error pushing event: " + error.message);
+        error.status = 500;
+        return next(error);
+    }
+
+    res.redirect("/topic-suggestion?registration_id=" + registration_id);
+}); // app.post("/topic-suggestion", (req, res) => {
+
+function submit_session(events, command) {
+    const existingTopics = events.reduce((acc, event) => {
+        switch(event.type) {
+            case "unique_id_generated_event":
+                // Reset topics for new conference
+                acc.topics = new Set();
+                break;
+            case "session_submitted_event":
+                acc.topics.add(event.topic.toLowerCase());
+                break;
+        }
+        return acc;
+    }, { topics: new Set() }).topics;
+
+    if (existingTopics.has(command.topic.toLowerCase())) {
+        throw new Error("A session with this topic has already been suggested");
+    }
+    return { type: "session_submitted_event", topic: command.topic, facilitation: command.facilitation, timestamp: new Date().toISOString(), meta: { command: command }};
+} // function submit_session(events, command)
+
+// Custom error handler for 404s
+app.use((req, res, next) => {
+    const err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    const statusCode = err.status || 500;
+    
+    // Check if the request accepts HTML
+    if (req.accepts('html')) {
+        res.status(statusCode);
+        res.render('error', {
+            message: err.message || 'Something went wrong!',
+            error: statusCode >= 500 ? {
+                status: statusCode,
+                stack: err.stack
+            } : undefined,
+            errorStylesheet: '<link rel="stylesheet" href="/error.css">'
+        });
+    } else {
+        // API error response
+        res.status(statusCode).json({
+            error: {
+                message: err.message || 'Something went wrong!',
+                status: statusCode
+            }
+        });
+    }
+}); // Global error handler
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
