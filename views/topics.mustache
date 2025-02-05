@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current Sessions</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="primary-nav">
+            <span class="nav-item">Setup</span> |
+            <span class="nav-item active">Sessions</span> |
+            <span class="nav-item">Voting</span> |
+            <span class="nav-item">Schedule</span>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1>Current Sessions</h1>
+        
+        <section class="sessions-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Facilitation</th>
+                        <th>Topic</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#topics}}
+                    <tr>
+                        <td>{{name}}</td>
+                        <td>{{facilitation}}</td>
+                        <td>{{topic}}</td>
+                    </tr>
+                    {{/topics}}
+                    {{^topics}}
+                    <tr>
+                        <td colspan="3" class="empty-message">No sessions proposed yet</td>
+                    </tr>
+                    {{/topics}}
+                </tbody>
+            </table>
+
+            <div class="button-group">
+                <a href="/submit-session{{#registration_id}}?registration_id={{registration_id}}{{/registration_id}}" class="btn btn-primary">Suggest Another</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html> 
