@@ -817,7 +817,7 @@ app.get("/topic-suggestion", (req, res) => {
         return;
     }
     res.render("submit-session", { name });
-});
+}); // app.get("/topic-suggestion", (req, res) => {
 
 function registration_name_for_suggestion_sv(history) {
     return history.reduce((acc, event) => {
@@ -831,7 +831,7 @@ function registration_name_for_suggestion_sv(history) {
         }
         return acc;
     }, { registration_to_name: {} });
-}
+} // function registration_name_for_suggestion_sv(history)
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
