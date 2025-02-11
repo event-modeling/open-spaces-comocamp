@@ -1183,40 +1183,6 @@ function submit_session(events, command) {
     return { type: "session_submitted_event", topic: command.topic, facilitation: command.facilitation, timestamp: new Date().toISOString(), meta: { command: command }};
 } // function submit_session(events, command)
 
-// Custom error handler for 404s
-app.use((req, res, next) => {
-    const err = new Error('Not Found');
-    err.status = 404;
-    next(err);
-});
-
-// Global error handler
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    const statusCode = err.status || 500;
-    
-    // Check if the request accepts HTML
-    if (req.accepts('html')) {
-        res.status(statusCode);
-        res.render('error', {
-            message: err.message || 'Something went wrong!',
-            error: statusCode >= 500 ? {
-                status: statusCode,
-                stack: err.stack
-            } : undefined,
-            errorStylesheet: '<link rel="stylesheet" href="/error.css">'
-        });
-    } else {
-        // API error response
-        res.status(statusCode).json({
-            error: {
-                message: err.message || 'Something went wrong!',
-                status: statusCode
-            }
-        });
-    }
-}); // Global error handler
-
 app.get("/sessions", (req, res) => {
     res.render("topics", { topics: topics_sv(get_events()), registration_id: req.query.registration_id });
 }); // sessions
