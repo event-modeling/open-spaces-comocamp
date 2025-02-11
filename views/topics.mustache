@@ -44,9 +44,11 @@
                 </tbody>
             </table>
 
+            {{#registration_id}}
             <div class="button-group">
-                <a href="/submit-session{{#registration_id}}?registration_id={{registration_id}}{{/registration_id}}" class="btn btn-primary">Suggest Another</a>
+                <a href="/topic-suggestion?registration_id={{registration_id}}" class="btn btn-primary">Suggest Another</a>
             </div>
+            {{/registration_id}}
         </section>
     </main>
 </body>
