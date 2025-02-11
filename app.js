@@ -1217,6 +1217,69 @@ app.use((err, req, res, next) => {
     }
 }); // Global error handler
 
+app.get("/sessions", (req, res) => {
+    res.render("topics", { topics: topics_sv(get_events()), registration_id: req.query.registration_id });
+}); // sessions
+
+function topics_sv(history) {
+    const topics = history.reduce((acc, event) => {
+        console.log("Processing event: " + JSON.stringify(event, null, 2));
+        console.log("Current state: " + JSON.stringify(acc, null, 2));
+        switch(event.type) { 
+            case "unique_id_generated_event":
+                acc.registrations = {};
+                acc.topics = [];
+                break;
+            case "registered_event":
+                acc.registrations[event.registration_id] = event.name;
+                break;
+            case "session_submitted_event":
+                try {
+                    acc.topics.push({ topic: event.topic, facilitation: event.facilitation, name: acc.registrations[event.registration_id] });
+                } catch (error) {
+                    console.log("Error adding topic: " + error.message);
+                }
+                break;
+        }
+        return acc;
+    }, { registrations: {}, topics: [] }).topics;
+    return topics;
+} // topics_sv
+
+// Custom error handler for 404s
+app.use((req, res, next) => {
+    const err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    const statusCode = err.status || 500;
+    
+    // Check if the request accepts HTML
+    if (req.accepts('html')) {
+        res.status(statusCode);
+        res.render('error', {
+            message: err.message || 'Something went wrong!',
+            error: statusCode >= 500 ? {
+                status: statusCode,
+                stack: err.stack
+            } : undefined,
+            errorStylesheet: '<link rel="stylesheet" href="/error.css">'
+        });
+    } else {
+        // API error response
+        res.status(statusCode).json({
+            error: {
+                message: err.message || 'Something went wrong!',
+                status: statusCode
+            }
+        });
+    }
+}); // Global error handler
+
 function assert(condition, message) { if (!condition) throw new Error(message); }
 function assertEqual(a, b, message) { if (a !== b) throw new Error(message + ". Expected: '" + b + "' but got: '" + a + "'"); }
 function assertNotEqual(a, b, message) { if (a === b) throw new Error(message + ". Did not expect: '" + b + "' but got the same thing."); }

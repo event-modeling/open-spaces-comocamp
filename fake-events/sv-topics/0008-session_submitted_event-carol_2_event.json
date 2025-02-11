@@ -1,0 +1,7 @@
+{
+    "type": "session_submitted_event",
+    "topic": "Testing Event-Driven Systems",
+    "facilitation": "Workshop",
+    "registration_id": "REG-003",
+    "timestamp": "2024-01-24T14:08:00Z"
+} 
