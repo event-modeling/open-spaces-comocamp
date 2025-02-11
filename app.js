@@ -48,7 +48,7 @@ if (sync_time > 0) setInterval(notify_processors, sync_time);
 
 app.get("/set-name", (req, res) => {
     res.render("set-name", { name: "" });
-});
+}); // set_name
 
 app.post('/set-name', upload.none(), (req, res) => {
     console.log(req.body); // Form data will be here, parsed as a regular object
@@ -71,7 +71,7 @@ app.post('/set-name', upload.none(), (req, res) => {
         res.body = "Error pushing event: " + error.message;
         return;}
     res.redirect('/set-name-confirmation');
-});
+}); // set_conference_name
 
 function set_conference_name(history, command) {
     // Check if the name is being changed to the same value
@@ -88,10 +88,9 @@ function set_conference_name(history, command) {
         name: command.name, 
         timestamp: command.timestamp || new Date().toISOString() 
     };
-}
+} // set_conference_name
 
-slice_tests.push({ 
-    slice_name: "Set Conference Name State Change",
+slice_tests.push({ slice_name: "Set Conference Name State Change",
     timelines: [
         {
             timeline_name: "Happy Path",
@@ -202,10 +201,10 @@ slice_tests.push({
             ]
         }
     ]
-});
+}); // test: Set Conference Name State Change
 app.get("/set-name-confirmation", (req, res) => {
     res.render("set-name-confirmation", { conference_name: conference_name_state_view(get_events()) });
-});
+}); // app.get("/set-name-confirmation")
 
 function conference_name_state_view(history) {
     const conference_name_event = history.findLast(event => event.type === "conference_name_set_event");
@@ -213,11 +212,11 @@ function conference_name_state_view(history) {
     console.log("history: " + JSON.stringify(history, null, 2));
     if (conference_name_event === undefined) return "";
     return conference_name_event.name;
-}
+} // conference_name_state_view
 
 app.get("/set-dates", (req, res) => {
     res.render("set-dates", { dates: [] });
-});
+}); // app.get("/set-dates")
 
 app.post("/set-dates", upload.none(), (req, res) => {
     const set_dates_event = {
@@ -229,23 +228,23 @@ app.post("/set-dates", upload.none(), (req, res) => {
     console.log("set_dates_event: " + JSON.stringify(set_dates_event, null, 2));
     push_event(set_dates_event);
     res.redirect('/set-dates-confirmation');
-});
+}); // app.post("/set-dates")
 
 app.get("/set-dates-confirmation", (req, res) => {
     res.render("set-dates-confirmation", conference_dates_state_view(get_events()));
-});
+}); // app.get("/set-dates-confirmation")
 
 function conference_dates_state_view(history) {
     const conference_dates_event = history.findLast(event => event.type === "set_dates_event");
     console.log("set_dates_event: " + JSON.stringify(conference_dates_event, null, 2));
     if (conference_dates_event === undefined) return { start_date: "", end_date: "" };
     return { start_date: conference_dates_event.start_date, end_date: conference_dates_event.end_date };
-}
+} // conference_dates_state_view
 
 app.get("/rooms", (req, res) => {
     //render a view of rooms. pass in a collection of rooms
     res.render("rooms", { rooms: rooms_state_view(get_events()) });
-});
+}); // app.get("/rooms")
 
 function rooms_state_view(history) {
     console.log("Processing history: " + JSON.stringify(history, null, 2));
@@ -270,7 +269,7 @@ function rooms_state_view(history) {
         }
         return acc;
     }, []);
-}
+} // rooms_state_view
 slice_tests.push({ slice_name: "rooms state view",
     timelines: [
         { timeline_name: "happy path",
@@ -336,8 +335,7 @@ slice_tests.push({ slice_name: "rooms state view",
         } // timeline
     ] // timelines
     } // slice
-); // push
-
+); // test: rooms state view
 app.post("/rooms", upload.none(), (req, res) => {
     const command = { type: "add_room_command", room_name: req.body.roomName, timestamp: new Date().toISOString() };
     let event = null;
@@ -356,7 +354,7 @@ app.post("/rooms", upload.none(), (req, res) => {
         return;
     }
     res.redirect("/rooms");
-});
+}); // app.post("/rooms")
 
 function add_room(events, command) {
     // check if room already exists
@@ -364,7 +362,7 @@ function add_room(events, command) {
         throw new Error("Room already exists");
     }
     return { type: "room_added_event", room_name: command.room_name, timestamp: new Date().toISOString() };
-}
+} // add_room
 
 app.get("/time-slots", (req, res) => {
     res.render("time-slots", { time_slots: time_slots_state_view(get_events()) });
@@ -412,7 +410,7 @@ function add_time_slot(history, command) {
         name: command.name,
         timestamp: command.timestamp || new Date().toISOString()
     };
-}
+} // add_time_slot
 
 slice_tests.push({ slice_name: "Add Time Slot State Change",
     timelines: [
@@ -480,7 +478,7 @@ slice_tests.push({ slice_name: "Add Time Slot State Change",
             ]
         }
     ]
-});
+}); // test: Add Time Slot State Change
 
 app.post("/time-slots", upload.none(), (req, res) => {
     const command = {
@@ -498,7 +496,7 @@ app.post("/time-slots", upload.none(), (req, res) => {
         console.error("Error adding time slot:", error.message);
         res.status(400).send(error.message);
     }
-});
+}); // app.post("/time-slots")
 
 function time_slots_state_view(history) {
     return history
@@ -508,7 +506,7 @@ function time_slots_state_view(history) {
             end_time: event.end_time,
             name: event.name
         }));
-}
+} // time_slots_state_view
 
 app.get("/generate-conf-id", (req, res) => { res.render("generate-conf-id"); });
 
@@ -521,12 +519,12 @@ app.post("/generate-conf-id", (req, res) => {
         return;
     }
     res.redirect('/join-conference');
-});
+}); // app.post("/generate-conf-id")
 
 function request_unique_id(history, command) {
     if (history.length > 0 && history[history.length - 1].type === "unique_id_requested_event") throw new Error("A request already exists");
     return { type: "unique_id_requested_event", timestamp: new Date().toISOString() };
-}
+} // request_unique_id
 
 slice_tests.push({ slice_name: "request_unique_id_sc",
     timelines: [
@@ -564,7 +562,7 @@ slice_tests.push({ slice_name: "request_unique_id_sc",
             ]
         }
     ]
-});
+}); // test: request_unique_id_sc
 
 function todo_gen_conf_id_sv(history) {
     return history.reduce((acc, current_event) => {
@@ -585,11 +583,11 @@ function todo_gen_conf_id_sv(history) {
         acc.last_event = current_event;
         return acc;
     }, { todos: [], last_event: null }).todos;
-}
+} // todo_gen_conf_id_sv
 
 app.get("/todo-gen-conf-ids", (req, res) => {
     res.render("todo-gen-conf-ids", { conf_ids: todo_gen_conf_id_sv(get_events()) });
-});
+}); // app.get("/todo-gen-conf-ids")
 
 slice_tests.push({ slice_name: "todo_gen_conf_id_sv",
     timelines: [
@@ -698,7 +696,7 @@ slice_tests.push({ slice_name: "todo_gen_conf_id_sv",
             ]
         }
     ]
-});
+}); // test: todo_gen_conf_id_sv
 
 function gen_conf_id_processor(history) {
     console.log("Looking for conf ID request in:");
@@ -711,14 +709,14 @@ function gen_conf_id_processor(history) {
     }
     console.log("Found conf ID request.");
     if (conf_ids[conf_ids.length - 1].conf_id === "") generate_unique_id();
-}
+} // gen_conf_id_processor
 
 function generate_unique_id() {
     const conf_id = uuidv4();
     const conf_id_generated_event = provide_unique_id(get_events(), { conf_id: conf_id, timestamp: new Date().toISOString() });
     push_event(conf_id_generated_event, 'id:' + conf_id);
     console.log("Generated unique ID: " + conf_id);
-}
+} // generate_unique_id
 
 const error_no_request_found = "No conf ID request found.";
 function provide_unique_id(unfiltered_events, command) {
@@ -729,7 +727,7 @@ function provide_unique_id(unfiltered_events, command) {
         throw new Error(error_no_request_found);
     }
     return { type: "conference_id_generated_event", conf_id: command.conf_id, timestamp: command.timestamp, timestamp: new Date().toISOString() };
-}
+} // provide_unique_id
 
 slice_tests.push({ slice_name: "generate_unique_id_sc",
     timelines: [
@@ -784,11 +782,11 @@ slice_tests.push({ slice_name: "generate_unique_id_sc",
             ]
         }
     ]
-});
+}); // test: generate_unique_id_sc
 
 app.get("/join-conference", (req, res) => {
     res.render("join-conference", { conf_id: join_conference_sv(get_events()).conf_id || "1234" });
-});
+}); // app.get("/join-conference")
 
 function join_conference_sv(history) {
     return history.reduce((acc, event) => {
@@ -799,12 +797,12 @@ function join_conference_sv(history) {
         }
         return acc;
     }, { conf_id: null });
-}
+} // join_conference_sv
 
 app.get("/register/:id", (req, res) => {
     const id = req.params.id;
     res.render("register", { conference_name: conference_name_state_view(get_events()), conference_id: id });
-});
+}); // app.get("/register/:id")
 
 app.post("/register/:id", multer().none(), (req, res) => {
     const id = req.params.id;
@@ -828,8 +826,8 @@ app.post("/register/:id", multer().none(), (req, res) => {
         res.status(500).send("Something went wrong. Please try again.");
         return;
     }
-        res.redirect(`/register-success/${registration_id}`);    
-});
+    res.redirect(`/register-success/${registration_id}`);    
+}); // app.post("/register/:id")
         
 app.post("/close-registration", (req, res) => {
     const close_registration_command = { type: "close_registration_command", timestamp: new Date().toISOString() };
@@ -849,7 +847,7 @@ app.post("/close-registration", (req, res) => {
         return;
     }
     res.redirect("/sessions");
-});
+}); // app.post("/close-registration")
 
 
 app.get("/register-success/:id", (req, res) => {
@@ -866,7 +864,7 @@ app.get("/register-success/:id", (req, res) => {
         participant_name: registered_name,
         conference_name: registration_sv.conference_name
     });
-});
+}); // app.get("/register-success/:id")
 
 function registration_state_view(history) {
     return history.reduce((acc, event) => {
@@ -886,7 +884,7 @@ function registration_state_view(history) {
         }
         return acc;
     }, { conference_id: null, conference_name: "-- not named yet --", registrations: new Map() });
-}
+} // registration_state_view
 
 
 const error_registration_closed = "Registration is closed.";
@@ -926,10 +924,9 @@ function register_state_change(history, command) {
         name: command.name, 
         timestamp: command.timestamp 
     };
-}
+} // register_state_change
 
-slice_tests.push({ 
-    slice_name: "Registration State Change",
+slice_tests.push({ slice_name: "Registration State Change",
     timelines: [
         {
             timeline_name: "First Timeline",
@@ -1082,7 +1079,7 @@ slice_tests.push({
             ]
         }
     ]
-});
+}); // test: registration_state_change
 
 function close_registration_state_change(history, command) {
     const state = history.reduce((acc, event) => {
@@ -1098,7 +1095,7 @@ function close_registration_state_change(history, command) {
     }, { closed: true });
     if (state.closed) throw new Error("Registration is already closed");
     return { type: "registration_closed_event", timestamp: new Date().toISOString() };
-}
+} // close_registration_state_change
 
 app.get("/topic-suggestion", (req, res, next) => {
     const registration_id = req.query.registration_id;
