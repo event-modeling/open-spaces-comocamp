@@ -804,7 +804,7 @@ function join_conference_sv(history) {
 
 app.get("/sessions", (req, res) => {
     res.render("topics", { topics: topics_sv(get_events()), registration_id: req.query.registration_id });
-});
+}); // sessions
 
 function topics_sv(history) {
     const topics = history.reduce((acc, event) => {
@@ -829,7 +829,7 @@ function topics_sv(history) {
         return acc;
     }, { registrations: {}, topics: [] }).topics;
     return topics;
-}
+} // topics_sv
 
 // Custom error handler for 404s
 app.use((req, res, next) => {
