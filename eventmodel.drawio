@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="J-dPGnQl9cI3L02o_4ir" name="Page-1">
-        <mxGraphModel dx="1478" dy="800" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
+        <mxGraphModel dx="2082" dy="515" grid="0" gridSize="10" guides="1" tooltips="0" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="26000" pageHeight="6000" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <object label="progress" id="109">
@@ -479,9 +479,6 @@
                 </mxCell>
                 <mxCell id="406" value="Suggestion" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#cdeb8b;strokeColor=#36393d;horizontal=1;align=left;verticalAlign=top;spacingTop=7;fontColor=#000000;" parent="1" vertex="1">
                     <mxGeometry x="16454" y="1545" width="70" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="407" value="&lt;font color=&quot;#000000&quot;&gt;Suggest Another&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#f9f7ed;" parent="1" vertex="1">
-                    <mxGeometry x="16604" y="1635" width="90" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="408" value="&lt;font color=&quot;#000000&quot;&gt;Adam&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#cdeb8b;strokeColor=#36393d;horizontal=1;align=left;verticalAlign=top;spacingTop=7;" parent="1" vertex="1">
                     <mxGeometry x="15984" y="1855" width="50" height="40" as="geometry"/>
@@ -1385,8 +1382,8 @@
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="13808" y="2791" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="11327" y="3017"/>
-                            <mxPoint x="13729" y="3017"/>
+                            <mxPoint x="11326" y="3090"/>
+                            <mxPoint x="13729" y="3090"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
@@ -1472,7 +1469,7 @@
                         <mxPoint x="9776" y="1406" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="1037" value="Set Sign Up URL" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=60;fontColor=#99CCFF;" parent="1036" vertex="1" connectable="0">
+                <mxCell id="1037" value="unique_id_generated_event" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=60;fontColor=#99CCFF;" parent="1036" vertex="1" connectable="0">
                     <mxGeometry x="-0.9687" y="4" relative="1" as="geometry">
                         <mxPoint x="-20" y="-46" as="offset"/>
                     </mxGeometry>
@@ -1836,8 +1833,8 @@
                 <mxCell id="1687" value="&lt;font color=&quot;#000000&quot;&gt;ConfIDProvided&lt;br&gt;&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&amp;nbsp;- value: 1111-2222-3333&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#ffff88;verticalAlign=top;align=left;" parent="1" vertex="1">
                     <mxGeometry x="7857" y="4034" width="180" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="1734" value="&lt;font color=&quot;#000000&quot;&gt;TODO GenConfIDs&lt;br&gt;[&amp;nbsp;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;{ value: &quot;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;3333-4444-5555&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&quot; } ]&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="8072" y="3909" width="166" height="68" as="geometry"/>
+                <mxCell id="1734" value="&lt;font color=&quot;#000000&quot;&gt;TODO GenConfIDs&lt;br&gt;[&amp;nbsp;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;{ value: &quot;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;3333-4444-5555&lt;/span&gt;&lt;font color=&quot;#000000&quot;&gt;&quot; } ]&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#36393d;fontFamily=Helvetica;fontSize=12;fillColor=#cdeb8b;verticalAlign=top;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="8072" y="3909" width="167" height="68" as="geometry"/>
                 </mxCell>
                 <mxCell id="1743" value="&lt;font&gt;No events should avoid accpting an id to the system&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=none;fontColor=#66FF66;" parent="1" vertex="1">
                     <mxGeometry x="8366" y="3159" width="300" height="30" as="geometry"/>
