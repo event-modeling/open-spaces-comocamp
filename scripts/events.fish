@@ -36,7 +36,8 @@ function events
                     set file "event-stream/$file"
 					set file_num (string sub -l 4 (basename $file))
 					if test -n "$file_num" -a "$file_num" -gt "$last_processed"
-						cat $file | jq -C --compact-output 'del(.timestamp)'
+                        echo -n "$file_num "
+						cat $file | jq -C --compact-output 'del(.. | .timestamp?)'
 						set last_processed $file_num
 					end
 				end
