@@ -32,7 +32,8 @@ function events
 			set last_processed "-1"
 			while true
 				# Get all files, sort them numerically, and process only new ones
-				for file in (ls event-stream/* 2>/dev/null | sort)
+				for file in (ls event-stream 2>/dev/null | sort)
+                    set file "event-stream/$file"
 					set file_num (string sub -l 4 (basename $file))
 					if test -n "$file_num" -a "$file_num" -gt "$last_processed"
 						cat $file | jq -C --compact-output 'del(.timestamp)'
