@@ -24,11 +24,11 @@ app.use(express.static('public'));
 app.use(express.json());
 app.use('/error.css', express.static('public/styles/error.css'));
 
-if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
-
 function get_events() { 
+    if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
     return  fs.readdirSync(eventstore).sort().map(file => { return JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8")); }); }
 function push_event(event, data = "") {
+    if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
     // get count of events in eventstore
     const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('_event.json')).length;
     const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
