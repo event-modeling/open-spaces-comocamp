@@ -1149,7 +1149,7 @@ app.post("/topic-suggestion", multer().none(), (req, res, next) => {
     }
     let session_submitted_event = undefined;
     try {
-        session_submitted_event = submit_session(events, { topic, facilitation, timestamp: new Date().toISOString() });
+        session_submitted_event = submit_session(events, { topic, facilitation, registration_id, timestamp: new Date().toISOString() });
     } catch (error) {
         console.error("Error submitting session: " + error.message);
         error.status = 404;
@@ -1164,7 +1164,7 @@ app.post("/topic-suggestion", multer().none(), (req, res, next) => {
         return next(error);
     }
 
-    res.redirect("/topic-suggestion?registration_id=" + registration_id);
+    res.redirect("/sessions?registration_id=" + registration_id);
 }); // app.post("/topic-suggestion", (req, res) => {
 
 function submit_session(events, command) {
@@ -1184,7 +1184,7 @@ function submit_session(events, command) {
     if (existingTopics.has(command.topic.toLowerCase())) {
         throw new Error("A session with this topic has already been suggested");
     }
-    return { type: "session_submitted_event", topic: command.topic, facilitation: command.facilitation, timestamp: new Date().toISOString(), meta: { command: command }};
+    return { type: "session_submitted_event", topic: command.topic, facilitation: command.facilitation, registration_id: command.registration_id, timestamp: new Date().toISOString(), meta: { command: command }};
 } // function submit_session(events, command)
 
 // Custom error handler for 404s
