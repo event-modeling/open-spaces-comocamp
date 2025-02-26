@@ -864,7 +864,8 @@ app.get("/register-success/:id", (req, res) => {
     console.log("Registration found, registration map: " + JSON.stringify(registration_sv.registrations, null, 2));
     res.render("register-success", {
         participant_name: registered_name,
-        conference_name: registration_sv.conference_name
+        conference_name: registration_sv.conference_name,
+        registration_id: registration_id
     });
 });
 
