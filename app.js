@@ -27,9 +27,9 @@ app.use('/error.css', express.static('public/styles/error.css'));
 function get_events() { 
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
     return  fs.readdirSync(eventstore).sort().map(file => { return JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8")); }); }
-function push_event(event, data = "") {
+function push_event(event) {
+    let data = event.summary ? event.summary : "";
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
-    // get count of events in eventstore
     const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('_event.json')).length;
     const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
     fs.writeFileSync(`${eventstore}/${event_seq}-${event.type}-${data}_event.json`, JSON.stringify(event));
@@ -44,43 +44,46 @@ function notify_processors(event = null) {
 
 if (sync_time > 0) setInterval(notify_processors, sync_time);
 
-function change_state_via_http(command_handler, command) {
-    let event = null; try { event = command_handler(get_events(), command);
-    } catch (error) { return next({...error, status: 400});}
-    try { push_event(event, "name: " + event.name);
-    } catch (error) {
-        console.error("Error pushing event: " + error.message);
-        return next({...error, status: 500});}
-}
+function change_state_via_http(command_handler, command, data = "") {
+    let events = null;
+    try { events = get_events();
+    } catch (error) { console.error("Error getting events: " + error.message);
+        return next({...error, status: 500}); }
+    let event = null; 
+    try { event = command_handler(events, command);
+    } catch (error) { console.error("Error changing state: " + error.message);
+        return next({...error, status: 400});}
+    try { push_event(event);
+    } catch (error) { console.error("Error pushing event: " + error.message); 
+        return next({...error, status: 500}); }
+} // change_state_via_http
 
-app.get("/set-conference-name", (req, res) => {
-    res.render("set-conference-name", { name: "" });
-}); // set_conference_name
+function get_state_via_http(state_view) {
+    let events = null;
+    try { events = get_events();
+    } catch (error) { console.error("Error getting events: " + error.message);
+        return next({...error, status: 500}); }
+    let state = null;
+    try { state = state_view(events);
+    } catch (error) { console.error("Error getting state: " + error.message);
+        return next({...error, status: 500}); }
+    return state;
+} // get_state_via_http
+
+app.get("/set-conference-name", (req, res) => { res.render("set-conference-name", { name: "" }); }); 
 
 app.post('/set-conference-name', upload.none(), (req, res) => {
-    console.log(req.body); // Form data will be here, parsed as a regular object
-    change_state_via_http(set_conference_name, {
-        type: "set_conference_name_command",
-        name: req.body.conferenceName,
-    });
+    console.log(req.body);
+    change_state_via_http(set_conference_name, { name: req.body.conferenceName });
     res.redirect('/set-conference-name-confirmation');
 }); // set_conference_name
 
 function set_conference_name(history, command) {
-    // Check if the name is being changed to the same value
     const current_name = history
         .filter(event => event.type === "conference_name_set_event")
         .reduce((_, event) => event.name, null);
-    
-    if (current_name === command.name) {
-        throw new Error("You didn't change the name. No change registered.");
-    }
-
-    return { 
-        type: "conference_named_event", 
-        name: command.name, 
-        timestamp: command.timestamp || new Date().toISOString() 
-    };
+    if (current_name === command.name) throw new Error("You didn't change the name. No change registered.");
+    return { type: "conference_named_event", name: command.name}; 
 } // set_conference_name
 
 slice_tests.push({ slice_name: "Set Conference Name State Change",
@@ -195,6 +198,7 @@ slice_tests.push({ slice_name: "Set Conference Name State Change",
         }
     ]
 }); // test: Set Conference Name State Change
+
 app.get("/set-name-confirmation", (req, res) => {
     res.render("set-name-confirmation", { conference_name: conference_name_state_view(get_events()) });
 }); // app.get("/set-name-confirmation")
@@ -1078,17 +1082,12 @@ slice_tests.push({ slice_name: "Registration State Change",
 function close_registration_state_change(history, command) {
     const state = history.reduce((acc, event) => {
         switch(event.type) {
-            case "conference_id_generated_event":
-                acc.closed = false;
-                break;
-            case "registration_closed_event":
-                acc.closed = true;
-                break;
-        }
+            case "conference_id_generated_event": acc.closed = false; break;
+            case "registration_closed_event": acc.closed = true; break; }
         return acc;
     }, { closed: true });
     if (state.closed) throw new Error("Registration is already closed");
-    return { type: "registration_closed_event", timestamp: new Date().toISOString() };
+    return { type: "registration_closed_event" };
 } // close_registration_state_change
 
 app.get("/topic-suggestion", (req, res, next) => {
