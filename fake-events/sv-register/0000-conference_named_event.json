@@ -1,5 +1,5 @@
 {
-    "type": "conference_name_set_event",
+    "type": "conference_named_event",
     "name": "Event Modeling Open Spaces",
     "timestamp": "2024-01-23T10:01:00Z"
 } 

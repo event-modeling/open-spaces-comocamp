@@ -33,12 +33,10 @@ function push_event(event, data = "") {
     const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('_event.json')).length;
     const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
     fs.writeFileSync(`${eventstore}/${event_seq}-${event.type}-${data}_event.json`, JSON.stringify(event));
-    if (sync_time === 0 ) notify_processors(event); 
-}
-const processors = [{
-    function: gen_conf_id_processor,
-    events: ["unique_id_requested_event"]
-}];
+    if (sync_time === 0 ) notify_processors(event); }
+const processors = [
+    { function: gen_conf_id_processor, events: ["unique_id_requested_event"] },
+]; // processors
 
 function notify_processors(event = null) {
     if (event === null) { processors.forEach(processor => processor.function(get_events())); return;}
@@ -46,31 +44,26 @@ function notify_processors(event = null) {
 
 if (sync_time > 0) setInterval(notify_processors, sync_time);
 
-app.get("/set-name", (req, res) => {
-    res.render("set-name", { name: "" });
-}); // set_name
-
-app.post('/set-name', upload.none(), (req, res) => {
-    console.log(req.body); // Form data will be here, parsed as a regular object
-    const set_name_command = {
-        type: "set_conference_name_command",
-        name: req.body.conferenceName,
-        timestamp: new Date().toISOString()
-    }
-    let event = null;
-    try { event = set_conference_name(get_events(), set_name_command);
-    } catch (error) {
-        console.error("Error setting conference name: " + error.message);
-        res.status(400).send("Error setting conference name");
-        res.body = "Error setting conference name: " + error.message;
-        return;     }
-    try { push_event(event);
+function change_state_via_http(command_handler, command) {
+    let event = null; try { event = command_handler(get_events(), command);
+    } catch (error) { return next({...error, status: 400});}
+    try { push_event(event, "name: " + event.name);
     } catch (error) {
         console.error("Error pushing event: " + error.message);
-        res.status(500).send("Error pushing event");
-        res.body = "Error pushing event: " + error.message;
-        return;}
-    res.redirect('/set-name-confirmation');
+        return next({...error, status: 500});}
+}
+
+app.get("/set-conference-name", (req, res) => {
+    res.render("set-conference-name", { name: "" });
+}); // set_conference_name
+
+app.post('/set-conference-name', upload.none(), (req, res) => {
+    console.log(req.body); // Form data will be here, parsed as a regular object
+    change_state_via_http(set_conference_name, {
+        type: "set_conference_name_command",
+        name: req.body.conferenceName,
+    });
+    res.redirect('/set-conference-name-confirmation');
 }); // set_conference_name
 
 function set_conference_name(history, command) {
@@ -84,7 +77,7 @@ function set_conference_name(history, command) {
     }
 
     return { 
-        type: "conference_name_set_event", 
+        type: "conference_named_event", 
         name: command.name, 
         timestamp: command.timestamp || new Date().toISOString() 
     };
@@ -1215,6 +1208,7 @@ function topics_sv(history) {
 
 // Custom error handler for 404s
 app.use((req, res, next) => {
+    console.log("404 error handler: " + req.path);
     const err = new Error('Not Found');
     err.status = 404;
     next(err);
@@ -1222,6 +1216,7 @@ app.use((req, res, next) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
+    console.log("Error " + err.status + ", message: " + err.message);
     console.error(err.stack);
     const statusCode = err.status || 500;
     

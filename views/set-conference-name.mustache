@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Name Setup</title>
+    <title>Set Conference Name</title>
     <link rel="stylesheet" href="/styles/main.css">
 </head>
 <body>
@@ -27,7 +27,7 @@
         <h1>What do you want to call your Open Spaces?</h1>
         
         <section class="form-section">
-            <form method="POST" action="/set-name" enctype="multipart/form-data">
+            <form method="POST" action="/set-conference-name" enctype="multipart/form-data">
                 <div class="input-group">
                     <label for="conferenceName">Name:</label>
                     <input type="text" 
@@ -35,7 +35,7 @@
                            name="conferenceName" 
                            class="input-field" 
                            value="{{name}}"
-                           placeholder="Enter event name">
+                           placeholder="Enter conference name">
                 </div>
 
                 <div class="button-group">
