@@ -1,7 +1,0 @@
-{
-    "type": "time_slot_added_event",
-    "start_time": "10:30",
-    "end_time": "11:25",
-    "name": "2nd Session",
-    "timestamp": "2024-01-23T10:01:00Z"
-} 
