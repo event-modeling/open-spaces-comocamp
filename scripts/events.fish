@@ -28,16 +28,29 @@ function events
             # Add your categories logic here 
 
 		case "watch"
+            # get options from arg 2
+            set all_event_data false
+            switch $argv[2]
+                case "--all" "-A"
+                    set all_event_data true
+            end
+
 			# watch the event-stream for changes
 			set last_processed "-1"
 			while true
 				# Get all files, sort them numerically, and process only new ones
 				for file in (ls event-stream 2>/dev/null | sort)
                     set file "event-stream/$file"
-					set file_num (string sub -l 4 (basename $file))
+                    set file_parts (string split -n "-" (basename $file))
+					set file_num $file_parts[1] 
+                    set event_type $file_parts[2]
 					if test -n "$file_num" -a "$file_num" -gt "$last_processed"
-                        echo -n "$file_num "
-						cat $file | jq -C --compact-output 'del(.. | .timestamp?)'
+                        echo -n "$file_num $event_type "
+                        if test $all_event_data = true
+                            cat $file | jq -C --compact-output
+                        else
+                            cat $file | jq -C --compact-output 'del(.meta)'
+                        end
 						set last_processed $file_num
 					end
 				end
