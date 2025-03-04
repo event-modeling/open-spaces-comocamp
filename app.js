@@ -28,14 +28,15 @@ function get_events() {
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
     return  fs.readdirSync(eventstore).sort().map(file => { return JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8")); }); }
 function push_event(event) {
-    let data = event.summary ? event.summary : "";
+    let event_type = event.meta.type;
+    let summary = event.meta.summary ? event.meta.summary : "";
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
     const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('_event.json')).length;
     const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
-    fs.writeFileSync(`${eventstore}/${event_seq}-${event.type}-${data}_event.json`, JSON.stringify(event));
+    fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
     if (sync_time === 0 ) notify_processors(event); }
 const processors = [
-    { function: gen_conf_id_processor, events: ["unique_id_requested_event"] },
+    { function: gen_conf_id_processor, events: ["unique_id_requested"] },
 ]; // processors
 
 function notify_processors(event = null) {
@@ -44,7 +45,7 @@ function notify_processors(event = null) {
 
 if (sync_time > 0) setInterval(notify_processors, sync_time);
 
-function change_state_via_http(command_handler, command, data = "") {
+function change_state_via_http(command_handler, command) {
     let events = null;
     try { events = get_events();
     } catch (error) { console.error("Error getting events: " + error.message);
@@ -73,17 +74,16 @@ function get_state_via_http(state_view) {
 app.get("/set-conference-name", (req, res) => { res.render("set-conference-name", { name: "" }); }); 
 
 app.post('/set-conference-name', upload.none(), (req, res) => {
-    console.log(req.body);
     change_state_via_http(set_conference_name, { name: req.body.conferenceName });
     res.redirect('/set-conference-name-confirmation');
 }); // set_conference_name
 
 function set_conference_name(history, command) {
     const current_name = history
-        .filter(event => event.type === "conference_name_set_event")
+        .filter(event => event.meta.type === "conference_named")
         .reduce((_, event) => event.name, null);
     if (current_name === command.name) throw new Error("You didn't change the name. No change registered.");
-    return { type: "conference_named_event", name: command.name}; 
+    return { name: command.name, meta: { type: "conference_named", summary: command.name }}; 
 } // set_conference_name
 
 slice_tests.push({ slice_name: "Set Conference Name State Change",
@@ -93,17 +93,15 @@ slice_tests.push({ slice_name: "Set Conference Name State Change",
             checkpoints: [
                 {
                     event: { 
-                        type: "conference_name_set_event", 
+                        meta: { type: "conference_named" }, 
                         name: "EM Open Spaces", 
-                        timestamp: "2024-05-21T16:30:00" 
                     },
                     command: { 
                         name: "EM Open Spaces", 
-                        timestamp: "2024-05-21T16:30:00" 
                     },
                     test: function first_name_should_be_set_when_requested(events, command, event) {
                         const result = set_conference_name(events, command);
-                        assert(result.type === event.type, "Should be a conference_name_set_event");
+                        assert(result.meta.type === event.meta.type, "Should be a conference_named event");
                         assert(result.name === command.name, "Name should be set to requested value");
                     }
                 }
@@ -114,24 +112,21 @@ slice_tests.push({ slice_name: "Set Conference Name State Change",
             checkpoints: [
                 { 
                     event: { 
-                        type: "conference_name_set_event", 
+                        meta: { type: "conference_named" }, 
                         name: "EM Open Spaces", 
-                        timestamp: "2024-05-21T16:30:00" 
                     }
                 },
                 {
                     event: { 
-                        type: "conference_name_set_event", 
+                        meta: { type: "conference_named" }, 
                         name: "Event Modeling Space", 
-                        timestamp: "2024-05-22T16:30:00" 
                     },
                     command: { 
                         name: "Event Modeling Space", 
-                        timestamp: "2024-05-22T16:30:00" 
                     },
                     test: function name_should_be_changeable(events, command, event) {
                         const result = set_conference_name(events, command);
-                        assert(result.type === event.type, "Should be a conference_name_set_event");
+                        assert(result.type === event.type, "Should be a conference_name_set");
                         assert(result.name === command.name, "Name should be updated to new value");
                     }
                 }
@@ -142,27 +137,23 @@ slice_tests.push({ slice_name: "Set Conference Name State Change",
             checkpoints: [
                 { 
                     event: { 
-                        type: "conference_name_set_event", 
+                        meta: { type: "conference_named" }, 
                         name: "EM Open Spaces", 
-                        timestamp: "2024-05-21T16:30:00" 
                     }
                 },
                 { 
                     event: { 
-                        type: "conference_name_set_event", 
+                        meta: { type: "conference_named" }, 
                         name: "Event Modeling Space", 
-                        timestamp: "2024-05-22T16:30:00" 
                     }
                 },
                 {
                     event: { 
-                        type: "conference_name_set_event", 
+                        meta: { type: "conference_named" }, 
                         name: "Event Modeling Open Spaces", 
-                        timestamp: "2024-05-23T16:30:00" 
                     },
                     command: { 
                         name: "Event Modeling Open Spaces", 
-                        timestamp: "2024-05-23T16:30:00" 
                     },
                     test: function name_should_be_changeable_multiple_times(events, command, event) {
                         const result = set_conference_name(events, command);
@@ -177,16 +168,14 @@ slice_tests.push({ slice_name: "Set Conference Name State Change",
             checkpoints: [
                 { 
                     event: { 
-                        type: "conference_name_set_event", 
+                        meta: { type: "conference_named" }, 
                         name: "EM Open Spaces", 
-                        timestamp: "2024-05-21T16:30:00" 
                     }
                 },
                 {
                     exception: "You didn't change the name. No change registered.",
                     command: { 
                         name: "EM Open Spaces", 
-                        timestamp: "2024-05-22T16:30:00" 
                     },
                     test: function should_reject_unchanged_name(events, command, exception) {
                         let caught_error = run_with_expected_error(set_conference_name, events, command);
@@ -199,9 +188,9 @@ slice_tests.push({ slice_name: "Set Conference Name State Change",
     ]
 }); // test: Set Conference Name State Change
 
-app.get("/set-name-confirmation", (req, res) => {
-    res.render("set-name-confirmation", { conference_name: conference_name_state_view(get_events()) });
-}); // app.get("/set-name-confirmation")
+app.get("/set-conference-name-confirmation", (req, res) => {
+    res.render("set-conference-name-confirmation", { conference_name: conference_name_state_view(get_events()) });
+}); // app.get("/set-conference-name-confirmation")
 
 function conference_name_state_view(history) {
     const conference_name_event = history.findLast(event => event.type === "conference_name_set_event");
