@@ -1,0 +1,38 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = git@github.com:event-modeling/open-spaces-comocamp.git
+	fetch = +refs/heads/bpf*:refs/remotes/origin/bpf*
+[branch "bpf-design"]
+	remote = origin
+	merge = refs/heads/bpf-design
+[branch "bpf/slice/sc/time-slot-add/node"]
+	vscode-merge-base = origin/main
+	remote = origin
+	merge = refs/heads/bpf/slice/sc/time-slot-add/node
+[branch "bpf-dev"]
+	vscode-merge-base = origin/bpf/slice/sc/time-slot-add/node
+	remote = origin
+	merge = refs/heads/bpf-dev
+[branch "bpf-qa"]
+	vscode-merge-base = origin/bpf/slice/sc/time-slot-add/node
+	remote = origin
+	merge = refs/heads/bpf-qa
+[branch "bpf/slice/sv/todo-gen-conf-id/node"]
+	vscode-merge-base = origin/main
+	remote = origin
+	merge = refs/heads/bpf/slice/sv/todo-gen-conf-id/node
+[branch "bpf/slice/sv/rooms/dotnet"]
+	vscode-merge-base = origin/bpf/slice/sv/todo-gen-conf-id
+	remote = origin
+	merge = refs/heads/bpf/slice/sv/rooms/dotnet
+[branch "bpf/slice/sv/rooms/node"]
+	remote = origin
+	merge = refs/heads/bpf/slice/sv/rooms/node
+[branch "bpf/slice/sc/set-name/node"]
+	vscode-merge-base = origin/bpf-qa
+[branch "main"]
+	vscode-merge-base = origin/bpf-qa
