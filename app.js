@@ -19,12 +19,14 @@ app.use(express.static('public'));
 app.use(express.json());
 app.use('/error.css', express.static('public/styles/error.css'));
 
+function strip_summary(event) { if (event && event.meta) { delete event.meta.summary; } return event; }
 function get_events() { 
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
     return  fs.readdirSync(eventstore).sort().map(file => { return JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8")); }); }
 function push_event(event) {
     let event_type = event.meta.type;
     let summary = event.meta.summary ? event.meta.summary : "";
+    event = strip_summary(event);
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
     const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('-event.json')).length;
     const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
@@ -98,8 +100,8 @@ slice_tests.push({ test_function: set_conference_name,
             checkpoints: [
                 {
                     event: { 
-                        meta: { type: "conference_named" }, 
                         name: "EM Open Spaces", 
+                        meta: { type: "conference_named" }, 
                     },
                     command: { 
                         name: "EM Open Spaces", 
@@ -113,14 +115,14 @@ slice_tests.push({ test_function: set_conference_name,
             checkpoints: [
                 { 
                     event: { 
-                        meta: { type: "conference_named" }, 
                         name: "EM Open Spaces", 
+                        meta: { type: "conference_named" }, 
                     }
                 },
                 {
                     event: { 
-                        meta: { type: "conference_named" }, 
                         name: "Event Modeling Space", 
+                        meta: { type: "conference_named" }, 
                     },
                     command: { 
                         name: "Event Modeling Space", 
@@ -134,20 +136,20 @@ slice_tests.push({ test_function: set_conference_name,
             checkpoints: [
                 { 
                     event: { 
-                        meta: { type: "conference_named" }, 
                         name: "EM Open Spaces", 
+                        meta: { type: "conference_named" }, 
                     }
                 },
                 { 
                     event: { 
-                        meta: { type: "conference_named" }, 
                         name: "Event Modeling Space", 
+                        meta: { type: "conference_named" }, 
                     }
                 },
                 {
                     event: { 
-                        meta: { type: "conference_named" }, 
                         name: "Event Modeling Open Spaces", 
+                        meta: { type: "conference_named" }, 
                     },
                     command: { 
                         name: "Event Modeling Open Spaces", 
@@ -161,8 +163,8 @@ slice_tests.push({ test_function: set_conference_name,
             checkpoints: [
                 { 
                     event: { 
-                        meta: { type: "conference_named" }, 
                         name: "EM Open Spaces", 
+                        meta: { type: "conference_named" }, 
                     }
                 },
                 {
@@ -436,7 +438,7 @@ slice_tests.push({ test_function: todo_gen_conference_id_sv,
                     purpose: "empty array should be returned when no events exist"
                 },
                 {
-                    event: { meta: { type: "conference_id_generated" }, conference_id: "1111-2222-3333" },
+                    event: { conference_id: "1111-2222-3333", meta: { type: "conference_id_generated" }},
                     state: [{ conference_id: "" }],
                     purpose: "empty conf ID should be added on request"
                 },
@@ -556,7 +558,7 @@ slice_tests.push({ test_function: provide_conference_id,
                     progress_marker: "Test the happy path"
                 },
                 { 
-                    event: { meta: { type: "conference_id_generated" }, conference_id: "1111-2222-3333" },
+                    event: { conference_id: "1111-2222-3333", meta: { type: "conference_id_generated" } },
                     command: { conference_id: "1111-2222-3333" },
                     purpose: "provide unique ID should be added when requested"
                 },
@@ -564,7 +566,7 @@ slice_tests.push({ test_function: provide_conference_id,
                     event: { meta: { type: "conference_id_requested" } }
                 },
                 {
-                    event: { meta: { type: "conference_id_generated" }, conference_id: "2222-3333-4444" }
+                    event: { conference_id: "2222-3333-4444", meta: { type: "conference_id_generated" }}
                 },
                 {
                     exception: error_no_request_found,
@@ -654,9 +656,9 @@ function register_state_change(history, command) {
     if (registration_state.names?.has(command.name)) throw error_already_registered;
 
     return { 
-        conference_id: command.conference_id, 
-        registration_id: command.registration_id, 
         name: command.name, 
+        registration_id: command.registration_id, 
+        conference_id: command.conference_id, 
         meta: { type: "registered", summary: command.name + "," + command.registration_id }
     };
 } // register_state_change
@@ -683,7 +685,7 @@ slice_tests.push({ test_function: register_state_change,
                         name: "Adam",
                         registration_id: "eeee-ffff-00000",
                         conference_id: "1111-2222-3333",
-                        meta: { type: "registered", summary: "Adam,eeee-ffff-00000" }
+                        meta: { type: "registered" }
                     },
                     command: {
                         name: "Adam",
@@ -727,7 +729,7 @@ slice_tests.push({ test_function: register_state_change,
                         name: "Adam",
                         registration_id: "aaaa-bbbb-00000",
                         conference_id: "2222-3333-4444",
-                        meta: { type: "registered", summary: "Adam,aaaa-bbbb-00000" }
+                        meta: { type: "registered" }
                     },
                     command: {
                         name: "Adam",
@@ -893,52 +895,21 @@ function tests() {
                 if (checkpoint.purpose !== undefined || checkpoint.test !== undefined) {
                     try {
                         if (checkpoint.command) { // state change test
-                            if (checkpoint.event && !checkpoint.exception) { // testing success of a command
-                                if (checkpoint.test !== undefined) {
-                                checkpoint.test(
-                                    Given = acc.events, 
-                                    When = checkpoint.command, 
-                                    Then = checkpoint.event); }
-                                    else {
-                                        const result = slice.test_function(acc.events, checkpoint.command);
-                                        assert(result.meta.type !== undefined, "Should have a type");
-                                        assert(result.meta.type === checkpoint.event.meta.type, "Should be a " + checkpoint.event.meta.type + " event, but was: " + result.meta.type);
-                                        // must look at each property to match
-                                        Object.keys(checkpoint.event).forEach(key => {
-                                            if (key === "meta") return;
-                                            assert(result[key] !== undefined, "Property '" + key + "' doesn't exist");
-                                            assert(result[key] === checkpoint.event[key], "Property '" + key + "' should be equal. was: " + result[key] + " but expected: " + checkpoint.event[key]);
-                                        });
-                                        Object.keys(result).forEach(key => {
-                                            if (key === "meta") return;
-                                            assert(checkpoint.event[key] !== undefined, "Property '" + key + "' shouldn't exist it the resulting event.");
-                                        });
-                                    } 
+                            if (checkpoint.event && !checkpoint.exception) { // testing success of a command  
+                                const result = slice.test_function(acc.events, checkpoint.command);
+                                assert(JSON.stringify(strip_summary(result)) === JSON.stringify(checkpoint.event), "Should be equal to " + JSON.stringify(checkpoint.event) + " but was: " + JSON.stringify(result));
                             } else if (checkpoint.exception && !checkpoint.event) { // testing exception
-                                if (checkpoint.test !== undefined) {
-                                    checkpoint.test(
-                                        Given = acc.events, 
-                                        When = checkpoint.command, 
-                                        Then = checkpoint.exception); 
-                                } else {
-                                    console.log("running exception test auto-runner");
-                                    const result = run_with_expected_error(slice.test_function, acc.events, checkpoint.command);
-                                    assert(result !== null, "Should throw '" + checkpoint.exception.message + "' error but did not throw an exception");
-                                    assert(result === checkpoint.exception.message, "Should throw " + checkpoint.exception.message + " but threw: " + result);
-                                }
+                                console.log("running exception test auto-runner");
+                                const result = run_with_expected_error(slice.test_function, acc.events, checkpoint.command);
+                                assert(result !== null, "Should throw '" + checkpoint.exception.message + "' error but did not throw an exception");
+                                assert(result === checkpoint.exception.message, "Should throw " + checkpoint.exception.message + " but threw: " + result);
                             } else { // bad chckpoint structure
                                 console.log("bad checkpoint structure: command but no event/exception");
                                 throw new Error("Bad checkpoint structure: command but no event/exception");
                             }
                         } else if (checkpoint.state) { // state view test
-                            if (checkpoint.test !== undefined) {
-                                checkpoint.test(
-                                    Given = acc.events, 
-                                    Then = checkpoint.state); 
-                            } else {
-                                const result = slice.test_function(acc.events);
-                                assert (JSON.stringify(result) === JSON.stringify(checkpoint.state), "Should be equal to " + JSON.stringify(checkpoint.state) + " but was: " + JSON.stringify(result));
-                            }
+                            const result = slice.test_function(acc.events);
+                            assert (JSON.stringify(strip_summary(result)) === JSON.stringify(checkpoint.state), "Should be equal to " + JSON.stringify(checkpoint.state) + " but was: " + JSON.stringify(result));
                         }
                         console.log("test passed");
                         summary += `  ✅ Test passed: ${checkpoint.purpose !== undefined ? checkpoint.purpose : checkpoint.test.name} \n`;
