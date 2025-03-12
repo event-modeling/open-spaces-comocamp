@@ -16,16 +16,16 @@
             <div class="results-section">
                 <h3>Generated IDs:</h3>
                 <ul class="list">
-                    {{#conf_ids}}
+                    {{#conference_ids}}
                         <li class="list-item">
-                            {{#conf_id}}
-                                {{conf_id}}
-                            {{/conf_id}}
-                            {{^conf_id}}
+                            {{#conference_id}}
+                                {{conference_id}}
+                            {{/conference_id}}
+                            {{^conference_id}}
                                 <span class="pending">Pending generation...</span>
-                            {{/conf_id}}
+                            {{/conference_id}}
                         </li>
-                    {{/conf_ids}}
+                    {{/conference_ids}}
                 </ul>
             </div>
         </section>
