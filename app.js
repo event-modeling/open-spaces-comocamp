@@ -899,7 +899,7 @@ function tests() {
                         if (checkpoint.command) { // state change test
                             if (checkpoint.event && !checkpoint.exception) { // testing success of a command  
                                 const result = slice.test_function(acc.events, checkpoint.command);
-                                assert(JSON.stringify(strip_summary(result)) === JSON.stringify(checkpoint.event), "Should be equal to " + JSON.stringify(checkpoint.event) + " but was: " + JSON.stringify(result));
+                                assert(JSON.stringify(strip_summary(result)) === JSON.stringify(strip_summary(checkpoint.event)), "Should be equal to " + JSON.stringify(strip_summary(checkpoint.event)) + " but was: " + JSON.stringify(strip_summary(result)));
                             } else if (checkpoint.exception && !checkpoint.event) { // testing exception
                                 console.log("running exception test auto-runner");
                                 const result = run_with_expected_error(slice.test_function, acc.events, checkpoint.command);
@@ -911,7 +911,7 @@ function tests() {
                             }
                         } else if (checkpoint.state) { // state view test
                             const result = slice.test_function(acc.events);
-                            assert (JSON.stringify(strip_summary(result)) === JSON.stringify(checkpoint.state), "Should be equal to " + JSON.stringify(checkpoint.state) + " but was: " + JSON.stringify(result));
+                            assert (JSON.stringify(strip_summary(result)) === JSON.stringify(strip_summary(checkpoint.state)), "Should be equal to " + JSON.stringify(strip_summary(checkpoint.state)) + " but was: " + JSON.stringify(strip_summary(result)));
                         }
                         console.log("test passed");
                         summary += `  ✅ Test passed: ${checkpoint.purpose !== undefined ? checkpoint.purpose : checkpoint.test.name} \n`;
