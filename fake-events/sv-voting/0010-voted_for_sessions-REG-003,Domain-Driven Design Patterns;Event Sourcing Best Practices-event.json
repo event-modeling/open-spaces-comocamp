@@ -1,0 +1,7 @@
+{
+  "registration_id": "REG-003",
+  "topics": ["Domain-Driven Design Patterns", "Event Sourcing Best Practices"],
+  "meta": {
+    "type": "voted_for_sessions"
+  }
+} 

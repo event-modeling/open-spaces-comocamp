@@ -1,0 +1,7 @@
+{
+  "registration_id": "REG-002",
+  "topics": ["Event Modeling Basics", "CQRS Implementation Strategies"],
+  "meta": {
+    "type": "voted_for_sessions"
+  }
+} 

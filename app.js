@@ -836,6 +836,31 @@ function topics_state_view(history) {
     return state.topics;
 } // topics_state_view
 
+app.get("/voting", (req, res, error_next) => {
+    get_access_token_http_wrapper(req, error_next, (token) => {
+        get_state_http_wrapper(voting_state_view, error_next, (state) => { res.render("voting", { sessions: state.map(topic => ({ ...topic, voted: topic.voters.includes(token.registration_id), votes: undefined })), registration_id: token.registration_id }); });
+    });
+}); // voting
+
+function voting_state_view(history) {
+    function default_state() { return { registrations: {}, topics: [] }; }
+    const state = history.reduce((acc, event) => {
+        switch(event.meta.type) {
+            case "conference_id_generated": acc = default_state(); break;
+            case "registered": acc.registrations[event.registration_id] = event.name; break;
+            case "session_submitted": acc.topics.push({ topic: event.topic, facilitation: event.facilitation, name: acc.registrations[event.registration_id], votes: new Set() }); break;
+            case "voted_for_sessions":
+                acc.topics.forEach(topic => { topic.votes.delete(event.registration_id); });
+                event.topics.forEach(topic => { acc.topics.forEach(t => { if (t.topic === topic) t.votes.add(event.registration_id); }); });
+                break;
+            default: break;
+        }
+        return acc;
+    }, default_state());
+    return state.topics.map(topic => (
+        { topic: topic.topic, facilitation: topic.facilitation, name: topic.name, vote_count: topic.votes.size, voters: Array.from(topic.votes) }));
+} // voting_state_view
+
 // Custom error handler for 404s
 app.use((req, res, next) => {
     // skip favicon.ico requests
