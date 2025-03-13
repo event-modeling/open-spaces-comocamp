@@ -792,7 +792,7 @@ app.post("/topic-suggestion", multer().none(), (req, res, error_next) => {
             topic: req.body.topic, 
             facilitation: req.body.facilitation, 
             registration_id: token.registration_id 
-        }, error_next, () => { res.redirect("/sessions?registration_id=" + token.registration_id); });
+        }, error_next, () => { res.redirect("/topics?registration_id=" + token.registration_id); });
     });
 }); // app.post("/topic-suggestion", (req, res) => {
 
@@ -810,7 +810,7 @@ function submit_session(events, command) {
     return { topic: command.topic, facilitation: command.facilitation, registration_id: command.registration_id, meta: { type: "session_submitted", summary: command.facilitation + "," + command.topic + "," + command.registration_id }};
 } // function submit_session(events, command)
 
-app.get("/sessions", (req, res, error_next) => {
+app.get("/topics", (req, res, error_next) => {
     get_state_http_wrapper(topics_state_view, error_next, (state) => { res.render("topics", { topics: state, registration_id: req.query.registration_id }); });
 }); // sessions
 
