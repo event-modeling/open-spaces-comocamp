@@ -86,9 +86,11 @@ app.post('/set-conference-name', upload.none(), (req, res, error_next) => {
 
 const exception_conference_named_with_no_change = new Error("You didn't change the name. No change registered.");
 function set_conference_name(history, command) {
-    const current_name = history
-        .filter(event => event.meta.type === "conference_named")
-        .reduce((_, event) => event.name, null);
+    const current_name = history.reduce((acc, event) => {
+        switch(event.meta.type) {
+            case "conference_named": return event.name;
+            default: return acc; }
+    }, "");
     if (current_name === command.name) throw exception_conference_named_with_no_change;
     return { name: command.name, meta: { type: "conference_named", summary: command.name }}; 
 } 
