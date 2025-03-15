@@ -1,7 +1,9 @@
 {
-  "start_time": "10:30",
-  "end_time": "11:25",
-  "name": "2nd Session",
+  "data": {
+    "start_time": "10:30",
+    "end_time": "11:25",
+    "name": "2nd Session"
+  },
   "meta": {
     "type": "time_slot_added"
   }

@@ -1,6 +1,8 @@
 {
-  "registration_id": "REG-003",
-  "name": "Carol Davis",
+  "data": {
+    "registration_id": "REG-003",
+    "name": "Carol Davis"
+  },
   "meta": {
     "type": "registered"
   }

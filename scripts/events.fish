@@ -47,9 +47,9 @@ function events
 					if test -n "$file_num" -a "$file_num" -gt "$last_processed"
                         echo -n "$file_num $event_type "
                         if test $all_event_data = true
-                            cat $file | jq -C --compact-output
+                            cat $file | jq -C --compact-output '.'
                         else
-                            cat $file | jq -C --compact-output 'del(.meta)'
+                            cat $file | jq -C --compact-output '.data'
                         end
 						set last_processed $file_num
 					end

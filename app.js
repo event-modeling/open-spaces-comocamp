@@ -85,18 +85,18 @@ function get_access_token_http_wrapper(request, error_next, success_action) {
 app.get("/set-conference-name", (req, res) => { res.render("set-conference-name", { name: "" }); }); 
 
 app.post('/set-conference-name', upload.none(), (req, res, error_next) => {
-    change_state_http_wrapper(set_conference_name, { name: req.body.conferenceName }, error_next, () => { res.redirect('/set-conference-name-confirmation'); });
+    change_state_http_wrapper(set_conference_name, { data: { name: req.body.conferenceName } }, error_next, () => { res.redirect('/set-conference-name-confirmation'); });
 }); // set_conference_name
 
 const exception_conference_named_with_no_change = new Error("You didn't change the name. No change registered.");
 function set_conference_name(history, command) {
     const current_name = history.reduce((acc, event) => {
         switch(event.meta.type) {
-            case "conference_named": return event.name;
+            case "conference_named": return event.data.name;
             default: return acc; }
     }, "");
-    if (current_name === command.name) throw exception_conference_named_with_no_change;
-    return { name: command.name, meta: { type: "conference_named", summary: command.name }}; 
+    if (current_name === command.data.name) throw exception_conference_named_with_no_change;
+    return { data: { name: command.data.name }, meta: { type: "conference_named", summary: command.data.name }}; 
 } 
 
 slice_tests.push({ test_function: set_conference_name,
@@ -106,11 +106,11 @@ slice_tests.push({ test_function: set_conference_name,
             checkpoints: [
                 {
                     event: { 
-                        name: "EM Open Spaces", 
+                        data: { name: "EM Open Spaces" }, 
                         meta: { type: "conference_named" }, 
                     },
                     command: { 
-                        name: "EM Open Spaces", 
+                        data: { name: "EM Open Spaces" }, 
                     },
                     purpose: "test that the conference name is set to the new name"
                 }
@@ -121,17 +121,17 @@ slice_tests.push({ test_function: set_conference_name,
             checkpoints: [
                 { 
                     event: { 
-                        name: "EM Open Spaces", 
+                        data: { name: "EM Open Spaces" }, 
                         meta: { type: "conference_named" }, 
                     }
                 },
                 {
                     event: { 
-                        name: "Event Modeling Space", 
+                        data: { name: "Event Modeling Space" }, 
                         meta: { type: "conference_named" }, 
                     },
                     command: { 
-                        name: "Event Modeling Space", 
+                        data: { name: "Event Modeling Space" }, 
                     },
                     purpose: "name should be changeable"
                 }
@@ -142,23 +142,23 @@ slice_tests.push({ test_function: set_conference_name,
             checkpoints: [
                 { 
                     event: { 
-                        name: "EM Open Spaces", 
+                        data: { name: "EM Open Spaces" }, 
                         meta: { type: "conference_named" }, 
                     }
                 },
                 { 
                     event: { 
-                        name: "Event Modeling Space", 
+                        data: { name: "Event Modeling Space" }, 
                         meta: { type: "conference_named" }, 
                     }
                 },
                 {
                     event: { 
-                        name: "Event Modeling Open Spaces", 
+                        data: { name: "Event Modeling Open Spaces" }, 
                         meta: { type: "conference_named" }, 
                     },
                     command: { 
-                        name: "Event Modeling Open Spaces", 
+                        data: { name: "Event Modeling Open Spaces" }, 
                     },
                     purpose: "name should be changeable multiple times"
                 }
@@ -169,14 +169,14 @@ slice_tests.push({ test_function: set_conference_name,
             checkpoints: [
                 { 
                     event: { 
-                        name: "EM Open Spaces", 
+                        data: { name: "EM Open Spaces" }, 
                         meta: { type: "conference_named" }, 
                     }
                 },
                 {
                     exception: exception_conference_named_with_no_change,
                     command: { 
-                        name: "EM Open Spaces", 
+                        data: { name: "EM Open Spaces" }, 
                     },
                     purpose: "exception should be thrown if the conference name is not changed"
                 }
@@ -192,20 +192,20 @@ app.get("/set-conference-name-confirmation", (req, res, error_next) => {
 }); // app.get("/set-conference-name-confirmation")
 
 function conference_name_state_view(history) {
-    return history.reduce((name, event) => { if (event.meta.type === "conference_named") { return event.name; } return name; }, ""); } // conference_name_state_view
+    return history.reduce((name, event) => { if (event.meta.type === "conference_named") { return event.data.name; } return name; }, ""); } // conference_name_state_view
 
 app.get("/set-dates", (req, res, next) => { res.render("set-dates", { dates: [] }); }); 
 
 app.post("/set-dates", upload.none(), (req, res, error_next) => {
-    change_state_http_wrapper(set_dates, { startDate: req.body.startDate, endDate: req.body.endDate }, error_next, () => { res.redirect('/set-dates-confirmation'); });
+    change_state_http_wrapper(set_dates, { data: { startDate: req.body.startDate, endDate: req.body.endDate } }, error_next, () => { res.redirect('/set-dates-confirmation'); });
 }); // app.post("/set-dates")
 
 const exception_dates_have_invalid_range = new Error("Start date must be before end date");
 function set_dates(history, command) {
-    const start_date = new Date(command.startDate);
-    const end_date = new Date(command.endDate);
+    const start_date = new Date(command.data.startDate);
+    const end_date = new Date(command.data.endDate);
     if (start_date > end_date) throw exception_dates_have_invalid_range;
-    return { start_date: command.startDate, end_date: command.endDate, meta: { type: "set_dates", summary: command.startDate + " to " + command.endDate } };
+    return { data: { start_date: command.data.startDate, end_date: command.data.endDate }, meta: { type: "set_dates", summary: command.data.startDate + " to " + command.data.endDate } };
 } // set_dates
 
 app.get("/set-dates-confirmation",(_, res, next)=>{ 
@@ -215,9 +215,10 @@ app.get("/set-dates-confirmation",(_, res, next)=>{
 }); 
 
 function conference_dates_state_view(history) {
-    const conference_dates_event = history.findLast(event => event.meta.type === "set_dates");
-    if (conference_dates_event === undefined) return { start_date: "", end_date: "" };
-    return { start_date: conference_dates_event.start_date, end_date: conference_dates_event.end_date };
+    return history.reduce((acc, event) => {
+        if (event.meta.type === "set_dates") acc = event.data;
+        return acc;
+    });
 } // conference_dates_state_view
 
 app.get("/rooms", (req, res, error_next) => { 
@@ -229,13 +230,13 @@ app.get("/rooms", (req, res, error_next) => {
 function rooms_state_view(history) {
     return history.reduce((acc, event) => {
         switch(event.meta.type) {
-            case "room_added": acc.push(event.room_name); break;
+            case "room_added": acc.push(event.data.room_name); break;
             case "room_renamed":
-                const index = acc.indexOf(event.old_name);
-                if (index !== -1) acc[index] = event.new_name;
+                const index = acc.indexOf(event.data.old_name);
+                if (index !== -1) acc[index] = event.data.new_name;
                 break;
             case "room_deleted":
-                const deleteIndex = acc.indexOf(event.room_name);
+                const deleteIndex = acc.indexOf(event.data.room_name);
                 if (deleteIndex !== -1) acc.splice(deleteIndex, 1);
                 break;
         }
@@ -246,28 +247,28 @@ slice_tests.push({ test_function: rooms_state_view,
     timelines: [
         { timeline_name: "happy path",
             checkpoints: [
-            { event: { room_name: "Auditorium", meta: { type: "room_added" } },
+            { event: { data: { room_name: "Auditorium" }, meta: { type: "room_added" } },
                 state: [],
                 purpose: "no rooms should be returned when no events have occurred"
             },
-            { event: { room_name: "CS100", meta: { type: "room_added" }},
+            { event: { data: { room_name: "CS100" }, meta: { type: "room_added" }},
                 state: ["Auditorium"], 
                 purpose: "one room should be returned when one room has been added"
             },
             { progress_marker: "at this point, the initial room reserves the name" },
-            { event: { room_name: "CS200", meta: { type: "room_added" } },
+            { event: { data: { room_name: "CS200" }, meta: { type: "room_added" } },
                 state: ["Auditorium", "CS100"],
                 purpose: "two rooms should be returned when two rooms have been added"
             },
-            { event: { old_name: "Auditorium", new_name: "Main Hall", meta: { type: "room_renamed" } },
+            { event: { data: { old_name: "Auditorium", new_name: "Main Hall" }, meta: { type: "room_renamed" } },
                 state: ["Auditorium", "CS100", "CS200"],
                 purpose: "three rooms should be returned when three rooms have been added"
             },
-            { event: { room_name: "CS300", meta: { type: "room_added" } },
+            { event: { data: { room_name: "CS300" }, meta: { type: "room_added" } },
                 state: ["Main Hall", "CS100", "CS200"],
                 purpose: "renamed room should show new name in correct position"
             },
-            { event: { room_name: "CS200", meta: { type: "room_deleted" } } },
+            { event: { data: { room_name: "CS200" }, meta: { type: "room_deleted" } } },
             { 
                 state: ["Main Hall", "CS100", "CS300"],
                 purpose: "deleted room should not be in the result"
@@ -279,18 +280,19 @@ slice_tests.push({ test_function: rooms_state_view,
 ); // test: rooms state view
 
 app.post("/rooms", upload.none(), (req, res, error_next) => {
-    change_state_http_wrapper(add_room, { room_name: req.body.roomName }, error_next, () => { res.redirect("/rooms"); });
+    change_state_http_wrapper(add_room, { data: { room_name: req.body.roomName } }, error_next, () => { res.redirect("/rooms"); });
 }); // app.post("/rooms")
 
 const exception_room_already_exists = new Error("Room already exists");
 function add_room(events, command) {
-    if (events.some(event => event.meta.type === "room_added" && event.room_name === command.room_name)) 
+    console.log("add_room", JSON.stringify(command, null, 2));
+    if (events.some(event => event.meta.type === "room_added" && event.data.room_name === command.data.room_name)) 
         throw exception_room_already_exists;
-    return { room_name: command.room_name, meta: { type: "room_added", summary: command.room_name } };
+    return { data: { room_name: command.data.room_name }, meta: { type: "room_added", summary: command.data.room_name } };
 } // add_room
 
 app.post("/time-slots", upload.none(), (req, res, error_next) => {
-    change_state_http_wrapper(add_time_slot, { start_time: req.body.startTime, end_time: req.body.endTime, name: req.body.name }, error_next, () => { res.redirect("/time-slots"); });
+    change_state_http_wrapper(add_time_slot, { data: { start_time: req.body.startTime, end_time: req.body.endTime, name: req.body.name } }, error_next, () => { res.redirect("/time-slots"); });
 }); // app.post("/time-slots")
 
 const exception_time_slot_required_fields_missing = new Error("Start time, end time, and name are required");
@@ -299,23 +301,23 @@ const exception_time_slot_overlapping = new Error("Time slot is overlapping with
 function add_time_slot(history, command) {
     function timeToMinutes(timeStr) { const [hours, minutes] = timeStr.split(':').map(Number);
         return hours * 60 + minutes;}
-    if (!command.start_time || !command.end_time || !command.name) throw exception_time_slot_required_fields_missing;
+    if (!command.data.start_time || !command.data.end_time || !command.data.name) throw exception_time_slot_required_fields_missing;
 
-    const newStart = timeToMinutes(command.start_time);
-    const newEnd = timeToMinutes(command.end_time);
+    const newStart = timeToMinutes(command.data.start_time);
+    const newEnd = timeToMinutes(command.data.end_time);
     if (newStart >= newEnd) throw exception_time_slot_time_order_invalid;
     
     const hasOverlap = history
         .filter(event => event.meta.type === "time_slot_added")
         .some(event => {
-            const existingStart = timeToMinutes(event.start_time);
-            const existingEnd = timeToMinutes(event.end_time);
+            const existingStart = timeToMinutes(event.data.start_time);
+            const existingEnd = timeToMinutes(event.data.end_time);
             return (newStart < existingEnd && newEnd > existingStart);
         });
     if (hasOverlap) throw exception_time_slot_overlapping;
 
-    return { start_time: command.start_time, end_time: command.end_time, name: command.name,
-        meta: { type: "time_slot_added", summary: command.start_time + " to " + command.end_time + " - " + command.name }
+    return { data: { start_time: command.data.start_time, end_time: command.data.end_time, name: command.data.name },
+        meta: { type: "time_slot_added", summary: command.data.start_time + " to " + command.data.end_time + " - " + command.data.name }
     };
 } // add_time_slot
 
@@ -326,32 +328,32 @@ slice_tests.push({ test_function: add_time_slot,
             timeline_name: "Happy Path",
             checkpoints: [
                 {
-                    event: { start_time: "09:30", end_time: "10:25", name: "1st Session",
+                    event: { data: { start_time: "09:30", end_time: "10:25", name: "1st Session" },
                         meta: { type: "time_slot_added" }
                     },
-                    command: { start_time: "09:30", end_time: "10:25", name: "1st Session" },
+                    command: { data: { start_time: "09:30", end_time: "10:25", name: "1st Session" } },
                     purpose: "first time slot should be added when valid"
                 },
                 {
-                    event: { start_time: "10:30", end_time: "11:25", name: "2nd Session",
+                    event: { data: { start_time: "10:30", end_time: "11:25", name: "2nd Session" },
                         meta: { type: "time_slot_added" }
                     },
-                    command: { start_time: "10:30", end_time: "11:25", name: "2nd Session" },
+                    command: { data: { start_time: "10:30", end_time: "11:25", name: "2nd Session" } },
                     purpose: "second time slot should be added when valid"
                 },
                 {
                     exception: exception_time_slot_overlapping,
-                    command: { start_time: "11:00", end_time: "12:00", name: "1st Session" },
+                    command: { data: { start_time: "11:00", end_time: "12:00", name: "1st Session" } },
                     purpose: "overlapping at the end of the time slot should be rejected"
                 },
                 {
                     exception: exception_time_slot_overlapping,
-                    command: { start_time: "10:00", end_time: "11:00", name: "1st Session" },
+                    command: { data: { start_time: "10:00", end_time: "11:00", name: "1st Session" } },
                     purpose: "overlapping at the start of the time slot should be rejected"
                 },
                 {
                     exception: exception_time_slot_overlapping,
-                    command: { start_time: "10:45", end_time: "11:10", name: "1st Session" },
+                    command: { data: { start_time: "10:45", end_time: "11:10", name: "1st Session" } },
                     purpose: "overlapping time slot entirely within an existing time slot should be rejected"
                 }
             ]
@@ -365,18 +367,26 @@ app.get("/time-slots",(_,res,error_next)=>{
 
 function time_slots_state_view(history) {
     return history.reduce((acc, event) => {
-        if (event.meta.type === "time_slot_added") acc.push({ ...event, meta: undefined });
+        if (event.meta.type === "time_slot_added") acc.push({ ...event.data, meta: undefined, data: undefined });
         return acc;
     }, []); } // time_slots_state_view
 
 app.get("/generate-conf-id", (_, res) => { res.render("generate-conf-id"); });
 
-app.post("/generate-conf-id", (_, res, error_next) => { change_state_http_wrapper(request_unique_id, {}, error_next, () => { res.redirect('/join-conference'); }); }); 
+app.post("/generate-conf-id", (_, res, error_next) => { change_state_http_wrapper(request_unique_id, { data: {} }, error_next, () => { res.redirect('/join-conference'); }); }); 
 
 const exception_unique_id_already_requested = new Error("A request already exists");
 function request_unique_id(history, command) {
-    if (history.length > 0 && history[history.length - 1].meta.type === "conference_id_requested") throw exception_unique_id_already_requested;
-    return { meta: { type: "conference_id_requested" } };
+    const request_available =history.reduce((acc, event) => {
+        switch(event.meta.type) {
+            case "conference_id_requested": acc = false; break;
+            case "conference_id_generated": acc = true; break;
+            default: break;
+        }
+        return acc;
+    }, true );
+    if (!request_available) throw exception_unique_id_already_requested;
+    return { data: {}, meta: { type: "conference_id_requested" } };
 } // request_unique_id
 
 slice_tests.push({ test_function: request_unique_id,
@@ -385,21 +395,21 @@ slice_tests.push({ test_function: request_unique_id,
             timeline_name: "Happy Path",
             checkpoints: [        
                 {
-                    event: { meta: { type: "conference_id_requested" } },
-                    command: {},
+                    event: { data: {}, meta: { type: "conference_id_requested" } },
+                    command: { data: {} },
                     purpose: "request unique ID should be added when requested",
                 },
                 {
                     exception: exception_unique_id_already_requested,
-                    command: {},
+                    command: { data: {} },
                     purpose: "request unique ID should throw an error when request already exists",
                 },
                 {
-                    event: { conference_id: "1111-2222-3333", meta: { type: "conference_id_generated" } }
+                    event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" } }
                 },
                 {
-                    event: { meta: { type: "conference_id_requested" } },
-                    command: {},
+                    event: { data: {}, meta: { type: "conference_id_requested" } },
+                    command: { data: {} },
                     purpose: "request unique ID event should be added when requested after a conference ID has been generated"
                 }
             ]
@@ -412,8 +422,8 @@ app.get("/todo-gen-conf-ids",(_, res, error_next)=>{
 }); 
 
 function todo_gen_conference_id_sv(history) {
-    return history.reduce((acc, current_event) => {
-        switch(current_event.meta.type) {
+    return history.reduce((acc, event) => {
+        switch(event.meta.type) {
             case "conference_id_requested":
                 if (acc.last_event !== null && acc.last_event.meta.type === "conference_id_requested") break;
                 acc.todos.push({ conference_id: "" });
@@ -424,10 +434,10 @@ function todo_gen_conference_id_sv(history) {
                     || acc.todos.length === 0
                     || acc.todos[acc.todos.length - 1].conference_id !== "") 
                     break;
-                acc.todos[acc.todos.length - 1].conference_id = current_event.conference_id;
+                acc.todos[acc.todos.length - 1].conference_id = event.data.conference_id;
                 break;
         }
-        acc.last_event = current_event;
+        acc.last_event = event;
         return acc;
     }, { todos: [], last_event: null }).todos;
 } // todo_gen_conference_id_sv
@@ -439,17 +449,17 @@ slice_tests.push({ test_function: todo_gen_conference_id_sv,
             timeline_name: "Happy Path",
             checkpoints: [
                 {
-                    event: { meta: { type: "conference_id_requested" } },
+                    event: { data: {}, meta: { type: "conference_id_requested" } },
                     state: [],
                     purpose: "empty array should be returned when no events exist"
                 },
                 {
-                    event: { conference_id: "1111-2222-3333", meta: { type: "conference_id_generated" }},
+                    event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" }},
                     state: [{ conference_id: "" }],
                     purpose: "empty conf ID should be added on request"
                 },
                 {
-                    event: { meta: { type: "some_other_event" } },
+                    event: { data: {}, meta: { type: "some_other_event" } },
                     state: [{ conference_id: "1111-2222-3333" }],
                     purpose: "conf ID should be updated when generated"
                 },
@@ -457,10 +467,10 @@ slice_tests.push({ test_function: todo_gen_conference_id_sv,
                     progress_marker: "Second Request behaves the same way"
                 },
                 {
-                    event: { meta: { type: "conference_id_requested" } }
+                    event: { data: {}, meta: { type: "conference_id_requested" } }
                 },
                 {
-                    event: { conference_id: "2222-3333-4444", meta: { type: "conference_id_generated" }},
+                    event: { data: { conference_id: "2222-3333-4444" }, meta: { type: "conference_id_generated" }},
                     state: [{ conference_id: "1111-2222-3333" }, { conference_id: "" }],
                     purpose: "second request should add new empty conf ID"
                 },
@@ -474,24 +484,24 @@ slice_tests.push({ test_function: todo_gen_conference_id_sv,
             timeline_name: "A processor is idempotent",
             checkpoints: [
                 {
-                    event: { meta: { type: "conference_id_requested" } }
+                    event: { data: {}, meta: { type: "conference_id_requested" } }
                 },
                 {
                     progress_marker: "A duplicate request of an ID will be ignored"
                 },
                 {
-                    event: { meta: { type: "conference_id_requested" } },
+                    event: { data: {}, meta: { type: "conference_id_requested" } },
                     state: [{ conference_id: "" }],
                     purpose: "duplicate request should be ignored"
                },
                 {
-                    event: { conference_id: "3333-4444-5555", meta: { type: "conference_id_generated" } }
+                    event: { data: { conference_id: "3333-4444-5555" }, meta: { type: "conference_id_generated" } }
                 },
                 {
                     progress_marker: "A duplicate provision of an ID will be ignored"
                 },
                 {
-                    event: { conference_id: "4444-5555-6666", meta: { type: "conference_id_generated" } },
+                    event: { data: { conference_id: "4444-5555-6666" }, meta: { type: "conference_id_generated" } },
                     state:  [{ conference_id: "3333-4444-5555" }] ,
                     purpose: "duplicate generation should be ignored"
                 }
@@ -501,7 +511,7 @@ slice_tests.push({ test_function: todo_gen_conference_id_sv,
             timeline_name: "If no requests appear in the TODO list, a provided ID is ignored",
             checkpoints: [
                 {
-                    event: { meta: { type: "conference_id_generated" }, conference_id: "1111-2222-3333" },
+                    event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" } },
                     state: [] ,
                     purpose: "generated ID should be ignored without request"
                 }
@@ -526,19 +536,26 @@ processors.push({ function: generate_conference_id_processor, events: ["conferen
 
 function generate_conference_id() {
     const conference_id = generate_id();
-    const conference_id_generated_event = provide_conference_id(get_events(), { conference_id: conference_id });
+    const conference_id_generated_event = provide_conference_id(get_events(), { data: { conference_id: conference_id } });
     push_event(conference_id_generated_event, 'id:' + conference_id);
     console.log("Generated unique ID: " + conference_id);
 } // generate_conference_id
 
 const error_no_request_found = new Error("No conf ID request found.");
-function provide_conference_id(unfiltered_events, command) {
-    const events = unfiltered_events.filter(event => event.meta.type === "conference_id_requested" || event.meta.type === "conference_id_generated");
+function provide_conference_id(history, command) {
+    const events = history.reduce((acc, event) => {
+        switch(event.meta.type) {
+            case "conference_id_requested": acc.push(event); break;
+            case "conference_id_generated": acc.push(event); break;
+            default: break;
+        }
+        return acc;
+    }, []);
     if (events.length === 0 || events[events.length - 1].meta.type !== "conference_id_requested") {
         console.log("No conf ID request found.");
         throw error_no_request_found;
     }
-    return { conference_id: command.conference_id, meta: { type: "conference_id_generated" } };
+    return { data: { conference_id: command.data.conference_id }, meta: { type: "conference_id_generated" } };
 } // provide_conference_id
 
 slice_tests.push({ test_function: provide_conference_id,
@@ -551,32 +568,32 @@ slice_tests.push({ test_function: provide_conference_id,
                 },
                 {
                     exception: error_no_request_found,
-                    command: { conference_id: "1111-2222-3333" },
+                    command: { data: { conference_id: "1111-2222-3333" } },
                     purpose: "provide unique ID should throw an error when no request exists"
                 },
                 { 
-                    event: { meta: { type: "conference_id_requested" } } 
+                    event: { data: {}, meta: { type: "conference_id_requested" } } 
                 },
                 {
-                    event: { meta: { type: "some_other_event" } }
+                    event: { data: {}, meta: { type: "some_other_event" } }
                 },
                 {
                     progress_marker: "Test the happy path"
                 },
                 { 
-                    event: { conference_id: "1111-2222-3333", meta: { type: "conference_id_generated" } },
-                    command: { conference_id: "1111-2222-3333" },
+                    event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" } },
+                    command: { data: { conference_id: "1111-2222-3333" } },
                     purpose: "provide unique ID should be added when requested"
                 },
                 {
-                    event: { meta: { type: "conference_id_requested" } }
+                    event: { data: {}, meta: { type: "conference_id_requested" } }
                 },
                 {
-                    event: { conference_id: "2222-3333-4444", meta: { type: "conference_id_generated" }}
+                    event: { data: { conference_id: "2222-3333-4444" }, meta: { type: "conference_id_generated" }}
                 },
                 {
                     exception: error_no_request_found,
-                    command: { conference_id: "3333-4444-5555" },
+                    command: { data: { conference_id: "3333-4444-5555" } },
                     purpose: "provide unique ID should throw an error when no request exists"
                 }
             ]
@@ -590,7 +607,7 @@ app.get("/join-conference", (_, res, error_next) => {
 
 function join_conference_sv(history) {
     return history.reduce((acc, event) => {
-        switch(event.meta.type) { case "conference_id_generated": acc.conference_id = event.conference_id; break; }
+        switch(event.meta.type) { case "conference_id_generated": acc.conference_id = event.data.conference_id; break; }
         return acc;
     }, { conference_id: null });
 } // join_conference_sv
@@ -603,7 +620,7 @@ app.post("/register/:conference_id", multer().none(), (req, res, error_next) => 
     const id = req.params.conference_id;
     const name = req.body.participantName;
     const registration_id = generate_id();
-    change_state_http_wrapper(register_state_change,{ conference_id: id, registration_id: registration_id, name: name }, error_next, () => { res.redirect(`/register-success/${registration_id}`); });
+    change_state_http_wrapper(register_state_change,{ data: { conference_id: id, registration_id: registration_id, name: name } }, error_next, () => { res.redirect(`/register-success/${registration_id}`); });
 }); // app.post("/register/:id")
         
 app.post("/close-registration", (_, r, error_next) => { 
@@ -619,14 +636,14 @@ function registrations_state_view(history) {
     return history.reduce((acc, event) => {
         switch(event.meta.type) {
             case "conference_id_generated":
-                acc.conference_id = event.conference_id;
+                acc.conference_id = event.data.conference_id;
                 acc.registrations = {};
                 break;
             case "conference_named":
-                acc.conference_name = event.name;
+                acc.conference_name = event.data.name;
                 break;
             case "registered":
-                acc.registrations[event.registration_id] = event.name;
+                acc.registrations[event.data.registration_id] = event.data.name;
                 break;
             default: break; }
         return acc;
@@ -645,10 +662,10 @@ function register_state_change(history, command) {
                 break;
             case "registered":
                 if (acc.conference_id === null) break; // this should not happen
-                acc.names.add(event.name);
+                acc.names.add(event.data.name);
                 break;
             case "conference_id_generated":
-                acc.conference_id = event.conference_id;
+                acc.conference_id = event.data.conference_id;
                 acc.names = new Set();
                 break;
             default:
@@ -658,14 +675,16 @@ function register_state_change(history, command) {
     }, { conference_id: null, names: new Set() });
 
     if (   registration_state.conference_id === null 
-        || registration_state.conference_id !== command.conference_id) throw error_registration_closed;
-    if (registration_state.names?.has(command.name)) throw error_already_registered;
+        || registration_state.conference_id !== command.data.conference_id) throw error_registration_closed;
+    if (registration_state.names?.has(command.data.name)) throw error_already_registered;
 
     return { 
-        name: command.name, 
-        registration_id: command.registration_id, 
-        conference_id: command.conference_id, 
-        meta: { type: "registered", summary: command.name + "," + command.registration_id }
+        data: { 
+            name: command.data.name, 
+            registration_id: command.data.registration_id, 
+            conference_id: command.data.conference_id 
+        },
+        meta: { type: "registered", summary: command.data.name + "," + command.data.registration_id }
     };
 } // register_state_change
 
@@ -676,42 +695,47 @@ slice_tests.push({ test_function: register_state_change,
             checkpoints: [
                 {
                     exception: error_registration_closed,
-                    command: {
-                        name: "Adam",
-                        registration_id: "eeee-ffff-00000",
-                        conference_id: "1111-2222-3333"
-                    },
+                    command: { data: {
+                            name: "Adam",
+                            registration_id: "eeee-ffff-00000",
+                            conference_id: "1111-2222-3333"
+                        }},
                     purpose: "Should reject registration when conference doesn't exist"
                 },
                 {
-                    event: {conference_id: "1111-2222-3333", meta: { type: "conference_id_generated" }}
+                    event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" }}
                 },
                 {
-                    event: { 
-                        name: "Adam",
-                        registration_id: "eeee-ffff-00000",
-                        conference_id: "1111-2222-3333",
+                    event: { data: { 
+                            name: "Adam",
+                            registration_id: "eeee-ffff-00000",
+                            conference_id: "1111-2222-3333"
+                        },
                         meta: { type: "registered" }
                     },
                     command: {
-                        name: "Adam",
-                        registration_id: "eeee-ffff-00000",
-                        conference_id: "1111-2222-3333"
+                        data: { 
+                            name: "Adam",
+                            registration_id: "eeee-ffff-00000",
+                            conference_id: "1111-2222-3333"
+                        }
                     },
                     purpose: "Should allow first registration"
                 },
                 {
                     exception: error_already_registered,
                     command: {
-                        name: "Adam",
-                        registration_id: "cccc-dddd-1111",
-                        conference_id: "1111-2222-3333"
+                        data: { 
+                            name: "Adam",
+                            registration_id: "cccc-dddd-1111",
+                            conference_id: "1111-2222-3333"
+                        }
                     },
                     purpose: "Should reject duplicate registration"
                 },
                 {
                     event: {
-                        conference_id: "1111-2222-3333",
+                        data: { conference_id: "1111-2222-3333" },
                         meta: { type: "registration_closed" }
                     }
                 },
@@ -719,28 +743,30 @@ slice_tests.push({ test_function: register_state_change,
                     progress_marker: "A second conference is started"
                 },
                 {
-                    event: {conference_id: "2222-3333-4444", meta: { type: "conference_id_generated" }}
+                    event: { data: { conference_id: "2222-3333-4444" }, meta: { type: "conference_id_generated" }}
                 },
                 {
                     exception: error_registration_closed,
-                    command: {
-                        name: "Adam",
-                        registration_id: "eeee-ffff-00000",
-                        conference_id: "1111-2222-3333"
-                    },
+                    command: { data: { 
+                            name: "Adam",
+                            registration_id: "eeee-ffff-00000",
+                            conference_id: "1111-2222-3333"
+                        } },
                     purpose: "Should reject registration for old conference"
                 },
                 {
-                    event: {
-                        name: "Adam",
-                        registration_id: "aaaa-bbbb-00000",
-                        conference_id: "2222-3333-4444",
+                    event: { data: { 
+                            name: "Adam",
+                            registration_id: "aaaa-bbbb-00000",
+                            conference_id: "2222-3333-4444"
+                        },
                         meta: { type: "registered" }
                     },
-                    command: {
-                        name: "Adam",
-                        registration_id: "aaaa-bbbb-00000",
-                        conference_id: "2222-3333-4444"
+                    command: { data: { 
+                            name: "Adam",
+                            registration_id: "aaaa-bbbb-00000",
+                            conference_id: "2222-3333-4444"
+                        }
                     },
                     purpose: "Should allow registration for new conference"
                 }
@@ -750,23 +776,18 @@ slice_tests.push({ test_function: register_state_change,
             timeline_name: "Registration is closed",
             checkpoints: [
                 {
-                    event: {
-                        conference_id: "1111-2222-3333",
-                        meta: { type: "conference_id_generated" }
-                    }
+                    event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" }}
                 },
                 {
-                    event: {
-                        conference_id: "1111-2222-3333",
-                        meta: { type: "registration_closed" }
-                    }
+                    event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "registration_closed" }}
                 },
                 {
                     exception: error_registration_closed,
-                    command: {
-                        name: "Adam",
-                        registration_id: "eeee-ffff-00000",
-                        conference_id: "1111-2222-3333"
+                    command: { data: { 
+                            name: "Adam",
+                            registration_id: "eeee-ffff-00000",
+                            conference_id: "1111-2222-3333"
+                        }
                     },
                     purpose: "Should reject registration when closed"
                 }
@@ -783,7 +804,7 @@ function close_registration_state_change(history, command) {
         return acc;
     }, { closed: true });
     if (state.closed) throw new Error("Registration is already closed");
-    return { meta: { type: "registration_closed" } };
+    return { data: {}, meta: { type: "registration_closed" } };
 } // close_registration_state_change
 
 app.get("/topic-suggestion", (req, res, error_next) => {
@@ -793,9 +814,11 @@ app.get("/topic-suggestion", (req, res, error_next) => {
 app.post("/topic-suggestion", multer().none(), (req, res, error_next) => {
     get_access_token_http_wrapper(req, error_next, (token) => {
         change_state_http_wrapper(submit_session, { 
-            topic: req.body.topic, 
-            facilitation: req.body.facilitation, 
-            registration_id: token.registration_id 
+            data: { 
+                topic: req.body.topic, 
+                facilitation: req.body.facilitation, 
+                registration_id: token.registration_id 
+            }
         }, error_next, () => { res.redirect("/topics?registration_id=" + token.registration_id); });
     });
 }); // app.post("/topic-suggestion", (req, res) => {
@@ -805,13 +828,13 @@ function submit_session(events, command) {
     const existingTopics = events.reduce((acc, event) => {
         switch(event.meta.type) {
             case "unique_id_generated_event": acc.topics = new Set(); break;
-            case "session_submitted_event": acc.topics.add(event.topic.toLowerCase()); break;
+            case "session_submitted_event": acc.topics.add(event.data.topic.toLowerCase()); break;
         }
         return acc;
     }, { topics: new Set() }).topics;
 
-    if (existingTopics.has(command.topic.toLowerCase())) throw error_session_already_submitted;
-    return { topic: command.topic, facilitation: command.facilitation, registration_id: command.registration_id, meta: { type: "session_submitted", summary: command.facilitation + "," + command.topic + "," + command.registration_id }};
+    if (existingTopics.has(command.data.topic.toLowerCase())) throw error_session_already_submitted;
+    return { data: { topic: command.data.topic, facilitation: command.data.facilitation, registration_id: command.data.registration_id }, meta: { type: "session_submitted", summary: command.data.facilitation + "," + command.data.topic + "," + command.data.registration_id }};
 } // function submit_session(events, command)
 
 app.get("/topics", (req, res, error_next) => {
@@ -826,11 +849,11 @@ function topics_state_view(history) {
                 acc.topics = [];
                 break;
             case "registered":
-                acc.registrations[event.registration_id] = event.name;
+                acc.registrations[event.data.registration_id] = event.data.name;
                 break;
             case "session_submitted":
                 try {
-                    acc.topics.push({ topic: event.topic, facilitation: event.facilitation, name: acc.registrations[event.registration_id] });
+                    acc.topics.push({ topic: event.data.topic, facilitation: event.data.facilitation, name: acc.registrations[event.data.registration_id] });
                 } catch (error) { console.log("Error adding topic: " + error.message); }
                 break;
             default: break;
@@ -840,9 +863,31 @@ function topics_state_view(history) {
     return state.topics;
 } // topics_state_view
 
+function get_state_http_wrapper_v2(query, error_next, success_action) {
+    let events = null;
+    try { events = get_events(); console.log("events count for state view: " + events.length);
+    } catch (error) { console.error("Error getting events: " + error.message);
+        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
+    let state = null;
+    try { state = query.state_view(events); console.log("state: ", JSON.stringify(state));
+        state = query.adjustment_function(state); console.log("state after adjustment_function: ", JSON.stringify(state));
+    } catch (error) { console.error("Error getting state: " + error.message);
+        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
+    if (success_action !== undefined) success_action(state);
+    return state;
+} // get_state_via_http
+
 app.get("/voting", (req, res, error_next) => {
     get_access_token_http_wrapper(req, error_next, (token) => {
-        get_state_http_wrapper(voting_state_view, error_next, (state) => { res.render("voting", { sessions: state.map(topic => ({ ...topic, voted: topic.voters.includes(token.registration_id) })), registration_id: token.registration_id }); });
+         get_state_http_wrapper_v2(
+            { 
+                state_view: voting_state_view, 
+                adjustment_function: (state) => {
+                    return { registration_id: token.registration_id, sessions: state.map(topic =>({ 
+                        ...topic, 
+                        voted: topic.voters.includes(token.registration_id) })) }; }}, 
+            error_next, 
+            (model) => { res.render("voting", model); });
     });
 }); // voting
 
@@ -869,31 +914,33 @@ function history_reducer(history, default_state, event_handlers) {
     }, default_state);
     return state;
 }
-function state_change(history, event_handlers, default_state, invariant_function) {
-    const state = history_reducer(history, default_state, event_handlers);
-    return invariant_function(state);
+function state_change(command) {
+    const state = history_reducer(command.history, command.default_state, command.event_handlers);
+    return command.invariant_function(state);
 }
 
-function state_view(history, event_handlers, default_state, mapper_function) {
-    const state = history_reducer(history, default_state, event_handlers);
+function state_view(history, event_handlers, initial_state, mapper_function) {
+    const state = history_reducer(history, initial_state, event_handlers);
     let model = undefined;
-    try { model = mapper_function(state);
+    try { model = mapper_function(state); console.log("model: ", JSON.stringify(model, null, 2));
     } catch (error) { console.error("Error mapping state: " + JSON.stringify(state, null, 2)); console.error(error); }
     return model;
 }
 
 function voting_state_view(history) {
-    return state_view(history, {
+    return state_view(history, event_handlers = {
         "conference_id_generated": (state, event) => { state = { registrations: {}, topics: [] }; },
-        "registered": (state, event) => { state.registrations[event.registration_id] = event.name; },
-        "session_submitted": (state, event) => { state.topics.push({ topic: event.topic, facilitation: event.facilitation, name: state.registrations[event.registration_id], votes: new Set() }); },
+        "registered": (state, event) => { state.registrations[event.data.registration_id] = event.data.name; },
+        "session_submitted": (state, event) => { state.topics.push({ topic: event.data.topic, facilitation: event.data.facilitation, name: state.registrations[event.data.registration_id], votes: [] }); },
         "voted_for_sessions": (state, event) => {
-            state.topics.forEach(topic => { topic.votes.delete(event.registration_id); });
-            event.topics.forEach(topic => { state.topics.forEach(t => { if (t.topic === topic) t.votes.add(event.registration_id); }); });
+            state.topics.forEach(topic => { topic.votes = topic.votes.filter(vote => vote !== event.data.registration_id); });
+            event.data.topics.forEach(topic => { state.topics.forEach(t => { if (t.topic === topic) t.votes.push(event.data.registration_id); }); });
         },
         "close_voting": (state, event) => { state.closed = true; }
-    }, { registrations: {}, topics: [] } ,(state)=> {return state.topics.map(topic => (
-        { topic: topic.topic, facilitation: topic.facilitation, name: topic.name, vote_count: topic.votes.size, voters: Array.from(topic.votes) }));});
+    }, initial_state = { registrations: {}, topics: [] }, mapper_function = (state)=> { 
+         return state.topics.map(topic => (
+        { topic: topic.topic, facilitation: topic.facilitation, name: topic.name, vote_count: topic.votes.length, voters: topic.votes }));
+    });
 } // voting_state_view
 
 function get_votes_from_post_request(req) {
@@ -924,7 +971,7 @@ function change_state_http_wrapper_v2(command, error_next, success_action) {
 
 app.post("/voting", multer().none(), (req, res, error_next) => {
     get_access_token_http_wrapper(req, error_next, (token) => {
-        change_state_http_wrapper_v2({ meta: { command_name: "vote_for_sessions", command_handler: vote_for_sessions }, topics: get_votes_from_post_request(req), registration_id: token.registration_id }, error_next, () => { res.redirect("/voting?registration_id=" + token.registration_id); });
+        change_state_http_wrapper_v2(command = { meta: { command_name: "vote_for_sessions", command_handler: vote_for_sessions }, data: { topics: get_votes_from_post_request(req), registration_id: token.registration_id } }, error_next, () => { res.redirect("/voting?registration_id=" + token.registration_id); });
     });
 }); // vote
 
@@ -932,17 +979,21 @@ const error_voting_closed = new Error("Voting is closed");
 const error_topic_not_found = new Error("Topic not found");
 function vote_for_sessions(history, input) {
     console.log("-- vote_for_sessions input: ", JSON.stringify(input, null, 2));
-    return state_change(history, {
-        "conference_id_generated": (state, event) => { state = { topics: [], closed: false }; },
-        "session_submitted": (state, event) => { state.topics.push({ topic: event.topic}); },
-        "close_voting": (state, event) => { state.closed = true; }
-    }, { topics: [], closed: false }, (state) => {
-        if (state.closed) throw error_voting_closed;
-        if (!input.topics.reduce((acc, topic) => {
-            if (!state.topics.find(t => t.topic === topic)) return false;
-            return acc;
-        }, true)) throw error_topic_not_found;
-        return { registration_id: input.registration_id, topics: input.topics,  meta: { type: "voted_for_sessions",summary: input.registration_id + "," + input.topics} };
+    return state_change(command = {
+        history: history,
+        default_state: { topics: [], closed: false },
+        event_handlers: {
+            "conference_id_generated": (state, event) => { state = { topics: [], closed: false }; },
+            "session_submitted": (state, event) => { state.topics.push({ topic: event.data.topic}); },
+            "close_voting": (state, event) => { state.closed = true; } },
+        invariant_function: (state) => {
+            if (state.closed) throw error_voting_closed;
+            if (!input.data.topics.reduce((acc, topic) => {
+                if (!state.topics.find(t => t.topic === topic)) return false;
+                return acc;
+            }, true)) throw error_topic_not_found;
+            return { data: { registration_id: input.data.registration_id, topics: input.data.topics }, meta: { type: "voted_for_sessions", summary: input.data.registration_id + "," + input.data.topics} };
+        }
     }); 
 } // vote_for_sessions
 

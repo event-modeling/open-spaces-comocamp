@@ -1,5 +1,7 @@
 {
-  "room_name": "CS100",
+  "data": {
+    "room_name": "CS100"
+  },
   "meta": {
     "type": "room_deleted"
   }

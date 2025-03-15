@@ -1,6 +1,8 @@
 {
-  "registration_id": "abcd-efgh-ijkl",
-  "name": "John Smith",
+  "data": {
+    "registration_id": "abcd-efgh-ijkl",
+    "name": "John Smith"
+  },
   "meta": {
     "type": "registered"
   }

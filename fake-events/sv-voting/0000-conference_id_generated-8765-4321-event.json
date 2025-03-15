@@ -1,5 +1,7 @@
 {
-  "conference_id": "8765-4321",
+  "data": {
+    "conference_id": "8765-4321"
+  },
   "meta": {
     "type": "conference_id_generated"
   }

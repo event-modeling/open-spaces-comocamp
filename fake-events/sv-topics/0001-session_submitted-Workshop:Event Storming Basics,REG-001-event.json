@@ -1,7 +1,9 @@
 {
-  "topic": "Event Storming Basics",
-  "facilitation": "Workshop",
-  "registration_id": "REG-001",
+  "data": {
+    "topic": "Event Storming Basics",
+    "facilitation": "Workshop",
+    "registration_id": "REG-001"
+  },
   "meta": {
     "type": "session_submitted"
   }

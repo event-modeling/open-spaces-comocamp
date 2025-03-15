@@ -1,5 +1,7 @@
 {
-  "room_name": "Auditorium",
+  "data": {
+    "room_name": "Auditorium"
+  },
   "meta": {
     "type": "room_added"
   }

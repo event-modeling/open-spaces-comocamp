@@ -1,5 +1,7 @@
 {
-  "name": "Event Modeling Open Spaces",
+  "data": {
+    "name": "Event Modeling Open Spaces"
+  },
   "meta": {
     "type": "conference_named"
   }

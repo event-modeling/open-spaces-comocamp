@@ -1,7 +1,9 @@
 {
-  "topic": "Domain-Driven Design Patterns",
-  "facilitation": "Discussion",
-  "registration_id": "REG-002",
+  "data": {
+    "topic": "Domain-Driven Design Patterns",
+    "facilitation": "Discussion",
+    "registration_id": "REG-002"
+  },
   "meta": {
     "type": "session_submitted"
   }
