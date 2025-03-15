@@ -22,7 +22,11 @@ app.use('/error.css', express.static('public/styles/error.css'));
 function strip_summary(event) { if (event && event.meta) { delete event.meta.summary; } return event; }
 function get_events() { 
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
-    return  fs.readdirSync(eventstore).sort().map(file => { return JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8")); }); }
+    return fs.readdirSync(eventstore).sort().map(file => { 
+        const event = JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8"));
+        if (!event.meta) event.meta = {}; event.meta.sequence = parseInt(file.substring(0, 4));
+        return event;
+    }); }
 function push_event(event) {
     let event_type = event.meta.type;
     let summary = event.meta.summary ? event.meta.summary : "";
@@ -45,7 +49,7 @@ function change_state_http_wrapper(command_handler, command, error_next, success
     } catch (error) { console.error("Error getting events: " + error.message);
         const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
     try { result_event = command_handler(events, command); console.log("result_event: ", JSON.stringify(result_event));
-    } catch (error) { console.error("Error changing state: " + error.message);
+    } catch (error) { console.error("Error changing state (command handler: " + command_handler.name + "): " + error.message); console.error("command: ", JSON.stringify(command));
         const new_error = new Error(error.message); new_error.status = 422; return error_next(new_error); }
     try { push_event(result_event);
     } catch (error) { console.error("Error pushing event: " + error.message); 
@@ -835,6 +839,112 @@ function topics_state_view(history) {
     }, { registrations: {}, topics: [] }); 
     return state.topics;
 } // topics_state_view
+
+app.get("/voting", (req, res, error_next) => {
+    get_access_token_http_wrapper(req, error_next, (token) => {
+        get_state_http_wrapper(voting_state_view, error_next, (state) => { res.render("voting", { sessions: state.map(topic => ({ ...topic, voted: topic.voters.includes(token.registration_id) })), registration_id: token.registration_id }); });
+    });
+}); // voting
+
+function history_reducer(history, default_state, event_handlers) {
+    const state = history.reduce((acc, event) => {
+        console.log("processing event: " + JSON.stringify(event, null, 2));
+        let event_handler = undefined;
+        try {
+            if (!event_handlers[event.meta.type]) return acc; // skipping event
+            event_handler = event_handlers[event.meta.type];
+        } catch (error) {
+            console.error("Error getting event handler for event: " + JSON.stringify(event, null, 2));
+            console.error(error);
+            return acc;
+        }
+        try {
+            event_handler(acc, event);
+        } catch (error) {
+            console.error("Error handling event: " + JSON.stringify(event, null, 2));
+            console.error(error);
+            return acc;
+        }
+        return acc;
+    }, default_state);
+    return state;
+}
+function state_change(history, event_handlers, default_state, invariant_function) {
+    const state = history_reducer(history, default_state, event_handlers);
+    return invariant_function(state);
+}
+
+function state_view(history, event_handlers, default_state, mapper_function) {
+    const state = history_reducer(history, default_state, event_handlers);
+    let model = undefined;
+    try { model = mapper_function(state);
+    } catch (error) { console.error("Error mapping state: " + JSON.stringify(state, null, 2)); console.error(error); }
+    return model;
+}
+
+function voting_state_view(history) {
+    return state_view(history, {
+        "conference_id_generated": (state, event) => { state = { registrations: {}, topics: [] }; },
+        "registered": (state, event) => { state.registrations[event.registration_id] = event.name; },
+        "session_submitted": (state, event) => { state.topics.push({ topic: event.topic, facilitation: event.facilitation, name: state.registrations[event.registration_id], votes: new Set() }); },
+        "voted_for_sessions": (state, event) => {
+            state.topics.forEach(topic => { topic.votes.delete(event.registration_id); });
+            event.topics.forEach(topic => { state.topics.forEach(t => { if (t.topic === topic) t.votes.add(event.registration_id); }); });
+        },
+        "close_voting": (state, event) => { state.closed = true; }
+    }, { registrations: {}, topics: [] } ,(state)=> {return state.topics.map(topic => (
+        { topic: topic.topic, facilitation: topic.facilitation, name: topic.name, vote_count: topic.votes.size, voters: Array.from(topic.votes) }));});
+} // voting_state_view
+
+function get_votes_from_post_request(req) {
+    const selectedTopics = [];
+    for (const [key, value] of Object.entries(req.body)) selectedTopics.push(key.replace("session_", ""));
+    return selectedTopics;
+}
+
+function change_state_http_wrapper_v2(command, error_next, success_action) {
+    let events, result_event = undefined;
+    try { events = get_events(); console.log("events count for state change: " + events.length);
+    } catch (error) { console.error("Error getting events: " + error.message);
+        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
+    console.log("-- command: ", JSON.stringify(command, null, 2));
+        try { 
+            const command_handler = command.meta.command_handler;
+            const input_data = {...command, command_handler: undefined};
+            console.log("-- input_data: ", JSON.stringify(input_data, null, 2));
+            result_event = command_handler(events, input_data); console.log("result_event: ", JSON.stringify(result_event));
+    } catch (error) { console.error("Error changing state (command: " + JSON.stringify(command) + "): " + error.message); 
+        const new_error = new Error(error.message); new_error.status = 422; return error_next(new_error); }
+    try { push_event(result_event);
+    } catch (error) { console.error("Error pushing event: " + error.message); 
+        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
+    if (success_action !== undefined) success_action(result_event);
+    return result_event;
+} // change_state_via_http
+
+app.post("/voting", multer().none(), (req, res, error_next) => {
+    get_access_token_http_wrapper(req, error_next, (token) => {
+        change_state_http_wrapper_v2({ meta: { command_name: "vote_for_sessions", command_handler: vote_for_sessions }, topics: get_votes_from_post_request(req), registration_id: token.registration_id }, error_next, () => { res.redirect("/voting?registration_id=" + token.registration_id); });
+    });
+}); // vote
+
+const error_voting_closed = new Error("Voting is closed");
+const error_topic_not_found = new Error("Topic not found");
+function vote_for_sessions(history, input) {
+    console.log("-- vote_for_sessions input: ", JSON.stringify(input, null, 2));
+    return state_change(history, {
+        "conference_id_generated": (state, event) => { state = { topics: [], closed: false }; },
+        "session_submitted": (state, event) => { state.topics.push({ topic: event.topic}); },
+        "close_voting": (state, event) => { state.closed = true; }
+    }, { topics: [], closed: false }, (state) => {
+        if (state.closed) throw error_voting_closed;
+        if (!input.topics.reduce((acc, topic) => {
+            if (!state.topics.find(t => t.topic === topic)) return false;
+            return acc;
+        }, true)) throw error_topic_not_found;
+        return { registration_id: input.registration_id, topics: input.topics,  meta: { type: "voted_for_sessions",summary: input.registration_id + "," + input.topics} };
+    }); 
+} // vote_for_sessions
 
 // Custom error handler for 404s
 app.use((req, res, next) => {
