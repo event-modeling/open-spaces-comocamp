@@ -1,25 +1,27 @@
 let port = 3002;
 let slice_tests = [];
 const sync_time = 0;
-let eventstore = "./event-stream";
+const eventstore = "./event-stream";
 const event_seq_padding = '0000';
 
 let run_tests = process.argv.includes('--test');
 let long_ids = process.argv.includes('--long-ids');
 
 const { v4: uuidv4 } = require('uuid'); function generate_id() { return long_ids ? uuidv4() : uuidv4().slice(0, 8); }
-const express = require("express");
-const app = express();
-const fs = require("fs");
-const multer = require("multer");
-const upload = multer();
-app.set("view engine", "mustache");
-app.engine("mustache", require("mustache-express")());
-app.use(express.static('public'));
-app.use(express.json());
-app.use('/error.css', express.static('public/styles/error.css'));
+let app, fs, multer, upload;
+if (!run_tests) {
+    const express = require("express");
+    app = express();
+    fs = require("fs");
+    multer = require("multer");
+    upload = multer();
+    app.set("view engine", "mustache");
+    app.engine("mustache", require("mustache-express")());
+    app.use(express.static('public'));
+    app.use(express.json());
+    app.use('/error.css', express.static('public/styles/error.css')); }
 
-function strip_summary(event) { if (event && event.meta) { delete event.meta.summary; } return event; }
+function strip_summary(event) { if (event) { delete event.summary; } return event; }
 function get_events() { 
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
     return fs.readdirSync(eventstore).sort().map(file => { 
@@ -28,19 +30,22 @@ function get_events() {
         return event;
     }); }
 function push_event(event) {
-    let event_type = event.meta.type;
-    let summary = event.meta.summary ? event.meta.summary : "";
+    let event_type = event.name;
+    let summary = event.summary ? event.summary : "";
     event = strip_summary(event);
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
+
     const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('-event.json')).length;
+    
     const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
+    
     fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
     if (sync_time === 0 ) notify_processors(event); }
     
 if (sync_time > 0) setInterval(notify_processors, sync_time);
 function notify_processors(event = null) {
     if (event === null) { processors.forEach(processor => processor.function(get_events())); return;}
-    processors.forEach(processor => { if (processor.events.includes(event.meta.type)) processor.function(get_events()); });}
+    processors.forEach(processor => { if (processor.events.includes(event.name)) processor.function(get_events()); });}
 const processors = [];
 
 function change_state_http_wrapper(command_handler, command, error_next, success_action) {
@@ -82,110 +87,130 @@ function get_access_token_http_wrapper(request, error_next, success_action) {
     });
 } // get_access_token
 
-app.get("/set-conference-name", (req, res) => { res.render("set-conference-name", { name: "" }); }); 
+if (!run_tests) app.get("/set-conference-name", (req, res) => { res.render("set-conference-name", { name: "" }); }); 
 
-app.post('/set-conference-name', upload.none(), (req, res, error_next) => {
-    change_state_http_wrapper(set_conference_name, { data: { name: req.body.conferenceName } }, error_next, () => { res.redirect('/set-conference-name-confirmation'); });
-}); // set_conference_name
-
-const exception_conference_named_with_no_change = new Error("You didn't change the name. No change registered.");
-function set_conference_name(history, command) {
-    const current_name = history.reduce((acc, event) => {
-        switch(event.meta.type) {
-            case "conference_named": return event.data.name;
-            default: return acc; }
-    }, "");
-    if (current_name === command.data.name) throw exception_conference_named_with_no_change;
-    return { data: { name: command.data.name }, meta: { type: "conference_named", summary: command.data.name }}; 
-} 
-
-slice_tests.push({ test_function: set_conference_name,
-    timelines: [
-        {
-            timeline_name: "Happy Path",
+const slices = [];
+slices.push({ name: "name_the_conference", 
+    direction: "input", 
+    data: (req) => { return req.body.conferenceName; }, 
+    path: "/set-conference-name",
+    view: "set-conference-name",
+    on_success_path: "set-conference-name-confirmation",    
+    initial_state: "",
+    event_handlers: { "conference_named": (state, event) => { return event.data.name; } },
+    exceptions: [ { "no_change_to_name": new Error("You didn't change the name. No change registered.") } ],
+    invariant_function: (state, parameter) => {
+            if (state === parameter) return { type: "exception", name: "no_change_to_name" };
+            return { type: "event", data: { name: parameter }, name: "conference_named", summary: parameter };
+    },
+    test_timelines: [
+        {   timeline_name: "Happy Path",
             checkpoints: [
-                {
+                {   purpose: "test that the conference name is set to the new name",
+                    parameter: "EM Open Spaces", 
                     event: { 
                         data: { name: "EM Open Spaces" }, 
-                        meta: { type: "conference_named" }, 
-                    },
-                    command: { 
-                        data: { name: "EM Open Spaces" }, 
-                    },
-                    purpose: "test that the conference name is set to the new name"
-                }
-            ]
-        },
-        {
-            timeline_name: "Renames allowed",
+                        name: "conference_named" } } ] },
+        {   timeline_name: "Renames allowed",
             checkpoints: [
-                { 
-                    event: { 
+                {   event: { 
                         data: { name: "EM Open Spaces" }, 
-                        meta: { type: "conference_named" }, 
-                    }
-                },
-                {
+                        name: "conference_named" } }, 
+                {   purpose: "name should be changeable",
+                    parameter: "Event Modeling Space",
                     event: { 
                         data: { name: "Event Modeling Space" }, 
-                        meta: { type: "conference_named" }, 
-                    },
-                    command: { 
-                        data: { name: "Event Modeling Space" }, 
-                    },
-                    purpose: "name should be changeable"
-                }
-            ]
-        },
-        {
-            timeline_name: "Renames allowed multiple times",
+                        name: "conference_named" } } ] },
+        {   timeline_name: "Renames allowed multiple times",
             checkpoints: [
-                { 
-                    event: { 
+                {   event: { 
                         data: { name: "EM Open Spaces" }, 
-                        meta: { type: "conference_named" }, 
-                    }
-                },
-                { 
-                    event: { 
+                        name: "conference_named", } },
+                {   event: { 
                         data: { name: "Event Modeling Space" }, 
-                        meta: { type: "conference_named" }, 
-                    }
-                },
-                {
+                        name: "conference_named", } },
+                {   purpose: "name should be changeable multiple times",
+                    parameter: "Event Modeling Open Spaces",
                     event: { 
                         data: { name: "Event Modeling Open Spaces" }, 
-                        meta: { type: "conference_named" }, 
-                    },
-                    command: { 
-                        data: { name: "Event Modeling Open Spaces" }, 
-                    },
-                    purpose: "name should be changeable multiple times"
-                }
-            ]
-        },
-        {
-            timeline_name: "Renames not allowed if new name is the same",
+                        name: "conference_named", }, } ] },
+        {   timeline_name: "Renames not allowed if new name is the same",
             checkpoints: [
-                { 
-                    event: { 
+                {   event: { 
                         data: { name: "EM Open Spaces" }, 
-                        meta: { type: "conference_named" }, 
-                    }
-                },
-                {
-                    exception: exception_conference_named_with_no_change,
-                    command: { 
-                        data: { name: "EM Open Spaces" }, 
-                    },
-                    purpose: "exception should be thrown if the conference name is not changed"
-                }
-            ]
-        }
-    ]
-}); // test: Set Conference Name State Change
+                        name: "conference_named" } },
+                {   purpose: "exception should be thrown if the conference name is not changed",
+                    parameter: "EM Open Spaces",
+                    exception: "no_change_to_name",
+                } ] } ]
+});
 
-app.get("/set-conference-name-confirmation", (req, res, error_next) => {
+function bootstrap(slices) {
+    //function app_get(path, error_next, success_action) {}
+    function app_post(path, action) {
+        console.log("calling app_post: ", path, action);
+        app.post(path, upload.none(), action);
+    }
+    slices.forEach(slice => { console.log("bootstrapping slice: ", JSON.stringify(slice, null, 2));
+        const app_method = slice.direction === "input" ? app_post : app_get; 
+        app_method(slice.path, (req, res, error_next) => {
+            let events = [];
+            try { console.log("1.0 getting events");
+                if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
+                events = fs.readdirSync(eventstore).sort().map(file => { 
+                    const event = JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8"));
+                    if (!event.meta) event.meta = {}; event.meta.sequence = parseInt(file.substring(0, 4));
+                    return event;
+                }); console.log("1.1 events count: ", events.length);
+            } catch (error) { console.error("1.2 Error getting events: " + error.message);
+                const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
+
+            let state = slice.initial_state; console.log("2.0 getting state from events");
+            events.forEach(event => {
+                if (slice.event_handlers === undefined) return;
+                try { if (slice.event_handlers[event.name] === undefined) return;
+                    state = slice.event_handlers[event.name](state, event); } catch (error) { console.error("2.1 Error updating state: " + error.message); }
+            }); console.log("2.2 state: ", JSON.stringify(state, null, 2));
+
+            let result = undefined; console.log("3.0 calculating invariants");
+            try { 
+                const parameter = slice.data(req);
+                result = slice.invariant_function(state, parameter);
+            } catch (error) { console.error("3.1 Error invariant function: " + error.message);
+                const new_error = new Error(error.message); new_error.status = 422; return error_next(new_error); }
+            console.log("3.2 result: ", JSON.stringify(result, null, 2));
+            switch (result.type) {
+                case "event":
+                    try { console.log("4.0 pushing event: ", JSON.stringify(result, null, 2));
+                        let event_type = result.name;
+                        let summary = result.summary ? result.summary : "";
+                        let event = { data: result.data, name: event_type};
+                        if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
+
+                        const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('-event.json')).length;
+                        
+                        const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
+                        
+                        fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
+                        if (sync_time === 0 ) notify_processors(event); 
+
+                        res.redirect(slice.on_success_path);
+                    } catch (error) { console.error("4.1 Error pushing event: " + error.message);
+                        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
+                    break;
+                case "exception":
+                    error_next(result.exception);
+                    break;
+                case "query":
+                    res.render(slice.on_success_path);
+                    break;
+            }
+        });
+    });
+}
+if (!run_tests) bootstrap(slices);
+
+if (!run_tests) app.get("/set-conference-name-confirmation", (req, res, error_next) => {
     get_state_http_wrapper(conference_name_state_view, error_next, (conference_name) => {
         res.render("set-conference-name-confirmation", { conference_name });
     });
@@ -194,9 +219,9 @@ app.get("/set-conference-name-confirmation", (req, res, error_next) => {
 function conference_name_state_view(history) {
     return history.reduce((name, event) => { if (event.meta.type === "conference_named") { return event.data.name; } return name; }, ""); } // conference_name_state_view
 
-app.get("/set-dates", (req, res, next) => { res.render("set-dates", { dates: [] }); }); 
+if (!run_tests) app.get("/set-dates", (req, res, next) => { res.render("set-dates", { dates: [] }); }); 
 
-app.post("/set-dates", upload.none(), (req, res, error_next) => {
+if (!run_tests) app.post("/set-dates", upload.none(), (req, res, error_next) => {
     change_state_http_wrapper(set_dates, { data: { startDate: req.body.startDate, endDate: req.body.endDate } }, error_next, () => { res.redirect('/set-dates-confirmation'); });
 }); // app.post("/set-dates")
 
@@ -208,7 +233,7 @@ function set_dates(history, command) {
     return { data: { start_date: command.data.startDate, end_date: command.data.endDate }, meta: { type: "set_dates", summary: command.data.startDate + " to " + command.data.endDate } };
 } // set_dates
 
-app.get("/set-dates-confirmation",(_, res, next)=>{ 
+if (!run_tests) app.get("/set-dates-confirmation",(_, res, next)=>{ 
     get_state_http_wrapper(conference_dates_state_view, next, (conference_dates) => {
         res.render("set-dates-confirmation", conference_dates);
     });
@@ -221,7 +246,7 @@ function conference_dates_state_view(history) {
     });
 } // conference_dates_state_view
 
-app.get("/rooms", (req, res, error_next) => { 
+if (!run_tests) app.get("/rooms", (req, res, error_next) => { 
     get_state_http_wrapper(rooms_state_view, error_next, (rooms) => {
         res.render("rooms", { rooms });
     });
@@ -279,7 +304,7 @@ slice_tests.push({ test_function: rooms_state_view,
     } // slice
 ); // test: rooms state view
 
-app.post("/rooms", upload.none(), (req, res, error_next) => {
+if (!run_tests) app.post("/rooms", upload.none(), (req, res, error_next) => {
     change_state_http_wrapper(add_room, { data: { room_name: req.body.roomName } }, error_next, () => { res.redirect("/rooms"); });
 }); // app.post("/rooms")
 
@@ -291,7 +316,7 @@ function add_room(events, command) {
     return { data: { room_name: command.data.room_name }, meta: { type: "room_added", summary: command.data.room_name } };
 } // add_room
 
-app.post("/time-slots", upload.none(), (req, res, error_next) => {
+if (!run_tests) app.post("/time-slots", upload.none(), (req, res, error_next) => {
     change_state_http_wrapper(add_time_slot, { data: { start_time: req.body.startTime, end_time: req.body.endTime, name: req.body.name } }, error_next, () => { res.redirect("/time-slots"); });
 }); // app.post("/time-slots")
 
@@ -361,7 +386,7 @@ slice_tests.push({ test_function: add_time_slot,
     ]
 }); // test: Add Time Slot State Change
 
-app.get("/time-slots",(_,res,error_next)=>{ 
+if (!run_tests) app.get("/time-slots",(_,res,error_next)=>{ 
     get_state_http_wrapper(time_slots_state_view, error_next, (time_slots) => { res.render("time-slots", { time_slots });});
 });
 
@@ -371,9 +396,9 @@ function time_slots_state_view(history) {
         return acc;
     }, []); } // time_slots_state_view
 
-app.get("/generate-conf-id", (_, res) => { res.render("generate-conf-id"); });
+if (!run_tests) app.get("/generate-conf-id", (_, res) => { res.render("generate-conf-id"); });
 
-app.post("/generate-conf-id", (_, res, error_next) => { change_state_http_wrapper(request_unique_id, { data: {} }, error_next, () => { res.redirect('/join-conference'); }); }); 
+if (!run_tests) app.post("/generate-conf-id", (_, res, error_next) => { change_state_http_wrapper(request_unique_id, { data: {} }, error_next, () => { res.redirect('/join-conference'); }); }); 
 
 const exception_unique_id_already_requested = new Error("A request already exists");
 function request_unique_id(history, command) {
@@ -417,7 +442,7 @@ slice_tests.push({ test_function: request_unique_id,
     ]
 }); // test: request_unique_id_sc
 
-app.get("/todo-gen-conf-ids",(_, res, error_next)=>{ 
+if (!run_tests) app.get("/todo-gen-conf-ids",(_, res, error_next)=>{ 
     get_state_http_wrapper(todo_gen_conference_id_sv, error_next, (conference_ids) => { res.render("todo-gen-conf-ids", { conference_ids }); });
 }); 
 
@@ -601,7 +626,7 @@ slice_tests.push({ test_function: provide_conference_id,
     ]
 }); // test: generate_conference_id_sc
 
-app.get("/join-conference", (_, res, error_next) => { 
+if (!run_tests) app.get("/join-conference", (_, res, error_next) => { 
     get_state_http_wrapper(join_conference_sv, error_next, (state) => { res.render("join-conference", { conference_id: state.conference_id || "1234" }); });
 }); 
 
@@ -612,22 +637,22 @@ function join_conference_sv(history) {
     }, { conference_id: null });
 } // join_conference_sv
 
-app.get("/register/:conference_id", (req, res, error_next) => { 
+if (!run_tests) app.get("/register/:conference_id", (req, res, error_next) => { 
     get_state_http_wrapper(conference_name_state_view, error_next, (conference_name) => { res.render("register", { conference_name, conference_id: req.params.conference_id }); });
 }); 
 
-app.post("/register/:conference_id", multer().none(), (req, res, error_next) => {
+if (!run_tests) app.post("/register/:conference_id", multer().none(), (req, res, error_next) => {
     const id = req.params.conference_id;
     const name = req.body.participantName;
     const registration_id = generate_id();
     change_state_http_wrapper(register_state_change,{ data: { conference_id: id, registration_id: registration_id, name: name } }, error_next, () => { res.redirect(`/register-success/${registration_id}`); });
 }); // app.post("/register/:id")
         
-app.post("/close-registration", (_, r, error_next) => { 
+if (!run_tests) app.post("/close-registration", (_, r, error_next) => { 
     change_state_http_wrapper(close_registration_state_change, {}, error_next, () => { r.redirect("/sessions"); });
 });
 
-app.get("/register-success/:registration_id", (req, res, error_next) => { 
+if (!run_tests) app.get("/register-success/:registration_id", (req, res, error_next) => { 
     const registration_id = req.params.registration_id;
     get_state_http_wrapper(registrations_state_view, error_next, (state) => { res.render("register-success", { conference_name: state.conference_name, registration_id: registration_id, name: state.registrations[registration_id] }); });
 }); 
@@ -807,11 +832,11 @@ function close_registration_state_change(history, command) {
     return { data: {}, meta: { type: "registration_closed" } };
 } // close_registration_state_change
 
-app.get("/topic-suggestion", (req, res, error_next) => {
+if (!run_tests) app.get("/topic-suggestion", (req, res, error_next) => {
     get_access_token_http_wrapper(req, error_next, (token) => { res.render("submit-session", { name: token.name, registration_id: token.registration_id }); });
 }); // app.get("/topic-suggestion", (req, res) => {
 
-app.post("/topic-suggestion", multer().none(), (req, res, error_next) => {
+if (!run_tests) app.post("/topic-suggestion", multer().none(), (req, res, error_next) => {
     get_access_token_http_wrapper(req, error_next, (token) => {
         change_state_http_wrapper(submit_session, { 
             data: { 
@@ -827,8 +852,8 @@ const error_session_already_submitted = new Error("A session with this topic has
 function submit_session(events, command) {
     const existingTopics = events.reduce((acc, event) => {
         switch(event.meta.type) {
-            case "unique_id_generated_event": acc.topics = new Set(); break;
-            case "session_submitted_event": acc.topics.add(event.data.topic.toLowerCase()); break;
+            case "conference_id_generated": acc.topics = new Set(); break;
+            case "session_submitted": acc.topics.add(event.data.topic.toLowerCase()); break;
         }
         return acc;
     }, { topics: new Set() }).topics;
@@ -837,7 +862,7 @@ function submit_session(events, command) {
     return { data: { topic: command.data.topic, facilitation: command.data.facilitation, registration_id: command.data.registration_id }, meta: { type: "session_submitted", summary: command.data.facilitation + "," + command.data.topic + "," + command.data.registration_id }};
 } // function submit_session(events, command)
 
-app.get("/topics", (req, res, error_next) => {
+if (!run_tests) app.get("/topics", (req, res, error_next) => {
     get_state_http_wrapper(topics_state_view, error_next, (state) => { res.render("topics", { topics: state, registration_id: req.query.registration_id }); });
 }); // sessions
 
@@ -877,7 +902,7 @@ function get_state_http_wrapper_v2(query, error_next, success_action) {
     return state;
 } // get_state_via_http
 
-app.get("/voting", (req, res, error_next) => {
+if (!run_tests) app.get("/voting", (req, res, error_next) => {
     get_access_token_http_wrapper(req, error_next, (token) => {
          get_state_http_wrapper_v2(
             { 
@@ -937,7 +962,8 @@ function voting_state_view(history) {
             event.data.topics.forEach(topic => { state.topics.forEach(t => { if (t.topic === topic) t.votes.push(event.data.registration_id); }); });
         },
         "close_voting": (state, event) => { state.closed = true; }
-    }, initial_state = { registrations: {}, topics: [] }, mapper_function = (state)=> { 
+    }, initial_state = { registrations: {}, topics: [] }, 
+       mapper_function = (state)=> { 
          return state.topics.map(topic => (
         { topic: topic.topic, facilitation: topic.facilitation, name: topic.name, vote_count: topic.votes.length, voters: topic.votes }));
     });
@@ -969,7 +995,7 @@ function change_state_http_wrapper_v2(command, error_next, success_action) {
     return result_event;
 } // change_state_via_http
 
-app.post("/voting", multer().none(), (req, res, error_next) => {
+if (!run_tests) app.post("/voting", multer().none(), (req, res, error_next) => {
     get_access_token_http_wrapper(req, error_next, (token) => {
         change_state_http_wrapper_v2(command = { meta: { command_name: "vote_for_sessions", command_handler: vote_for_sessions }, data: { topics: get_votes_from_post_request(req), registration_id: token.registration_id } }, error_next, () => { res.redirect("/voting?registration_id=" + token.registration_id); });
     });
@@ -998,7 +1024,7 @@ function vote_for_sessions(history, input) {
 } // vote_for_sessions
 
 // Custom error handler for 404s
-app.use((req, res, next) => {
+if (!run_tests) app.use((req, res, next) => {
     // skip favicon.ico requests
     if (req.path === "/favicon.ico") return;
     console.log("404 error handler: " + req.path);
@@ -1008,7 +1034,7 @@ app.use((req, res, next) => {
 });
 
 // Global error handler
-app.use((err, req, res, next) => {
+if (!run_tests) app.use((err, req, res, next) => {
     console.log("Error " + err.status + ", message: " + err.message);
     console.error(err.stack);
     const statusCode = err.status || 500;
@@ -1048,32 +1074,27 @@ function run_with_expected_error(command_handler, events, command) {
 function tests() {
     let summary = "";
     console.log("🧪 Tests are running...");
-    slice_tests.forEach(slice => {
-        const slice_name = slice.slice_name !== undefined ? slice.slice_name : slice.test_function.name.replaceAll("_", " ");
+    // add slices to slice_tests at the beginning of the array
+    //slice_tests.unshift(...slices);
+    slices.forEach(slice => {
+        const slice_name = slice.name !== undefined ? slice.name : slice.test_function.name.replaceAll("_", " ");
         summary += `🍰 Testing slice: ${slice_name}\n`;
-        slice.timelines.forEach(timeline => {
+        slice.test_timelines.forEach(timeline => {
             summary += ` ⏱️  Testing timeline: ${timeline.timeline_name}\n`;
             timeline.checkpoints.reduce((acc, checkpoint) => {
                 summary += checkpoint.progress_marker ? `  🦉 ${checkpoint.progress_marker}\n` : '';
-                if (checkpoint.purpose !== undefined || checkpoint.test !== undefined) {
+                if (checkpoint.purpose !== undefined) {
                     try {
-                        if (checkpoint.command) { // state change test
-                            if (checkpoint.event && !checkpoint.exception) { // testing success of a command  
-                                const result = slice.test_function(acc.events, checkpoint.command);
-                                assert(JSON.stringify(strip_summary(result)) === JSON.stringify(strip_summary(checkpoint.event)), "Should be equal to " + JSON.stringify(strip_summary(checkpoint.event)) + " but was: " + JSON.stringify(strip_summary(result)));
-                            } else if (checkpoint.exception && !checkpoint.event) { // testing exception
-                                console.log("running exception test auto-runner");
-                                const result = run_with_expected_error(slice.test_function, acc.events, checkpoint.command);
-                                assert(result !== null, "Should throw '" + checkpoint.exception.message + "' error but did not throw an exception");
-                                assert(result === checkpoint.exception.message, "Should throw " + checkpoint.exception.message + " but threw: " + result);
-                            } else { // bad chckpoint structure
-                                console.log("bad checkpoint structure: command but no event/exception");
-                                throw new Error("Bad checkpoint structure: command but no event/exception");
-                            }
-                        } else if (checkpoint.state) { // state view test
-                            const result = slice.test_function(acc.events);
-                            assert (JSON.stringify(strip_summary(result)) === JSON.stringify(strip_summary(checkpoint.state)), "Should be equal to " + JSON.stringify(strip_summary(checkpoint.state)) + " but was: " + JSON.stringify(strip_summary(result)));
-                        }
+                        const state = acc.events.reduce((acc, event) => {
+                            if (slice.event_handlers[event.name] === undefined) return state;
+                            return slice.event_handlers[event.name](acc, event);
+                        }, slice.initial_state);
+                        let result = slice.invariant_function(state, checkpoint.parameter, slice.exceptions);
+                        const expected = checkpoint.exception !==undefined ? { name: checkpoint.exception } : checkpoint.event || checkpoint.model;
+                        result = { ...result, type: undefined, summary: undefined }; 
+                        
+                        assert(JSON.stringify(result) === JSON.stringify(expected), "Should be equal to " + JSON.stringify(expected) + " but was: " + JSON.stringify(result));
+                        
                         console.log("test passed");
                         summary += `  ✅ Test passed: ${checkpoint.purpose !== undefined ? checkpoint.purpose : checkpoint.test.name} \n`;
                         
@@ -1100,12 +1121,14 @@ function tests() {
 
 if (run_tests) tests();
 else app.listen(port, () => { 
-    console.log("Server is running on port " + port + " click on http://localhost:" + port + "/");
+    console.log("Server is running on port " + port + " click on http://localhost:" + port + "/"); 
     app._router.stack
         .filter(r => r.route) // Filter out middleware and focus on routes
         .map(r => r.route)
         .reduce((acc, route) => { if (acc.find(r => r.path === route.path)) return acc; acc.push(route); return acc; }, [])
         .forEach(route => {
-            console.log(`  http://localhost:${port}${route.path}`);
+            console.log(`  http://localhost:${port}${route.path}  ${route.stack.reduce((acc, s) => {return s.method + ", " + acc;}, "")}`);
+            //console.log(JSON.stringify(route, null, 2));
         });
+    //console.log(JSON.stringify(app._router.stack, null, 2));
 });     
