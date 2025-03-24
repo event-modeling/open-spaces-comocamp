@@ -1085,6 +1085,7 @@ function tests() {
                 summary += checkpoint.progress_marker ? `  🦉 ${checkpoint.progress_marker}\n` : '';
                 if (checkpoint.purpose !== undefined) {
                     try {
+                        checkpoint.test_pass = undefined;
                         const state = acc.events.reduce((acc, event) => {
                             if (slice.event_handlers[event.name] === undefined) return state;
                             return slice.event_handlers[event.name](acc, event);
@@ -1094,13 +1095,13 @@ function tests() {
                         result = { ...result, type: undefined, summary: undefined }; 
                         
                         assert(JSON.stringify(result) === JSON.stringify(expected), "Should be equal to " + JSON.stringify(expected) + " but was: " + JSON.stringify(result));
-                        
-                        console.log("test passed");
-                        summary += `  ✅ Test passed: ${checkpoint.purpose !== undefined ? checkpoint.purpose : checkpoint.test.name} \n`;
+                        checkpoint.test_pass = true; console.log("test passed");
+                        summary += `  ✅ Test passed: ${checkpoint.purpose} \n`;
                         
                     } catch (error) {
-                        console.log("test failed");
-                        summary += `  ❌ Test failed: ${checkpoint.purpose !== undefined ? checkpoint.purpose : checkpoint.test.name} due to: ${error.message}\n`;
+                        checkpoint.test_pass = false; console.log("test failed");
+                        checkpoint.error_message = error.message;
+                        summary += `  ❌ Test failed: ${checkpoint.purpose} due to: ${error.message}\n`;
                         console.log("💥 Test failed in Slice '" + slice_name + "' with test '" + (checkpoint.test !== undefined ? checkpoint.test.name : "auto-runner") + "'");
                         console.error(error);
                     }
@@ -1110,11 +1111,24 @@ function tests() {
             }, { events: []});
         });
     });
+    console.log(JSON.stringify(slices, null, 2));
     console.log("🧪 Tests are finished");
     console.log("📊 Tests summary:");
     console.log(summary);
-    const failed = (summary.match(/^.*❌/gm) || []).length;
-    const passed = (summary.match(/^.*✅/gm) || []).length;
+    const result_counts = slices.reduce((slice_acc, slice) => {
+        const timeline_counts = slice.test_timelines.reduce((timeline_acc, timeline) => {
+            const checkpoint_counts = timeline.checkpoints.reduce((checkpoint_acc, checkpoint) => {
+                if (checkpoint.test_pass === undefined) return checkpoint_acc;
+                if (checkpoint.test_pass) checkpoint_acc.passed++;
+                else checkpoint_acc.failed++;
+                return checkpoint_acc;
+            }, { passed: 0, failed: 0 });
+            return { passed: timeline_acc.passed + checkpoint_counts.passed, failed: timeline_acc.failed + checkpoint_counts.failed };
+        }, { passed: 0, failed: 0 });
+        return { passed: slice_acc.passed + timeline_counts.passed, failed: slice_acc.failed + timeline_counts.failed };
+    }, { passed: 0, failed: 0 });
+    const failed = result_counts.failed;
+    const passed = result_counts.passed;
     console.log("\x1b[" + (failed > 0 ? "91" : "92") + "m 🧪 Tests summary: Failed: " + failed + " Passed: " + passed + " \x1b[0m");
     process.exit(0);
 }
