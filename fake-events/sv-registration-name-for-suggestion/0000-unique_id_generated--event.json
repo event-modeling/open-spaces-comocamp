@@ -2,7 +2,5 @@
   "data": {
     "conference_id": "8888-9999-0000"
   },
-  "meta": {
-    "type": "unique_id_generated"
-  }
+  "name": "unique_id_generated"
 }

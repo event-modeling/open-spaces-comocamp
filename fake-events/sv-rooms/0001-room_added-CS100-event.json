@@ -2,7 +2,5 @@
   "data": {
     "room_name": "CS100"
   },
-  "meta": {
-    "type": "room_added"
-  }
+  "name": "room_added"
 }

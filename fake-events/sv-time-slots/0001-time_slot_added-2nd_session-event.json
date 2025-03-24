@@ -4,7 +4,5 @@
     "end_time": "11:25",
     "name": "2nd Session"
   },
-  "meta": {
-    "type": "time_slot_added"
-  }
+  "name": "time_slot_added"
 }

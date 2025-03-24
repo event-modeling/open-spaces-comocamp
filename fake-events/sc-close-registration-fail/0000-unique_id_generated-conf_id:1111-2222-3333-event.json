@@ -1,8 +1,6 @@
 {
-    "data": {
-        "conference_id": "1111-2222-3333"
-    },
-    "meta": {
-        "type": "unique_id_generated"
-    }
-} 
+  "data": {
+    "conference_id": "1111-2222-3333"
+  },
+  "name": "unique_id_generated"
+}

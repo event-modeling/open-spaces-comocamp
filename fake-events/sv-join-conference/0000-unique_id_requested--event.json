@@ -1,6 +1,4 @@
 {
-    "data": {},
-    "meta": {
-        "type": "conference_id_requested"
-    }
-} 
+  "data": {},
+  "name": "conference_id_requested"
+}

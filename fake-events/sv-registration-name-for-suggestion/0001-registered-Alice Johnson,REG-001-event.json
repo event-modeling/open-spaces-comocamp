@@ -3,7 +3,5 @@
     "registration_id": "REG-001",
     "name": "Alice Johnson"
   },
-  "meta": {
-    "type": "registered"
-  }
+  "name": "registered"
 }

@@ -1,6 +1,4 @@
 {
-    "data": {},
-    "meta": {
-        "type": "registration_closed"
-    }
-} 
+  "data": {},
+  "name": "registration_closed"
+}

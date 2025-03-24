@@ -1,9 +1,10 @@
 {
   "data": {
     "registration_id": "REG-001",
-    "topics": ["Event Modeling Basics", "Domain-Driven Design Patterns"]
+    "topics": [
+      "Event Modeling Basics",
+      "Domain-Driven Design Patterns"
+    ]
   },
-  "meta": {
-    "type": "voted_for_sessions"
-  }
-} 
+  "name": "voted_for_sessions"
+}
