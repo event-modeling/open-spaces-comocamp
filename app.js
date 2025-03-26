@@ -8,6 +8,10 @@ let run_tests = process.argv.includes('--test');
 let long_ids = process.argv.includes('--long-ids');
 
 const { v4: uuidv4 } = require('uuid'); function generate_id() { return long_ids ? uuidv4() : uuidv4().slice(0, 8); }
+function deepClone(obj) { if (obj === undefined) return undefined; if (obj === null) return null;
+    if (Array.isArray(obj)) return obj.map(deepClone);
+    if (typeof obj === 'object') { return Object.fromEntries( Object.entries(obj).map(([key, value]) => [key, deepClone(value)]) ); }
+    return obj; }
 let app, fs, multer, upload;
 if (!run_tests) {
     const express = require("express");
@@ -87,73 +91,24 @@ function get_access_token_http_wrapper(request, error_next, success_action) {
     });
 } // get_access_token
 
-if (!run_tests) app.get("/set-conference-name", (req, res) => { res.render("set-conference-name", { name: "" }); }); 
-
-const slices = [];
-slices.push({ name: "name_the_conference", 
-    direction: "input", 
-    data: (req) => { return req.body.conferenceName; }, 
-    path: "/set-conference-name",
-    view: "set-conference-name",
-    on_success_path: "set-conference-name-confirmation",    
-    initial_state: "",
-    event_handlers: { "conference_named": (state, event) => { return event.data.name; } },
-    exceptions: [ { "no_change_to_name": new Error("You didn't change the name. No change registered.") } ],
-    invariant_function: (state, parameter) => {
-            if (state === parameter) return { type: "exception", name: "no_change_to_name" };
-            return { type: "event", data: { name: parameter }, name: "conference_named", summary: parameter };
-    },
-    test_timelines: [
-        {   timeline_name: "Happy Path",
-            checkpoints: [
-                {   purpose: "test that the conference name is set to the new name",
-                    parameter: "EM Open Spaces", 
-                    event: { 
-                        data: { name: "EM Open Spaces" }, 
-                        name: "conference_named" } } ] },
-        {   timeline_name: "Renames allowed",
-            checkpoints: [
-                {   event: { 
-                        data: { name: "EM Open Spaces" }, 
-                        name: "conference_named" } }, 
-                {   purpose: "name should be changeable",
-                    parameter: "Event Modeling Space",
-                    event: { 
-                        data: { name: "Event Modeling Space" }, 
-                        name: "conference_named" } } ] },
-        {   timeline_name: "Renames allowed multiple times",
-            checkpoints: [
-                {   event: { 
-                        data: { name: "EM Open Spaces" }, 
-                        name: "conference_named", } },
-                {   event: { 
-                        data: { name: "Event Modeling Space" }, 
-                        name: "conference_named", } },
-                {   purpose: "name should be changeable multiple times",
-                    parameter: "Event Modeling Open Spaces",
-                    event: { 
-                        data: { name: "Event Modeling Open Spaces" }, 
-                        name: "conference_named", }, } ] },
-        {   timeline_name: "Renames not allowed if new name is the same",
-            checkpoints: [
-                {   event: { 
-                        data: { name: "EM Open Spaces" }, 
-                        name: "conference_named" } },
-                {   purpose: "exception should be thrown if the conference name is not changed",
-                    parameter: "EM Open Spaces",
-                    exception: "no_change_to_name",
-                } ] } ]
-});
-
 function bootstrap(slices) {
     //function app_get(path, error_next, success_action) {}
     function app_post(path, action) {
         console.log("calling app_post: ", path, action);
         app.post(path, upload.none(), action);
     }
+    function app_get(path, action) {
+        console.log("calling app_get: ", path, action);
+        app.get(path, action);
+    }
     slices.forEach(slice => { console.log("bootstrapping slice: ", JSON.stringify(slice, null, 2));
-        const app_method = slice.direction === "input" ? app_post : app_get; 
-        app_method(slice.path, (req, res, error_next) => {
+        if (slice.navigation.web_data === undefined && slice.refinement_function === undefined) {
+            console.log("bootstrapping view only slice: ", slice.name);
+            app.get(slice.navigation.path + "", (req, res) => { res.render(slice.navigation.view + "", {}); });
+            return;
+        }
+        const app_method = slice.navigation.direction === "input" ? app_post : app_get;
+        app_method(slice.navigation.path, (req, res, error_next) => {
             let events = [];
             try { console.log("1.0 getting events");
                 if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
@@ -165,7 +120,9 @@ function bootstrap(slices) {
             } catch (error) { console.error("1.2 Error getting events: " + error.message);
                 const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
 
-            let state = slice.initial_state; console.log("2.0 getting state from events");
+            let state = deepClone(slice.initial_state); console.log("2.0 getting state from events");
+            console.log("2.0.1 state: ", JSON.stringify(state, null, 2));
+            console.log("2.0.2 slice initial state: ", JSON.stringify(slice.initial_state, null, 2));
             events.forEach(event => {
                 if (slice.event_handlers === undefined) return;
                 try { if (slice.event_handlers[event.name] === undefined) return;
@@ -174,8 +131,9 @@ function bootstrap(slices) {
 
             let result = undefined; console.log("3.0 calculating invariants");
             try { 
-                const parameter = slice.data(req);
-                result = slice.invariant_function(state, parameter);
+                let parameter = undefined;
+                if (slice.navigation.web_data) parameter = slice.navigation.web_data(req);
+                result = slice.refinement_function(state, parameter);
             } catch (error) { console.error("3.1 Error invariant function: " + error.message);
                 const new_error = new Error(error.message); new_error.status = 422; return error_next(new_error); }
             console.log("3.2 result: ", JSON.stringify(result, null, 2));
@@ -194,127 +152,213 @@ function bootstrap(slices) {
                         fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
                         if (sync_time === 0 ) notify_processors(event); 
 
-                        res.redirect(slice.on_success_path);
+                        res.redirect(slice.navigation.next_path);
                     } catch (error) { console.error("4.1 Error pushing event: " + error.message);
                         const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
                     break;
                 case "exception":
-                    error_next(result.exception);
+                    console.log("5.0 exception: ", JSON.stringify(result, null, 2));
+                    console.log("5.1 slice.exceptions: ", JSON.stringify(slice.exceptions, null, 2));
+                    const message = slice.exceptions[result.name];
+                    console.log("5.2 message: ", message);
+                    const exception = new Error(message);
+                    console.log("5.3 exception: ", JSON.stringify(exception, null, 2));
+                    exception.status = 422;
+                    console.log("5.4 exception: ", JSON.stringify(exception, null, 2));
+                    error_next(exception);
                     break;
-                case "query":
-                    res.render(slice.on_success_path);
+                case "model":
+                    console.log("6.0 rendering model: ", JSON.stringify(result.model, null, 2));
+                    res.render(slice.navigation.view, typeof result.model === "string" ? { model: result.model } : result.model);
                     break;
             }
         });
     });
+    // Custom error handler for 404s
+    app.use((req, res, next) => {
+        // skip favicon.ico requests
+        if (req.path === "/favicon.ico") return;
+        console.log("404 error handler: " + req.path);
+        const err = new Error('Not Found');
+        err.status = 404;
+        next(err);
+    });
+
+    // Global error handler
+    app.use((err, req, res, next) => {
+        console.log("Error " + err.status + ", message: " + err.message);
+        console.error(err.stack);
+        const statusCode = err.status || 500;
+        
+        // Check if the request accepts HTML
+        if (req.accepts('html')) {
+            res.status(statusCode);
+            res.render('error', {
+                message: err.message || 'Something went wrong!',
+                error: statusCode >= 500 ? {
+                    status: statusCode,
+                    stack: err.stack
+                } : undefined,
+                errorStylesheet: '<link rel="stylesheet" href="/error.css">'
+            });
+        } else {
+            // API error response
+            res.status(statusCode).json({
+                error: {
+                    message: err.message || 'Something went wrong!',
+                    status: statusCode
+                }
+            });
+        }
+    }); // Global error handler
 }
-if (!run_tests) bootstrap(slices);
 
-if (!run_tests) app.get("/set-conference-name-confirmation", (req, res, error_next) => {
-    get_state_http_wrapper(conference_name_state_view, error_next, (conference_name) => {
-        res.render("set-conference-name-confirmation", { conference_name });
-    });
-}); // app.get("/set-conference-name-confirmation")
+const slices = [];
+function make_event_result(name, data, summary) { return { type: "event", data: data, name: name, summary: summary }; }
+function make_exception_result(name) { return { type: "exception", name: name }; }
+function make_model_result(model) { return { type: "model", model: model }; }
 
-function conference_name_state_view(history) {
-    return history.reduce((name, event) => { if (event.meta.type === "conference_named") { return event.data.name; } return name; }, ""); } // conference_name_state_view
+slices.push({ name: "set_conference_name_default", 
+    navigation: { direction: "output", path: "/set-conference-name", view: "set-conference-name" } });
 
-if (!run_tests) app.get("/set-dates", (req, res, next) => { res.render("set-dates", { dates: [] }); }); 
-
-if (!run_tests) app.post("/set-dates", upload.none(), (req, res, error_next) => {
-    change_state_http_wrapper(set_dates, { data: { startDate: req.body.startDate, endDate: req.body.endDate } }, error_next, () => { res.redirect('/set-dates-confirmation'); });
-}); // app.post("/set-dates")
-
-const exception_dates_have_invalid_range = new Error("Start date must be before end date");
-function set_dates(history, command) {
-    const start_date = new Date(command.data.startDate);
-    const end_date = new Date(command.data.endDate);
-    if (start_date > end_date) throw exception_dates_have_invalid_range;
-    return { data: { start_date: command.data.startDate, end_date: command.data.endDate }, meta: { type: "set_dates", summary: command.data.startDate + " to " + command.data.endDate } };
-} // set_dates
-
-if (!run_tests) app.get("/set-dates-confirmation",(_, res, next)=>{ 
-    get_state_http_wrapper(conference_dates_state_view, next, (conference_dates) => {
-        res.render("set-dates-confirmation", conference_dates);
-    });
-}); 
-
-function conference_dates_state_view(history) {
-    return history.reduce((acc, event) => {
-        if (event.meta.type === "set_dates") acc = event.data;
-        return acc;
-    });
-} // conference_dates_state_view
-
-if (!run_tests) app.get("/rooms", (req, res, error_next) => { 
-    get_state_http_wrapper(rooms_state_view, error_next, (rooms) => {
-        res.render("rooms", { rooms });
-    });
+slices.push({ name: "name_the_conference", 
+    navigation: { direction: "input", path: "/set-conference-name", next_path: "/set-conference-name-confirmation", 
+        web_data: (req) => { return req.body.conferenceName; } },
+    event_handlers: { "conference_named": (state, event) => { return event.data.name; } },
+    exceptions: { "no_change_to_name": "You didn't change the name. No change registered." },
+    refinement_function: (state, parameter) => {
+        if (state === parameter) return make_exception_result("no_change_to_name");
+        return make_event_result("conference_named", { name: parameter }, parameter);
+    },
+    test_timelines: [
+        {   timeline_name: "Happy Path",
+            checkpoints: [
+                {   purpose: "test that the conference name is set to the new name",
+                    parameter: "EM Open Spaces", 
+                    event: { data: { name: "EM Open Spaces" }, name: "conference_named" } } ] },
+        {   timeline_name: "Renames allowed",
+            checkpoints: [
+                {   event: { data: { name: "EM Open Spaces" }, name: "conference_named" } }, 
+                {   purpose: "name should be changeable",
+                    parameter: "Event Modeling Space",
+                    event: { data: { name: "Event Modeling Space" }, name: "conference_named" } } ] },
+        {   timeline_name: "Renames allowed multiple times",
+            checkpoints: [
+                {   event: { data: { name: "EM Open Spaces" }, name: "conference_named", } },
+                {   event: { data: { name: "Event Modeling Space" }, name: "conference_named", } },
+                {   purpose: "name should be changeable multiple times",
+                    parameter: "Event Modeling Open Spaces",
+                    event: { data: { name: "Event Modeling Open Spaces" }, name: "conference_named", }, } ] },
+        {   timeline_name: "Renames not allowed if new name is the same",
+            checkpoints: [
+                {   event: { data: { name: "EM Open Spaces" }, name: "conference_named" } },
+                {   purpose: "exception should be thrown if the conference name is not changed",
+                    parameter: "EM Open Spaces",
+                    exception: "no_change_to_name",
+                } ] } ]
 });
 
-function rooms_state_view(history) {
-    return history.reduce((acc, event) => {
-        switch(event.meta.type) {
-            case "room_added": acc.push(event.data.room_name); break;
-            case "room_renamed":
-                const index = acc.indexOf(event.data.old_name);
-                if (index !== -1) acc[index] = event.data.new_name;
-                break;
-            case "room_deleted":
-                const deleteIndex = acc.indexOf(event.data.room_name);
-                if (deleteIndex !== -1) acc.splice(deleteIndex, 1);
-                break;
-        }
-        return acc;
-    }, []);
-} // rooms_state_view
-slice_tests.push({ test_function: rooms_state_view,
-    timelines: [
+slices.push( { name: "conference_name_confirmation", 
+    navigation: { direction: "output", path: "/set-conference-name-confirmation", view: "set-conference-name-confirmation" },
+    event_handlers: { "conference_named": (state, event) => { return event.data.name; } },
+    refinement_function: (state, parameter) => { return make_model_result(state); },
+});
+
+slices.push({ name: "set_dates_default", 
+    navigation: { direction: "output", path: "/set-dates", view: "set-dates" } });
+ 
+slices.push({ name: "set_dates", 
+    navigation: { direction: "input", path: "/set-dates", next_path: "/set-dates-confirmation", 
+        web_data: (req) => { return { startDate: req.body.startDate, endDate: req.body.endDate }; } },
+    event_handlers: { "dates_set": (state, event) => { return event.data.startDate; } },
+    exceptions: { "invalid_range": "Start date must be before end date" } ,
+    refinement_function: (state, parameter) => {
+        const start_date = new Date(parameter.startDate);
+        const end_date = new Date(parameter.endDate);
+        if (start_date > end_date) return make_exception_result("invalid_range");
+        return make_event_result("dates_set", { start_date: parameter.startDate, end_date: parameter.endDate }, parameter.startDate + " to " + parameter.endDate);
+    }
+});
+
+slices.push({ name: "conference_dates_confirmation", 
+    navigation: { direction: "output", path: "/set-dates-confirmation", view: "set-dates-confirmation" },
+    event_handlers: { "dates_set": (state, event) => { return event.data; } },
+    refinement_function: (state, parameter) => { return make_model_result(state); },
+});
+
+slices.push({ name: "rooms",
+    navigation: { direction: "output", path: "/rooms", view: "rooms" },
+    initial_state: [],
+    event_handlers: { 
+        "room_added": (state, event) => { state.push(event.data.room_name); return state; },
+        "room_renamed": (state, event) => {
+            const index = state.indexOf(event.data.old_name);
+            if (index !== -1) state[index] = event.data.new_name;
+            return state; },
+        "room_deleted": (state, event) => {
+            const index = state.indexOf(event.data.room_name);
+            if (index !== -1) state.splice(index, 1);
+            return state; },
+    },
+    refinement_function: (state, parameter) => { return make_model_result({ rooms: state }); },
+    test_timelines: [
         { timeline_name: "happy path",
             checkpoints: [
-            { event: { data: { room_name: "Auditorium" }, meta: { type: "room_added" } },
-                state: [],
-                purpose: "no rooms should be returned when no events have occurred"
-            },
-            { event: { data: { room_name: "CS100" }, meta: { type: "room_added" }},
-                state: ["Auditorium"], 
-                purpose: "one room should be returned when one room has been added"
-            },
-            { progress_marker: "at this point, the initial room reserves the name" },
-            { event: { data: { room_name: "CS200" }, meta: { type: "room_added" } },
-                state: ["Auditorium", "CS100"],
-                purpose: "two rooms should be returned when two rooms have been added"
-            },
-            { event: { data: { old_name: "Auditorium", new_name: "Main Hall" }, meta: { type: "room_renamed" } },
-                state: ["Auditorium", "CS100", "CS200"],
-                purpose: "three rooms should be returned when three rooms have been added"
-            },
-            { event: { data: { room_name: "CS300" }, meta: { type: "room_added" } },
-                state: ["Main Hall", "CS100", "CS200"],
-                purpose: "renamed room should show new name in correct position"
-            },
-            { event: { data: { room_name: "CS200" }, meta: { type: "room_deleted" } } },
-            { 
-                state: ["Main Hall", "CS100", "CS300"],
-                purpose: "deleted room should not be in the result"
-            } // checkpoint
-        ] // checkpoints
-        } // timeline
-    ] // timelines
-    } // slice
-); // test: rooms state view
+                { purpose: "no rooms should be returned when no events have occurred",
+                    model: { rooms: [] } },
+                { event: { data: { room_name: "Auditorium" }, name: "room_added" }},
+                { purpose: "one room should be returned when one room has been added",
+                    model: { rooms: ["Auditorium"] } },
+                { event: { data: { room_name: "CS100" }, name: "room_added" } },
+                { progress_marker: "at this point, the initial room reserves the name" },
+                { model: { rooms: ["Auditorium", "CS100"] },
+                    purpose: "two rooms should be returned when two rooms have been added" },
+                { event: { data: { room_name: "CS200" }, name: "room_added" } ,},
+                { purpose: "three rooms should be returned when three rooms have been added",
+                    model: { rooms: ["Auditorium", "CS100", "CS200"] } },
+                { event: { data: { room_name: "CS300" }, name: "room_added" } },
+                { purpose: "four rooms should be returned when three rooms have been added",
+                    model: { rooms: ["Auditorium", "CS100", "CS200", "CS300"] } },
+                { event: { data: { old_name: "Auditorium", new_name: "Main Hall" }, name: "room_renamed" } ,},
+                { purpose: "renamed room should show new name in correct position",
+                    model: { rooms: ["Main Hall", "CS100", "CS200", "CS300"] } },
+                { event: { data: { room_name: "CS200" }, name: "room_deleted" } },
+                { purpose: "deleted room should not be in the result",
+                    model: { rooms: ["Main Hall", "CS100", "CS300"] } } 
+            ] } ]
+});
 
-if (!run_tests) app.post("/rooms", upload.none(), (req, res, error_next) => {
-    change_state_http_wrapper(add_room, { data: { room_name: req.body.roomName } }, error_next, () => { res.redirect("/rooms"); });
-}); // app.post("/rooms")
+slices.push({ name: "add_room",
+    navigation: { direction: "input", path: "/rooms", next_path: "/rooms",
+        web_data: (req) => { return { roomName: req.body.roomName }; } },
+    initial_state: [],
+    event_handlers: { "room_added": (state, event) => { state.push(event.data.room_name); return state; },
+        "room_renamed": (state, event) => {
+            const index = state.indexOf(event.data.old_name);
+            if (index !== -1) state[index] = event.data.new_name;
+            return state; },
+        "room_deleted": (state, event) => {
+            const index = state.indexOf(event.data.room_name);
+            if (index !== -1) state.splice(index, 1);
+            return state; } },
+    exceptions: { "room_already_exists": "Room by that name already exists" },
+    refinement_function: (state, parameter) => { 
+        if (state.some(room => room === parameter.roomName)) return make_exception_result("room_already_exists");
+        return make_event_result("room_added", { room_name: parameter.roomName }, parameter.roomName); 
+    },
+});
 
-const exception_room_already_exists = new Error("Room already exists");
-function add_room(events, command) {
-    console.log("add_room", JSON.stringify(command, null, 2));
-    if (events.some(event => event.meta.type === "room_added" && event.data.room_name === command.data.room_name)) 
-        throw exception_room_already_exists;
-    return { data: { room_name: command.data.room_name }, meta: { type: "room_added", summary: command.data.room_name } };
-} // add_room
+// if (!run_tests) app.post("/rooms", upload.none(), (req, res, error_next) => {
+//     change_state_http_wrapper(add_room, { data: { room_name: req.body.roomName } }, error_next, () => { res.redirect("/rooms"); });
+// }); // app.post("/rooms")
+
+// const exception_room_already_exists = new Error("Room already exists");
+// function add_room(events, command) {
+//     console.log("add_room", JSON.stringify(command, null, 2));
+//     if (events.some(event => event.meta.type === "room_added" && event.data.room_name === command.data.room_name)) 
+//         throw exception_room_already_exists;
+//     return { data: { room_name: command.data.room_name }, meta: { type: "room_added", summary: command.data.room_name } };
+// } // add_room
 
 if (!run_tests) app.post("/time-slots", upload.none(), (req, res, error_next) => {
     change_state_http_wrapper(add_time_slot, { data: { start_time: req.body.startTime, end_time: req.body.endTime, name: req.body.name } }, error_next, () => { res.redirect("/time-slots"); });
@@ -1023,54 +1067,9 @@ function vote_for_sessions(history, input) {
     }); 
 } // vote_for_sessions
 
-// Custom error handler for 404s
-if (!run_tests) app.use((req, res, next) => {
-    // skip favicon.ico requests
-    if (req.path === "/favicon.ico") return;
-    console.log("404 error handler: " + req.path);
-    const err = new Error('Not Found');
-    err.status = 404;
-    next(err);
-});
-
-// Global error handler
-if (!run_tests) app.use((err, req, res, next) => {
-    console.log("Error " + err.status + ", message: " + err.message);
-    console.error(err.stack);
-    const statusCode = err.status || 500;
-    
-    // Check if the request accepts HTML
-    if (req.accepts('html')) {
-        res.status(statusCode);
-        res.render('error', {
-            message: err.message || 'Something went wrong!',
-            error: statusCode >= 500 ? {
-                status: statusCode,
-                stack: err.stack
-            } : undefined,
-            errorStylesheet: '<link rel="stylesheet" href="/error.css">'
-        });
-    } else {
-        // API error response
-        res.status(statusCode).json({
-            error: {
-                message: err.message || 'Something went wrong!',
-                status: statusCode
-            }
-        });
-    }
-}); // Global error handler
+if (!run_tests) bootstrap(slices);
 
 function assert(condition, message) { if (!condition) throw new Error(message); }
-function run_with_expected_error(command_handler, events, command) {
-    let caught_error = null;
-    try {
-        command_handler(events, command);
-    } catch (error) {
-        console.log("Caught error: " + JSON.stringify(error, null, 2));
-        caught_error = error.message;
-    }
-    return caught_error; }
 function tests() {
     let summary = "";
     console.log("🧪 Tests are running...");
@@ -1078,6 +1077,7 @@ function tests() {
     //slice_tests.unshift(...slices);
     slices.forEach(slice => {
         const slice_name = slice.name !== undefined ? slice.name : slice.test_function.name.replaceAll("_", " ");
+        if (slice.test_timelines === undefined) return;
         summary += `🍰 Testing slice: ${slice_name}\n`;
         slice.test_timelines.forEach(timeline => {
             summary += ` ⏱️  Testing timeline: ${timeline.timeline_name}\n`;
@@ -1085,13 +1085,12 @@ function tests() {
                 summary += checkpoint.progress_marker ? `  🦉 ${checkpoint.progress_marker}\n` : '';
                 if (checkpoint.purpose !== undefined) {
                     try {
-                        checkpoint.test_pass = undefined;
-                        const state = acc.events.reduce((acc, event) => {
-                            if (slice.event_handlers[event.name] === undefined) return state;
-                            return slice.event_handlers[event.name](acc, event);
-                        }, slice.initial_state);
-                        let result = slice.invariant_function(state, checkpoint.parameter, slice.exceptions);
-                        const expected = checkpoint.exception !==undefined ? { name: checkpoint.exception } : checkpoint.event || checkpoint.model;
+                        const state = acc.events.reduce((event_handlers_acc, event) => {
+                            if (slice.event_handlers[event.name] === undefined) return event_handlers_acc;
+                            return slice.event_handlers[event.name](event_handlers_acc, event);
+                        }, deepClone(slice.initial_state));
+                        let result = slice.refinement_function(state, checkpoint.parameter, slice.exceptions);
+                        const expected = checkpoint.exception !==undefined ? { name: checkpoint.exception } : (checkpoint.model !== undefined ? { model: checkpoint.model} : checkpoint.event);
                         result = { ...result, type: undefined, summary: undefined }; 
                         
                         assert(JSON.stringify(result) === JSON.stringify(expected), "Should be equal to " + JSON.stringify(expected) + " but was: " + JSON.stringify(result));
@@ -1116,6 +1115,7 @@ function tests() {
     console.log("📊 Tests summary:");
     console.log(summary);
     const result_counts = slices.reduce((slice_acc, slice) => {
+        if (slice.test_timelines === undefined) return slice_acc;
         const timeline_counts = slice.test_timelines.reduce((timeline_acc, timeline) => {
             const checkpoint_counts = timeline.checkpoints.reduce((checkpoint_acc, checkpoint) => {
                 if (checkpoint.test_pass === undefined) return checkpoint_acc;
@@ -1134,7 +1134,8 @@ function tests() {
 }
 
 if (run_tests) tests();
-else app.listen(port, () => { 
+
+app.listen(port, () => { 
     console.log("Server is running on port " + port + " click on http://localhost:" + port + "/"); 
     app._router.stack
         .filter(r => r.route) // Filter out middleware and focus on routes
