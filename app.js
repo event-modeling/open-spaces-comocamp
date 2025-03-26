@@ -126,7 +126,7 @@ function bootstrap(slices) {
             events.forEach(event => {
                 if (slice.event_handlers === undefined) return;
                 try { if (slice.event_handlers[event.name] === undefined) return;
-                    state = slice.event_handlers[event.name](state, event); } catch (error) { console.error("2.1 Error updating state: " + error.message); }
+                    state = slice.event_handlers[event.name](state, event, data); } catch (error) { console.error("2.1 Error updating state: " + error.message); }
             }); console.log("2.2 state: ", JSON.stringify(state, null, 2));
 
             let result = undefined; console.log("3.0 calculating invariants");
@@ -342,87 +342,122 @@ slices.push({ name: "add_room",
     },
 });
 
-// if (!run_tests) app.post("/rooms", upload.none(), (req, res, error_next) => {
-//     change_state_http_wrapper(add_room, { data: { room_name: req.body.roomName } }, error_next, () => { res.redirect("/rooms"); });
-// }); // app.post("/rooms")
+slices.push({ name: "time_slots",
+    navigation: { direction: "input", path: "/time-slots", next_path: "/time-slots",
+        web_data: (req) => { return { startTime: req.body.startTime, endTime: req.body.endTime, name: req.body.name }; } },
+    initial_state: [],
+    event_handlers: { "time_slot_added": (state, event) => { state.push(event.data); return state; } },
+    exceptions: { 
+        "time_slot_required_fields_missing": "Start time, end time, and name are required",
+        "time_slot_time_order_invalid": "End time must be after start time",
+        "time_slot_overlapping": "Time slot is overlapping with others that are already defined" },
+    refinement_function: (state, parameter) => { 
+        function timeToMinutes(timeStr) { const [hours, minutes] = timeStr.split(':').map(Number); return hours * 60 + minutes; }
+        if (!parameter.startTime || !parameter.endTime || !parameter.name) return make_exception_result("time_slot_required_fields_missing");
+        const newStart = timeToMinutes(parameter.startTime);
+        const newEnd = timeToMinutes(parameter.endTime);
+        if (newStart >= newEnd) return make_exception_result("time_slot_time_order_invalid");
 
-// const exception_room_already_exists = new Error("Room already exists");
-// function add_room(events, command) {
-//     console.log("add_room", JSON.stringify(command, null, 2));
-//     if (events.some(event => event.meta.type === "room_added" && event.data.room_name === command.data.room_name)) 
-//         throw exception_room_already_exists;
-//     return { data: { room_name: command.data.room_name }, meta: { type: "room_added", summary: command.data.room_name } };
-// } // add_room
-
-if (!run_tests) app.post("/time-slots", upload.none(), (req, res, error_next) => {
-    change_state_http_wrapper(add_time_slot, { data: { start_time: req.body.startTime, end_time: req.body.endTime, name: req.body.name } }, error_next, () => { res.redirect("/time-slots"); });
-}); // app.post("/time-slots")
-
-const exception_time_slot_required_fields_missing = new Error("Start time, end time, and name are required");
-const exception_time_slot_time_order_invalid = new Error("End time must be after start time");
-const exception_time_slot_overlapping = new Error("Time slot is overlapping with others that are already defined");
-function add_time_slot(history, command) {
-    function timeToMinutes(timeStr) { const [hours, minutes] = timeStr.split(':').map(Number);
-        return hours * 60 + minutes;}
-    if (!command.data.start_time || !command.data.end_time || !command.data.name) throw exception_time_slot_required_fields_missing;
-
-    const newStart = timeToMinutes(command.data.start_time);
-    const newEnd = timeToMinutes(command.data.end_time);
-    if (newStart >= newEnd) throw exception_time_slot_time_order_invalid;
-    
-    const hasOverlap = history
-        .filter(event => event.meta.type === "time_slot_added")
-        .some(event => {
-            const existingStart = timeToMinutes(event.data.start_time);
-            const existingEnd = timeToMinutes(event.data.end_time);
+        const hasOverlap = state.some(time_slot => {
+            const existingStart = timeToMinutes(time_slot.start_time);
+            const existingEnd = timeToMinutes(time_slot.end_time);
             return (newStart < existingEnd && newEnd > existingStart);
         });
-    if (hasOverlap) throw exception_time_slot_overlapping;
+        if (hasOverlap) return make_exception_result("time_slot_overlapping");
+        return make_event_result("time_slot_added", { start_time: parameter.startTime, end_time: parameter.endTime, name: parameter.name }, parameter.startTime + " to " + parameter.endTime + " - " + parameter.name);
+    },
+    test_timelines: [
+        { timeline_name: "Happy Path",
+            checkpoints: [
+                { purpose: "first time slot should be added when valid",
+                    parameter: { startTime: "09:30", endTime: "10:25", name: "1st Session" },
+                    event: { data: { start_time: "09:30", end_time: "10:25", name: "1st Session" }, name: "time_slot_added" } },
+                { purpose: "second time slot should be added when valid",
+                    parameter: { startTime: "10:30", endTime: "11:25", name: "2nd Session" },
+                    event: { data: { start_time: "10:30", end_time: "11:25", name: "2nd Session" }, name: "time_slot_added" } },
+                { purpose: "overlapping at the end of the time slot should be rejected",
+                    parameter: { startTime: "11:00", endTime: "12:00", name: "1st Session" },
+                    exception: "time_slot_overlapping" },
+                { purpose: "overlapping at the start of the time slot should be rejected",
+                    parameter: { startTime: "10:00", endTime: "11:00", name: "1st Session" },
+                    exception: "time_slot_overlapping" },
+                { purpose: "overlapping time slot entirely within an existing time slot should be rejected",
+                    parameter: { startTime: "10:45", endTime: "11:10", name: "1st Session" },
+                    exception: "time_slot_overlapping" } 
+            ]
+        }      
+    ]
+});
 
-    return { data: { start_time: command.data.start_time, end_time: command.data.end_time, name: command.data.name },
-        meta: { type: "time_slot_added", summary: command.data.start_time + " to " + command.data.end_time + " - " + command.data.name }
-    };
-} // add_time_slot
+// if (!run_tests) app.post("/time-slots", upload.none(), (req, res, error_next) => {
+//     change_state_http_wrapper(add_time_slot, { data: { start_time: req.body.startTime, end_time: req.body.endTime, name: req.body.name } }, error_next, () => { res.redirect("/time-slots"); });
+// }); // app.post("/time-slots")
+
+// const exception_time_slot_required_fields_missing = new Error("Start time, end time, and name are required");
+// const exception_time_slot_time_order_invalid = new Error("End time must be after start time");
+// const exception_time_slot_overlapping = new Error("Time slot is overlapping with others that are already defined");
+// function add_time_slot(history, command) {
+//     function timeToMinutes(timeStr) { const [hours, minutes] = timeStr.split(':').map(Number);
+//         return hours * 60 + minutes;}
+//     if (!command.data.start_time || !command.data.end_time || !command.data.name) throw exception_time_slot_required_fields_missing;
+
+//     const newStart = timeToMinutes(command.data.start_time);
+//     const newEnd = timeToMinutes(command.data.end_time);
+//     if (newStart >= newEnd) throw exception_time_slot_time_order_invalid;
+    
+//     const hasOverlap = history
+//         .filter(event => event.meta.type === "time_slot_added")
+//         .some(event => {
+//             const existingStart = timeToMinutes(event.data.start_time);
+//             const existingEnd = timeToMinutes(event.data.end_time);
+//             return (newStart < existingEnd && newEnd > existingStart);
+//         });
+//     if (hasOverlap) throw exception_time_slot_overlapping;
+
+//     return { data: { start_time: command.data.start_time, end_time: command.data.end_time, name: command.data.name },
+//         meta: { type: "time_slot_added", summary: command.data.start_time + " to " + command.data.end_time + " - " + command.data.name }
+//     };
+// } // add_time_slot
 
 // each checkpoint is a test if a command is there 
-slice_tests.push({ test_function: add_time_slot,
-    timelines: [
-        {
-            timeline_name: "Happy Path",
-            checkpoints: [
-                {
-                    event: { data: { start_time: "09:30", end_time: "10:25", name: "1st Session" },
-                        meta: { type: "time_slot_added" }
-                    },
-                    command: { data: { start_time: "09:30", end_time: "10:25", name: "1st Session" } },
-                    purpose: "first time slot should be added when valid"
-                },
-                {
-                    event: { data: { start_time: "10:30", end_time: "11:25", name: "2nd Session" },
-                        meta: { type: "time_slot_added" }
-                    },
-                    command: { data: { start_time: "10:30", end_time: "11:25", name: "2nd Session" } },
-                    purpose: "second time slot should be added when valid"
-                },
-                {
-                    exception: exception_time_slot_overlapping,
-                    command: { data: { start_time: "11:00", end_time: "12:00", name: "1st Session" } },
-                    purpose: "overlapping at the end of the time slot should be rejected"
-                },
-                {
-                    exception: exception_time_slot_overlapping,
-                    command: { data: { start_time: "10:00", end_time: "11:00", name: "1st Session" } },
-                    purpose: "overlapping at the start of the time slot should be rejected"
-                },
-                {
-                    exception: exception_time_slot_overlapping,
-                    command: { data: { start_time: "10:45", end_time: "11:10", name: "1st Session" } },
-                    purpose: "overlapping time slot entirely within an existing time slot should be rejected"
-                }
-            ]
-        }
-    ]
-}); // test: Add Time Slot State Change
+// slice_tests.push({ test_function: add_time_slot,
+//     timelines: [
+//         {
+//             timeline_name: "Happy Path",
+//             checkpoints: [
+//                 {
+//                     event: { data: { start_time: "09:30", end_time: "10:25", name: "1st Session" },
+//                         meta: { type: "time_slot_added" }
+//                     },
+//                     command: { data: { start_time: "09:30", end_time: "10:25", name: "1st Session" } },
+//                     purpose: "first time slot should be added when valid"
+//                 },
+//                 {
+//                     event: { data: { start_time: "10:30", end_time: "11:25", name: "2nd Session" },
+//                         meta: { type: "time_slot_added" }
+//                     },
+//                     command: { data: { start_time: "10:30", end_time: "11:25", name: "2nd Session" } },
+//                     purpose: "second time slot should be added when valid"
+//                 },
+//                 {
+//                     exception: exception_time_slot_overlapping,
+//                     command: { data: { start_time: "11:00", end_time: "12:00", name: "1st Session" } },
+//                     purpose: "overlapping at the end of the time slot should be rejected"
+//                 },
+//                 {
+//                     exception: exception_time_slot_overlapping,
+//                     command: { data: { start_time: "10:00", end_time: "11:00", name: "1st Session" } },
+//                     purpose: "overlapping at the start of the time slot should be rejected"
+//                 },
+//                 {
+//                     exception: exception_time_slot_overlapping,
+//                     command: { data: { start_time: "10:45", end_time: "11:10", name: "1st Session" } },
+//                     purpose: "overlapping time slot entirely within an existing time slot should be rejected"
+//                 }
+//             ]
+//         }
+//     ]
+// }); // test: Add Time Slot State Change
 
 if (!run_tests) app.get("/time-slots",(_,res,error_next)=>{ 
     get_state_http_wrapper(time_slots_state_view, error_next, (time_slots) => { res.render("time-slots", { time_slots });});
