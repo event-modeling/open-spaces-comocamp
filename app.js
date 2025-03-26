@@ -158,18 +158,13 @@ function bootstrap(slices) {
                     break;
                 case "exception":
                     console.log("5.0 exception: ", JSON.stringify(result, null, 2));
-                    console.log("5.1 slice.exceptions: ", JSON.stringify(slice.exceptions, null, 2));
-                    const message = slice.exceptions[result.name];
-                    console.log("5.2 message: ", message);
-                    const exception = new Error(message);
-                    console.log("5.3 exception: ", JSON.stringify(exception, null, 2));
+                    const exception = new Error(slice.exceptions[result.name]);
                     exception.status = 422;
-                    console.log("5.4 exception: ", JSON.stringify(exception, null, 2));
                     error_next(exception);
                     break;
-                case "model":
-                    console.log("6.0 rendering model: ", JSON.stringify(result.model, null, 2));
-                    res.render(slice.navigation.view, typeof result.model === "string" ? { model: result.model } : result.model);
+                case "query":
+                    console.log("6.0 rendering query: ", JSON.stringify(result.query, null, 2));
+                    res.render(slice.navigation.view, typeof result.query === "string" ? { model: result.query } : result.query);
                     break;
             }
         });
@@ -216,8 +211,7 @@ function bootstrap(slices) {
 const slices = [];
 function make_event_result(name, data, summary) { return { type: "event", data: data, name: name, summary: summary }; }
 function make_exception_result(name) { return { type: "exception", name: name }; }
-function make_model_result(model) { return { type: "model", model: model }; }
-
+function make_query_result(query) { return { type: "query", query: query }; }
 slices.push({ name: "set_conference_name_default", 
     navigation: { direction: "output", path: "/set-conference-name", view: "set-conference-name" } });
 
@@ -261,7 +255,7 @@ slices.push({ name: "name_the_conference",
 slices.push( { name: "conference_name_confirmation", 
     navigation: { direction: "output", path: "/set-conference-name-confirmation", view: "set-conference-name-confirmation" },
     event_handlers: { "conference_named": (state, event) => { return event.data.name; } },
-    refinement_function: (state, parameter) => { return make_model_result(state); },
+    refinement_function: (state, parameter) => { return make_query_result(state); },
 });
 
 slices.push({ name: "set_dates_default", 
@@ -283,7 +277,7 @@ slices.push({ name: "set_dates",
 slices.push({ name: "conference_dates_confirmation", 
     navigation: { direction: "output", path: "/set-dates-confirmation", view: "set-dates-confirmation" },
     event_handlers: { "dates_set": (state, event) => { return event.data; } },
-    refinement_function: (state, parameter) => { return make_model_result(state); },
+    refinement_function: (state, parameter) => { return make_query_result(state); },
 });
 
 slices.push({ name: "rooms",
@@ -300,31 +294,31 @@ slices.push({ name: "rooms",
             if (index !== -1) state.splice(index, 1);
             return state; },
     },
-    refinement_function: (state, parameter) => { return make_model_result({ rooms: state }); },
+    refinement_function: (state, parameter) => { return make_query_result({ rooms: state }); },
     test_timelines: [
         { timeline_name: "happy path",
             checkpoints: [
                 { purpose: "no rooms should be returned when no events have occurred",
-                    model: { rooms: [] } },
+                    query: { rooms: [] } },
                 { event: { data: { room_name: "Auditorium" }, name: "room_added" }},
                 { purpose: "one room should be returned when one room has been added",
-                    model: { rooms: ["Auditorium"] } },
+                    query: { rooms: ["Auditorium"] } },
                 { event: { data: { room_name: "CS100" }, name: "room_added" } },
                 { progress_marker: "at this point, the initial room reserves the name" },
-                { model: { rooms: ["Auditorium", "CS100"] },
+                { query: { rooms: ["Auditorium", "CS100"] },
                     purpose: "two rooms should be returned when two rooms have been added" },
                 { event: { data: { room_name: "CS200" }, name: "room_added" } ,},
                 { purpose: "three rooms should be returned when three rooms have been added",
-                    model: { rooms: ["Auditorium", "CS100", "CS200"] } },
+                    query: { rooms: ["Auditorium", "CS100", "CS200"] } },
                 { event: { data: { room_name: "CS300" }, name: "room_added" } },
                 { purpose: "four rooms should be returned when three rooms have been added",
-                    model: { rooms: ["Auditorium", "CS100", "CS200", "CS300"] } },
+                    query: { rooms: ["Auditorium", "CS100", "CS200", "CS300"] } },
                 { event: { data: { old_name: "Auditorium", new_name: "Main Hall" }, name: "room_renamed" } ,},
                 { purpose: "renamed room should show new name in correct position",
-                    model: { rooms: ["Main Hall", "CS100", "CS200", "CS300"] } },
+                    query: { rooms: ["Main Hall", "CS100", "CS200", "CS300"] } },
                 { event: { data: { room_name: "CS200" }, name: "room_deleted" } },
                 { purpose: "deleted room should not be in the result",
-                    model: { rooms: ["Main Hall", "CS100", "CS300"] } } 
+                    query: { rooms: ["Main Hall", "CS100", "CS300"] } } 
             ] } ]
 });
 
@@ -1090,7 +1084,7 @@ function tests() {
                             return slice.event_handlers[event.name](event_handlers_acc, event);
                         }, deepClone(slice.initial_state));
                         let result = slice.refinement_function(state, checkpoint.parameter, slice.exceptions);
-                        const expected = checkpoint.exception !==undefined ? { name: checkpoint.exception } : (checkpoint.model !== undefined ? { model: checkpoint.model} : checkpoint.event);
+                        const expected = checkpoint.exception !==undefined ? { name: checkpoint.exception } : (checkpoint.query !== undefined ? { query: checkpoint.query} : checkpoint.event);
                         result = { ...result, type: undefined, summary: undefined }; 
                         
                         assert(JSON.stringify(result) === JSON.stringify(expected), "Should be equal to " + JSON.stringify(expected) + " but was: " + JSON.stringify(result));
