@@ -126,7 +126,7 @@ function bootstrap(slices) {
             events.forEach(event => {
                 if (slice.event_handlers === undefined) return;
                 try { if (slice.event_handlers[event.name] === undefined) return;
-                    state = slice.event_handlers[event.name](state, event, data); } catch (error) { console.error("2.1 Error updating state: " + error.message); }
+                    state = slice.event_handlers[event.name](state, event); } catch (error) { console.error("2.1 Error updating state: " + error.message); }
             }); console.log("2.2 state: ", JSON.stringify(state, null, 2));
 
             let result = undefined; console.log("3.0 calculating invariants");
@@ -212,6 +212,8 @@ const slices = [];
 function make_event_result(name, data, summary) { return { type: "event", data: data, name: name, summary: summary }; }
 function make_exception_result(name) { return { type: "exception", name: name }; }
 function make_query_result(query) { return { type: "query", query: query }; }
+
+
 slices.push({ name: "set_conference_name_default", 
     navigation: { direction: "output", path: "/set-conference-name", view: "set-conference-name" } });
 
@@ -342,7 +344,8 @@ slices.push({ name: "add_room",
     },
 });
 
-slices.push({ name: "time_slots",
+
+slices.push({ name: "time_slots_addition",
     navigation: { direction: "input", path: "/time-slots", next_path: "/time-slots",
         web_data: (req) => { return { startTime: req.body.startTime, endTime: req.body.endTime, name: req.body.name }; } },
     initial_state: [],
@@ -389,85 +392,24 @@ slices.push({ name: "time_slots",
     ]
 });
 
-// if (!run_tests) app.post("/time-slots", upload.none(), (req, res, error_next) => {
-//     change_state_http_wrapper(add_time_slot, { data: { start_time: req.body.startTime, end_time: req.body.endTime, name: req.body.name } }, error_next, () => { res.redirect("/time-slots"); });
-// }); // app.post("/time-slots")
-
-// const exception_time_slot_required_fields_missing = new Error("Start time, end time, and name are required");
-// const exception_time_slot_time_order_invalid = new Error("End time must be after start time");
-// const exception_time_slot_overlapping = new Error("Time slot is overlapping with others that are already defined");
-// function add_time_slot(history, command) {
-//     function timeToMinutes(timeStr) { const [hours, minutes] = timeStr.split(':').map(Number);
-//         return hours * 60 + minutes;}
-//     if (!command.data.start_time || !command.data.end_time || !command.data.name) throw exception_time_slot_required_fields_missing;
-
-//     const newStart = timeToMinutes(command.data.start_time);
-//     const newEnd = timeToMinutes(command.data.end_time);
-//     if (newStart >= newEnd) throw exception_time_slot_time_order_invalid;
-    
-//     const hasOverlap = history
-//         .filter(event => event.meta.type === "time_slot_added")
-//         .some(event => {
-//             const existingStart = timeToMinutes(event.data.start_time);
-//             const existingEnd = timeToMinutes(event.data.end_time);
-//             return (newStart < existingEnd && newEnd > existingStart);
-//         });
-//     if (hasOverlap) throw exception_time_slot_overlapping;
-
-//     return { data: { start_time: command.data.start_time, end_time: command.data.end_time, name: command.data.name },
-//         meta: { type: "time_slot_added", summary: command.data.start_time + " to " + command.data.end_time + " - " + command.data.name }
-//     };
-// } // add_time_slot
-
-// each checkpoint is a test if a command is there 
-// slice_tests.push({ test_function: add_time_slot,
-//     timelines: [
-//         {
-//             timeline_name: "Happy Path",
-//             checkpoints: [
-//                 {
-//                     event: { data: { start_time: "09:30", end_time: "10:25", name: "1st Session" },
-//                         meta: { type: "time_slot_added" }
-//                     },
-//                     command: { data: { start_time: "09:30", end_time: "10:25", name: "1st Session" } },
-//                     purpose: "first time slot should be added when valid"
-//                 },
-//                 {
-//                     event: { data: { start_time: "10:30", end_time: "11:25", name: "2nd Session" },
-//                         meta: { type: "time_slot_added" }
-//                     },
-//                     command: { data: { start_time: "10:30", end_time: "11:25", name: "2nd Session" } },
-//                     purpose: "second time slot should be added when valid"
-//                 },
-//                 {
-//                     exception: exception_time_slot_overlapping,
-//                     command: { data: { start_time: "11:00", end_time: "12:00", name: "1st Session" } },
-//                     purpose: "overlapping at the end of the time slot should be rejected"
-//                 },
-//                 {
-//                     exception: exception_time_slot_overlapping,
-//                     command: { data: { start_time: "10:00", end_time: "11:00", name: "1st Session" } },
-//                     purpose: "overlapping at the start of the time slot should be rejected"
-//                 },
-//                 {
-//                     exception: exception_time_slot_overlapping,
-//                     command: { data: { start_time: "10:45", end_time: "11:10", name: "1st Session" } },
-//                     purpose: "overlapping time slot entirely within an existing time slot should be rejected"
-//                 }
-//             ]
-//         }
-//     ]
-// }); // test: Add Time Slot State Change
-
-if (!run_tests) app.get("/time-slots",(_,res,error_next)=>{ 
-    get_state_http_wrapper(time_slots_state_view, error_next, (time_slots) => { res.render("time-slots", { time_slots });});
+slices.push({ name: "time_slots_state_view",
+    navigation: { direction: "output", path: "/time-slots", view: "time-slots" },
+    initial_state: { time_slots: [] },
+    event_handlers: { "time_slot_added": (state, event) => { state.time_slots.push(event.data); return state; } },
+    refinement_function: (state, parameter) => { return make_query_result(state); },
 });
 
-function time_slots_state_view(history) {
-    return history.reduce((acc, event) => {
-        if (event.meta.type === "time_slot_added") acc.push({ ...event.data, meta: undefined, data: undefined });
-        return acc;
-    }, []); } // time_slots_state_view
+
+
+// if (!run_tests) app.get("/time-slots",(_,res,error_next)=>{ 
+//     get_state_http_wrapper(time_slots_state_view, error_next, (time_slots) => { res.render("time-slots", { time_slots });});
+// });
+
+// function time_slots_state_view(history) {
+//     return history.reduce((acc, event) => {
+//         if (event.meta.type === "time_slot_added") acc.push({ ...event.data, meta: undefined, data: undefined });
+//         return acc;
+//     }, []); } // time_slots_state_view
 
 if (!run_tests) app.get("/generate-conf-id", (_, res) => { res.render("generate-conf-id"); });
 
