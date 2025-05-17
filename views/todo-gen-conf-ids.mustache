@@ -12,21 +12,22 @@
         <h1>Conference IDs to Generate</h1>
         
         <section class="form-section">
+            <form action="/provide-conference-id" method="POST" class="manual-id-form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="conference_id">Conference ID:</label>
+                    <input type="text" id="conference_id" name="conference_id" required {{^requested}}disabled{{/requested}}>
+                    <button type="submit" class="btn" {{^requested}}disabled{{/requested}}>Add ID manually</button>
+                </div>
+            </form>
 
             <div class="results-section">
-                <h3>Generated IDs:</h3>
-                <ul class="list">
-                    {{#conference_ids}}
-                        <li class="list-item">
-                            {{#conference_id}}
-                                {{conference_id}}
-                            {{/conference_id}}
-                            {{^conference_id}}
-                                <span class="pending">Pending generation...</span>
-                            {{/conference_id}}
-                        </li>
-                    {{/conference_ids}}
-                </ul>
+                <h3>Currently waiting for confID:</h3>
+                {{#requested}}
+                    <p>Yes</p>
+                {{/requested}}
+                {{^requested}}
+                    <p>No</p>
+                {{/requested}}
             </div>
         </section>
     </main>

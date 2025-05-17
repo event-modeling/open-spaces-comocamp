@@ -1,6 +1,5 @@
 let port = 3002;
 let slice_tests = [];
-const sync_time = 0;
 const eventstore = "./event-stream";
 const event_seq_padding = '0000';
 
@@ -26,61 +25,56 @@ if (!run_tests) {
     app.use('/error.css', express.static('public/styles/error.css')); }
 
 function strip_summary(event) { if (event) { delete event.summary; } return event; }
-function get_events() { 
-    if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
-    return fs.readdirSync(eventstore).sort().map(file => { 
-        const event = JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8"));
-        if (!event.meta) event.meta = {}; event.meta.sequence = parseInt(file.substring(0, 4));
-        return event;
-    }); }
+function get_events(on_each_event, error_callback) { 
+    if (!on_each_event) throw new Error("on_each_event is required");
+    try {
+        console.log("1.0 getting events");
+        if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
+        let event_count = 0;
+        fs.readdirSync(eventstore).forEach(file => { 
+            if (!file.endsWith('-event.json')) return;
+            let event = undefined;
+            try {
+                event = JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8"));
+                if (!event.meta) event.meta = {}; event.meta.sequence = parseInt(file.substring(0, 4));
+                if (on_each_event) on_each_event(event);
+            } catch (error) {
+                if (error_callback) error_callback(error);
+                return;
+            }
+        }); 
+    } catch (error) {
+        if (error_callback) error_callback(error);
+        return 0;
+    }
+}
 function push_event(event) {
     let event_type = event.name;
     let summary = event.summary ? event.summary : "";
     event = strip_summary(event);
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
-
     const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('-event.json')).length;
-    
-    const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
-    
+    const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;   
     fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
-    if (sync_time === 0 ) notify_processors(event); }
-    
-if (sync_time > 0) setInterval(notify_processors, sync_time);
+    notify_processors(event); }
+function calculate_state(get_events_function, initial_state, event_handlers) { 
+    console.log("1.0 calculate_state called with get_events_function: ", get_events_function, "initial_state: ", initial_state, "event_handlers: ", event_handlers);
+    if (get_events_function === undefined) throw new Error("get_events_function is required");
+    if (event_handlers === undefined) throw new Error("event_handlers is required");
+    let state = deepClone(initial_state);
+    get_events_function( (event) => {
+        if (event_handlers[event.name]) { state = event_handlers[event.name](state, event); } }, (error) => { console.error("Error getting events: " + error.message); });
+    return state;}
+
 function notify_processors(event = null) {
-    if (event === null) { processors.forEach(processor => processor.function(get_events())); return;}
-    processors.forEach(processor => { if (processor.events.includes(event.name)) processor.function(get_events()); });}
+    if (event === null) { processors.forEach(processor => processor.do_each_item()); return;}
+    processors.forEach(processor => { 
+        if (processor.triggering_events === undefined) return;
+        if (processor.triggering_events.includes(event.name)) processor.do_each_item(); });}
 const processors = [];
 
-function change_state_http_wrapper(command_handler, command, error_next, success_action) {
-    let events, result_event = undefined;
-    try { events = get_events(); console.log("events count for state change: " + events.length);
-    } catch (error) { console.error("Error getting events: " + error.message);
-        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
-    try { result_event = command_handler(events, command); console.log("result_event: ", JSON.stringify(result_event));
-    } catch (error) { console.error("Error changing state (command handler: " + command_handler.name + "): " + error.message); console.error("command: ", JSON.stringify(command));
-        const new_error = new Error(error.message); new_error.status = 422; return error_next(new_error); }
-    try { push_event(result_event);
-    } catch (error) { console.error("Error pushing event: " + error.message); 
-        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
-    if (success_action !== undefined) success_action(result_event);
-    return result_event;
-} // change_state_via_http
-
-function get_state_http_wrapper(state_view, error_next, success_action) {
-    let events = null;
-    try { events = get_events(); console.log("events count for state view: " + events.length);
-    } catch (error) { console.error("Error getting events: " + error.message);
-        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
-    let state = null;
-    try { state = state_view(events); console.log("state: ", JSON.stringify(state));
-    } catch (error) { console.error("Error getting state: " + error.message);
-        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
-    if (success_action !== undefined) success_action(state);
-    return state;
-} // get_state_via_http
-
 function get_access_token_http_wrapper(request, error_next, success_action) {
+    throw new Error("get_access_token_http_wrapper is deprecated");
     const registration_id = request.query.registration_id || request.params.registration_id; 
     get_state_http_wrapper(registrations_state_view, error_next, (state) => {
         const name = state.registrations[registration_id];
@@ -102,41 +96,28 @@ function bootstrap(slices) {
         app.get(path, action);
     }
     slices.forEach(slice => { console.log("bootstrapping slice: ", JSON.stringify(slice, null, 2));
-        if (slice.navigation.web_data === undefined && slice.refinement_function === undefined) {
+        if (slice.refinement_function === undefined) {
             console.log("bootstrapping view only slice: ", slice.name);
             app.get(slice.navigation.path + "", (req, res) => { res.render(slice.navigation.view + "", {}); });
             return;
         }
         const app_method = slice.navigation.direction === "input" ? app_post : app_get;
         app_method(slice.navigation.path, (req, res, error_next) => {
-            let events = [];
-            try { console.log("1.0 getting events");
-                if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
-                events = fs.readdirSync(eventstore).sort().map(file => { 
-                    const event = JSON.parse(fs.readFileSync(`${eventstore}/${file}`, "utf8"));
-                    if (!event.meta) event.meta = {}; event.meta.sequence = parseInt(file.substring(0, 4));
-                    return event;
-                }); console.log("1.1 events count: ", events.length);
-            } catch (error) { console.error("1.2 Error getting events: " + error.message);
+            let state_function = undefined; 
+            try { console.log("2.0 calculating state");
+                state_function = () => calculate_state(get_events, slice.initial_state, slice.event_handlers); 
+            } catch (error) { console.error("2.1 Error calculating state: " + error.message);
                 const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
-
-            let state = deepClone(slice.initial_state); console.log("2.0 getting state from events");
-            console.log("2.0.1 state: ", JSON.stringify(state, null, 2));
-            console.log("2.0.2 slice initial state: ", JSON.stringify(slice.initial_state, null, 2));
-            events.forEach(event => {
-                if (slice.event_handlers === undefined) return;
-                try { if (slice.event_handlers[event.name] === undefined) return;
-                    state = slice.event_handlers[event.name](state, event); } catch (error) { console.error("2.1 Error updating state: " + error.message); }
-            }); console.log("2.2 state: ", JSON.stringify(state, null, 2));
-
-            let result = undefined; console.log("3.0 calculating invariants");
-            try { 
-                let parameter = undefined;
-                if (slice.navigation.web_data) parameter = slice.navigation.web_data(req);
-                result = slice.refinement_function(state, parameter);
+            let result = undefined; 
+            try { console.log("3.0 calculating invariants");
+                result = slice.refinement_function(state_function, () => {if (slice.navigation.web_data === undefined) return undefined;  return slice.navigation.web_data(req);} );
             } catch (error) { console.error("3.1 Error invariant function: " + error.message);
                 const new_error = new Error(error.message); new_error.status = 422; return error_next(new_error); }
             console.log("3.2 result: ", JSON.stringify(result, null, 2));
+            if (result.type === undefined) {
+                const new_error = new Error("No result type!");
+                new_error.status = 500;
+                return error_next(new_error); }
             switch (result.type) {
                 case "event":
                     try { console.log("4.0 pushing event: ", JSON.stringify(result, null, 2));
@@ -150,7 +131,7 @@ function bootstrap(slices) {
                         const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
                         
                         fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
-                        if (sync_time === 0 ) notify_processors(event); 
+                        notify_processors(event); 
 
                         res.redirect(slice.navigation.next_path);
                     } catch (error) { console.error("4.1 Error pushing event: " + error.message);
@@ -166,8 +147,39 @@ function bootstrap(slices) {
                     console.log("6.0 rendering query: ", JSON.stringify(result.query, null, 2));
                     res.render(slice.navigation.view, typeof result.query === "string" ? { model: result.query } : result.query);
                     break;
+                default:
+                    console.log("7.0 unknown result type: ", JSON.stringify(result, null, 2));
+                    const new_error = new Error("Unknown result type: " + result.type);
+                    new_error.status = 500;
+                    error_next(new_error);
+                    break;
             }
         });
+        if (slice.processor === undefined) return;
+        let processor = slice.processor;
+        const todo_list_slice = slices.find(slice => slice.name === processor.todo_list_slice);
+        processor.todo_list = {
+            initial_state: todo_list_slice.initial_state,
+            event_handlers: todo_list_slice.event_handlers,
+            refinement_function: todo_list_slice.refinement_function,
+            };
+        function do_each_item(processor) {
+            calculate_state(get_events, processor.todo_list.initial_state, processor.todo_list.event_handlers).forEach(item => { if (processor.processor_filter(item)) { processor.processor_action(() => get_events, item); } });
+        }
+        if (processor.execution === "immediate") {
+            // add to processors so they are checked when new events are stored and provide a way to do each item
+            processor.do_each_item = () => { do_each_item(processor); };
+            processors.push(processor);
+        } else {
+            // set up a timer according to the frequency
+            const timer = setInterval(() => {
+                // get the todo list
+                processor.todo_list = processor.todo_list_function(get_events);
+                // for each item in the todo list, check if it should be processed
+                processor.todo_list.forEach(item => { if (processor.processor_filter(item)) processor.processor_action(item); });
+            }, processor.frequency);
+            processor.timer = timer;
+        }
     });
     // Custom error handler for 404s
     app.use((req, res, next) => {
@@ -220,35 +232,37 @@ slices.push({ name: "set_conference_name_default",
 slices.push({ name: "name_the_conference", 
     navigation: { direction: "input", path: "/set-conference-name", next_path: "/set-conference-name-confirmation", 
         web_data: (req) => { return req.body.conferenceName; } },
+    initial_state: "",
     event_handlers: { "conference_named": (state, event) => { return event.data.name; } },
     exceptions: { "no_change_to_name": "You didn't change the name. No change registered." },
-    refinement_function: (state, parameter) => {
+    refinement_function: (state_function, parameter_function) => {
+        const state = state_function(); const parameter = parameter_function();
         if (state === parameter) return make_exception_result("no_change_to_name");
         return make_event_result("conference_named", { name: parameter }, parameter);
     },
     test_timelines: [
         {   timeline_name: "Happy Path",
             checkpoints: [
-                {   purpose: "test that the conference name is set to the new name",
+                {   check: "test that the conference name is set to the new name",
                     parameter: "EM Open Spaces", 
                     event: { data: { name: "EM Open Spaces" }, name: "conference_named" } } ] },
         {   timeline_name: "Renames allowed",
             checkpoints: [
                 {   event: { data: { name: "EM Open Spaces" }, name: "conference_named" } }, 
-                {   purpose: "name should be changeable",
+                {   check: "name should be changeable",
                     parameter: "Event Modeling Space",
                     event: { data: { name: "Event Modeling Space" }, name: "conference_named" } } ] },
         {   timeline_name: "Renames allowed multiple times",
             checkpoints: [
                 {   event: { data: { name: "EM Open Spaces" }, name: "conference_named", } },
                 {   event: { data: { name: "Event Modeling Space" }, name: "conference_named", } },
-                {   purpose: "name should be changeable multiple times",
+                {   check: "name should be changeable multiple times",
                     parameter: "Event Modeling Open Spaces",
                     event: { data: { name: "Event Modeling Open Spaces" }, name: "conference_named", }, } ] },
         {   timeline_name: "Renames not allowed if new name is the same",
             checkpoints: [
                 {   event: { data: { name: "EM Open Spaces" }, name: "conference_named" } },
-                {   purpose: "exception should be thrown if the conference name is not changed",
+                {   check: "exception should be thrown if the conference name is not changed",
                     parameter: "EM Open Spaces",
                     exception: "no_change_to_name",
                 } ] } ]
@@ -256,8 +270,9 @@ slices.push({ name: "name_the_conference",
 
 slices.push( { name: "conference_name_confirmation", 
     navigation: { direction: "output", path: "/set-conference-name-confirmation", view: "set-conference-name-confirmation" },
-    event_handlers: { "conference_named": (state, event) => { return event.data.name; } },
-    refinement_function: (state, parameter) => { return make_query_result(state); },
+    initial_state: "",
+    event_handlers: { "conference_named": (state, event) => { console.log("conference_named: " + event.data.name); return event.data.name; } },
+    refinement_function: (state_function, parameter_function) => { return make_query_result({ name: state_function() }); },
 });
 
 slices.push({ name: "set_dates_default", 
@@ -268,7 +283,8 @@ slices.push({ name: "set_dates",
         web_data: (req) => { return { startDate: req.body.startDate, endDate: req.body.endDate }; } },
     event_handlers: { "dates_set": (state, event) => { return event.data.startDate; } },
     exceptions: { "invalid_range": "Start date must be before end date" } ,
-    refinement_function: (state, parameter) => {
+    refinement_function: (state_function, parameter_function) => {
+        const parameter = parameter_function();
         const start_date = new Date(parameter.startDate);
         const end_date = new Date(parameter.endDate);
         if (start_date > end_date) return make_exception_result("invalid_range");
@@ -279,47 +295,47 @@ slices.push({ name: "set_dates",
 slices.push({ name: "conference_dates_confirmation", 
     navigation: { direction: "output", path: "/set-dates-confirmation", view: "set-dates-confirmation" },
     event_handlers: { "dates_set": (state, event) => { return event.data; } },
-    refinement_function: (state, parameter) => { return make_query_result(state); },
+    refinement_function: (state_function, parameter_function) => { return make_query_result(state_function()); },
 });
 
 slices.push({ name: "rooms",
     navigation: { direction: "output", path: "/rooms", view: "rooms" },
-    initial_state: [],
+    initial_state: { rooms: [] },
     event_handlers: { 
-        "room_added": (state, event) => { state.push(event.data.room_name); return state; },
+        "room_added": (state, event) => { state.rooms.push(event.data.room_name); return state; },
         "room_renamed": (state, event) => {
-            const index = state.indexOf(event.data.old_name);
-            if (index !== -1) state[index] = event.data.new_name;
+            const index = state.rooms.indexOf(event.data.old_name);
+            if (index !== -1) state.rooms[index] = event.data.new_name;
             return state; },
         "room_deleted": (state, event) => {
-            const index = state.indexOf(event.data.room_name);
-            if (index !== -1) state.splice(index, 1);
+            const index = state.rooms.indexOf(event.data.room_name);
+            if (index !== -1) state.rooms.splice(index, 1);
             return state; },
     },
-    refinement_function: (state, parameter) => { return make_query_result({ rooms: state }); },
+    refinement_function: (state_function, parameter_function) => { return make_query_result({ rooms: state_function().rooms  }); },
     test_timelines: [
         { timeline_name: "happy path",
             checkpoints: [
-                { purpose: "no rooms should be returned when no events have occurred",
+                { check: "no rooms should be returned when no events have occurred",
                     query: { rooms: [] } },
                 { event: { data: { room_name: "Auditorium" }, name: "room_added" }},
-                { purpose: "one room should be returned when one room has been added",
+                { check: "one room should be returned when one room has been added",
                     query: { rooms: ["Auditorium"] } },
                 { event: { data: { room_name: "CS100" }, name: "room_added" } },
                 { progress_marker: "at this point, the initial room reserves the name" },
                 { query: { rooms: ["Auditorium", "CS100"] },
-                    purpose: "two rooms should be returned when two rooms have been added" },
+                    check: "two rooms should be returned when two rooms have been added" },
                 { event: { data: { room_name: "CS200" }, name: "room_added" } ,},
-                { purpose: "three rooms should be returned when three rooms have been added",
+                { check: "three rooms should be returned when three rooms have been added",
                     query: { rooms: ["Auditorium", "CS100", "CS200"] } },
                 { event: { data: { room_name: "CS300" }, name: "room_added" } },
-                { purpose: "four rooms should be returned when three rooms have been added",
+                { check: "four rooms should be returned when three rooms have been added",
                     query: { rooms: ["Auditorium", "CS100", "CS200", "CS300"] } },
                 { event: { data: { old_name: "Auditorium", new_name: "Main Hall" }, name: "room_renamed" } ,},
-                { purpose: "renamed room should show new name in correct position",
+                { check: "renamed room should show new name in correct position",
                     query: { rooms: ["Main Hall", "CS100", "CS200", "CS300"] } },
                 { event: { data: { room_name: "CS200" }, name: "room_deleted" } },
-                { purpose: "deleted room should not be in the result",
+                { check: "deleted room should not be in the result",
                     query: { rooms: ["Main Hall", "CS100", "CS300"] } } 
             ] } ]
 });
@@ -338,7 +354,9 @@ slices.push({ name: "add_room",
             if (index !== -1) state.splice(index, 1);
             return state; } },
     exceptions: { "room_already_exists": "Room by that name already exists" },
-    refinement_function: (state, parameter) => { 
+    refinement_function: (state_function, parameter_function) => { 
+        const state = state_function();
+        const parameter = parameter_function();
         if (state.some(room => room === parameter.roomName)) return make_exception_result("room_already_exists");
         return make_event_result("room_added", { room_name: parameter.roomName }, parameter.roomName); 
     },
@@ -354,14 +372,15 @@ slices.push({ name: "time_slots_addition",
         "time_slot_required_fields_missing": "Start time, end time, and name are required",
         "time_slot_time_order_invalid": "End time must be after start time",
         "time_slot_overlapping": "Time slot is overlapping with others that are already defined" },
-    refinement_function: (state, parameter) => { 
+    refinement_function: (state_function, parameter_function) => { 
         function timeToMinutes(timeStr) { const [hours, minutes] = timeStr.split(':').map(Number); return hours * 60 + minutes; }
+        const parameter = parameter_function();
         if (!parameter.startTime || !parameter.endTime || !parameter.name) return make_exception_result("time_slot_required_fields_missing");
         const newStart = timeToMinutes(parameter.startTime);
         const newEnd = timeToMinutes(parameter.endTime);
         if (newStart >= newEnd) return make_exception_result("time_slot_time_order_invalid");
 
-        const hasOverlap = state.some(time_slot => {
+        const hasOverlap = state_function().some(time_slot => {
             const existingStart = timeToMinutes(time_slot.start_time);
             const existingEnd = timeToMinutes(time_slot.end_time);
             return (newStart < existingEnd && newEnd > existingStart);
@@ -372,19 +391,19 @@ slices.push({ name: "time_slots_addition",
     test_timelines: [
         { timeline_name: "Happy Path",
             checkpoints: [
-                { purpose: "first time slot should be added when valid",
+                { check: "first time slot should be added when valid",
                     parameter: { startTime: "09:30", endTime: "10:25", name: "1st Session" },
                     event: { data: { start_time: "09:30", end_time: "10:25", name: "1st Session" }, name: "time_slot_added" } },
-                { purpose: "second time slot should be added when valid",
+                { check: "second time slot should be added when valid",
                     parameter: { startTime: "10:30", endTime: "11:25", name: "2nd Session" },
                     event: { data: { start_time: "10:30", end_time: "11:25", name: "2nd Session" }, name: "time_slot_added" } },
-                { purpose: "overlapping at the end of the time slot should be rejected",
+                { check: "overlapping at the end of the time slot should be rejected",
                     parameter: { startTime: "11:00", endTime: "12:00", name: "1st Session" },
                     exception: "time_slot_overlapping" },
-                { purpose: "overlapping at the start of the time slot should be rejected",
+                { check: "overlapping at the start of the time slot should be rejected",
                     parameter: { startTime: "10:00", endTime: "11:00", name: "1st Session" },
                     exception: "time_slot_overlapping" },
-                { purpose: "overlapping time slot entirely within an existing time slot should be rejected",
+                { check: "overlapping time slot entirely within an existing time slot should be rejected",
                     parameter: { startTime: "10:45", endTime: "11:10", name: "1st Session" },
                     exception: "time_slot_overlapping" } 
             ]
@@ -396,76 +415,139 @@ slices.push({ name: "time_slots_state_view",
     navigation: { direction: "output", path: "/time-slots", view: "time-slots" },
     initial_state: { time_slots: [] },
     event_handlers: { "time_slot_added": (state, event) => { state.time_slots.push(event.data); return state; } },
-    refinement_function: (state, parameter) => { return make_query_result(state); },
+    refinement_function: (state_function, parameter_function) => { return make_query_result(state_function()); },
 });
 
+slices.push({ name: "generate_conference_id_request_creation",
+    navigation: { direction: "output", path: "/generate-conf-id", view: "generate-conf-id" },
+});
 
-
-// if (!run_tests) app.get("/time-slots",(_,res,error_next)=>{ 
-//     get_state_http_wrapper(time_slots_state_view, error_next, (time_slots) => { res.render("time-slots", { time_slots });});
-// });
-
-// function time_slots_state_view(history) {
-//     return history.reduce((acc, event) => {
-//         if (event.meta.type === "time_slot_added") acc.push({ ...event.data, meta: undefined, data: undefined });
-//         return acc;
-//     }, []); } // time_slots_state_view
-
-if (!run_tests) app.get("/generate-conf-id", (_, res) => { res.render("generate-conf-id"); });
-
-if (!run_tests) app.post("/generate-conf-id", (_, res, error_next) => { change_state_http_wrapper(request_unique_id, { data: {} }, error_next, () => { res.redirect('/join-conference'); }); }); 
-
-const exception_unique_id_already_requested = new Error("A request already exists");
-function request_unique_id(history, command) {
-    const request_available =history.reduce((acc, event) => {
-        switch(event.meta.type) {
-            case "conference_id_requested": acc = false; break;
-            case "conference_id_generated": acc = true; break;
-            default: break;
-        }
-        return acc;
-    }, true );
-    if (!request_available) throw exception_unique_id_already_requested;
-    return { data: {}, meta: { type: "conference_id_requested" } };
-} // request_unique_id
-
-slice_tests.push({ test_function: request_unique_id,
-    timelines: [
+slices.push({ name: "generate_conference_id_request",
+    navigation: { direction: "input", path: "/generate-conf-id", next_path: "/join-conference",
+        web_data: (req) => { return { conference_id: req.body.conference_id }; } },
+    initial_state: false,
+    event_handlers: { 
+        "conference_id_requested": (state, event) => { return true; },
+        "conference_id_generated": (state, event) => { return false; } },
+    exceptions: { "conference_id_already_requested": "A request already exists" },
+    refinement_function: (state_function, parameter_function) => { 
+        if (state_function()) return make_exception_result("conference_id_already_requested");
+        return make_event_result("conference_id_requested", {}); },
+    test_timelines: [
         {
             timeline_name: "Happy Path",
             checkpoints: [        
                 {
-                    event: { data: {}, meta: { type: "conference_id_requested" } },
-                    command: { data: {} },
-                    purpose: "request unique ID should be added when requested",
+                    check: "request unique ID should be added when requested",
+                    parameter: {},
+                    event: { data: {},  name: "conference_id_requested" },
                 },
                 {
-                    exception: exception_unique_id_already_requested,
-                    command: { data: {} },
-                    purpose: "request unique ID should throw an error when request already exists",
+                    check: "request unique ID should throw an error when request already exists",
+                    parameter: {},
+                    exception: "conference_id_already_requested",
                 },
                 {
-                    event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" } }
+                    event: { data: { conference_id: "1111-2222-3333" }, name: "conference_id_generated" }
                 },
                 {
-                    event: { data: {}, meta: { type: "conference_id_requested" } },
-                    command: { data: {} },
-                    purpose: "request unique ID event should be added when requested after a conference ID has been generated"
+                    check: "request unique ID event should be added when requested after a conference ID has been generated",
+                    parameter: {},
+                    event: { data: {}, name: "conference_id_requested" },
                 }
             ]
         }
     ]
-}); // test: request_unique_id_sc
+});
 
-if (!run_tests) app.get("/todo-gen-conf-ids",(_, res, error_next)=>{ 
-    get_state_http_wrapper(todo_gen_conference_id_sv, error_next, (conference_ids) => { res.render("todo-gen-conf-ids", { conference_ids }); });
-}); 
+slices.push( { name: "conference_id_generation_todo",
+    navigation: { direction: "output", path: "/todo-gen-conf-ids", view: "todo-gen-conf-ids" },
+    initial_state: true,
+    event_handlers: { 
+        "conference_id_requested": (state, event) => { return true; },
+        "conference_id_generated": (state, event) => { return false; } },
+    refinement_function: (state_function, parameter_function) => { return make_query_result({ requested: state_function() }); },
+});
+
+slices.push( { name: "conference_id_generation_processor_action",
+    navigation: { direction: "input", path: "/provide-conference-id", next_path: "/todo-gen-conf-ids", web_data: (req) => { return req.body.conference_id; } },
+    processor: { execution: "immediate", todo_list_slice: "conference_id_generation_todo",
+        triggering_events: ["conference_id_requested"],
+        processor_filter: (todo_list_item) => { return todo_list_item.conference_id === ""; },
+        processor_action: (events_function, todo_list_item) => {
+            if (todo_list_item.conference_id !== "") return;
+            return generate_id();
+    }},
+    event_handlers: { 
+        "conference_id_requested": (state, event) => { return true; },
+        "conference_id_generated": (state, event) => { return false; } },
+    exceptions: { 
+        "conference_id_not_requested": "No request for a conference ID has been made",
+        "conference_id_cannot_be_blank": "Conference ID cannot be blank" },
+    refinement_function: (state_function, parameter_function) => { 
+        const state = state_function();
+        const parameter = parameter_function();
+        if (parameter === undefined || parameter === null) parameter = "";
+        if (parameter === "") return make_exception_result("conference_id_cannot_be_blank");
+        if (state) return make_event_result("conference_id_provided", { conference_id: parameter });
+        return make_exception_result("conference_id_not_requested"); },
+})
+
+// if (!run_tests) app.get("/generate-conf-id", (_, res) => { res.render("generate-conf-id"); });
+
+// if (!run_tests) app.post("/generate-conf-id", (_, res, error_next) => { change_state_http_wrapper(request_unique_id, { data: {} }, error_next, () => { res.redirect('/join-conference'); }); }); 
+
+// const exception_unique_id_already_requested = new Error("A request already exists");
+// function request_unique_id(history, command) {
+//     const request_available =history.reduce((acc, event) => {
+//         switch(event.meta.type) {
+//             case "conference_id_requested": acc = false; break;
+//             case "conference_id_generated": acc = true; break;
+//             default: break;
+//         }
+//         return acc;
+//     }, true );
+//     if (!request_available) throw exception_unique_id_already_requested;
+//     return { data: {}, meta: { type: "conference_id_requested" } };
+// } // request_unique_id
+
+// slice_tests.push({ test_function: request_unique_id,
+//     timelines: [
+//         {
+//             timeline_name: "Happy Path",
+//             checkpoints: [        
+//                 {
+//                     event: { data: {}, meta: { type: "conference_id_requested" } },
+//                     command: { data: {} },
+//                     check: "request unique ID should be added when requested",
+//                 },
+//                 {
+//                     exception: exception_unique_id_already_requested,
+//                     command: { data: {} },
+//                     check: "request unique ID should throw an error when request already exists",
+//                 },
+//                 {
+//                     event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" } }
+//                 },
+//                 {
+//                     event: { data: {}, meta: { type: "conference_id_requested" } },
+//                     command: { data: {} },
+//                     check: "request unique ID event should be added when requested after a conference ID has been generated"
+//                 }
+//             ]
+//         }
+//     ]
+// }); // test: request_unique_id_sc
+
+// if (!run_tests) app.get("/todo-gen-conf-ids",(_, res, error_next)=>{ 
+//     get_state_http_wrapper(todo_gen_conference_id_sv, error_next, (conference_ids) => { res.render("todo-gen-conf-ids", { conference_ids }); });
+// }); 
 
 function todo_gen_conference_id_sv(history) {
     return history.reduce((acc, event) => {
-        switch(event.meta.type) {
+        switch(event.name) {
             case "conference_id_requested":
-                if (acc.last_event !== null && acc.last_event.meta.type === "conference_id_requested") break;
+                if (acc.last_event !== null && acc.last_event.name === "conference_id_requested") break;
                 acc.todos.push({ conference_id: "" });
                 break;
             case "conference_id_generated":
@@ -491,17 +573,17 @@ slice_tests.push({ test_function: todo_gen_conference_id_sv,
                 {
                     event: { data: {}, meta: { type: "conference_id_requested" } },
                     state: [],
-                    purpose: "empty array should be returned when no events exist"
+                    check: "empty array should be returned when no events exist"
                 },
                 {
                     event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" }},
                     state: [{ conference_id: "" }],
-                    purpose: "empty conf ID should be added on request"
+                    check: "empty conf ID should be added on request"
                 },
                 {
                     event: { data: {}, meta: { type: "some_other_event" } },
                     state: [{ conference_id: "1111-2222-3333" }],
-                    purpose: "conf ID should be updated when generated"
+                    check: "conf ID should be updated when generated"
                 },
                 {
                     progress_marker: "Second Request behaves the same way"
@@ -512,11 +594,11 @@ slice_tests.push({ test_function: todo_gen_conference_id_sv,
                 {
                     event: { data: { conference_id: "2222-3333-4444" }, meta: { type: "conference_id_generated" }},
                     state: [{ conference_id: "1111-2222-3333" }, { conference_id: "" }],
-                    purpose: "second request should add new empty conf ID"
+                    check: "second request should add new empty conf ID"
                 },
                 {
                     state:  [{ conference_id: "1111-2222-3333" }, { conference_id: "2222-3333-4444" }],
-                    purpose: "second conf ID should be updated when generated"
+                    check: "second conf ID should be updated when generated"
                 }
             ]
         },
@@ -532,7 +614,7 @@ slice_tests.push({ test_function: todo_gen_conference_id_sv,
                 {
                     event: { data: {}, meta: { type: "conference_id_requested" } },
                     state: [{ conference_id: "" }],
-                    purpose: "duplicate request should be ignored"
+                    check: "duplicate request should be ignored"
                },
                 {
                     event: { data: { conference_id: "3333-4444-5555" }, meta: { type: "conference_id_generated" } }
@@ -543,7 +625,7 @@ slice_tests.push({ test_function: todo_gen_conference_id_sv,
                 {
                     event: { data: { conference_id: "4444-5555-6666" }, meta: { type: "conference_id_generated" } },
                     state:  [{ conference_id: "3333-4444-5555" }] ,
-                    purpose: "duplicate generation should be ignored"
+                    check: "duplicate generation should be ignored"
                 }
             ]
         },
@@ -553,7 +635,7 @@ slice_tests.push({ test_function: todo_gen_conference_id_sv,
                 {
                     event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" } },
                     state: [] ,
-                    purpose: "generated ID should be ignored without request"
+                    check: "generated ID should be ignored without request"
                 }
             ]
         }
@@ -609,7 +691,7 @@ slice_tests.push({ test_function: provide_conference_id,
                 {
                     exception: error_no_request_found,
                     command: { data: { conference_id: "1111-2222-3333" } },
-                    purpose: "provide unique ID should throw an error when no request exists"
+                    check: "provide unique ID should throw an error when no request exists"
                 },
                 { 
                     event: { data: {}, meta: { type: "conference_id_requested" } } 
@@ -623,7 +705,7 @@ slice_tests.push({ test_function: provide_conference_id,
                 { 
                     event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" } },
                     command: { data: { conference_id: "1111-2222-3333" } },
-                    purpose: "provide unique ID should be added when requested"
+                    check: "provide unique ID should be added when requested"
                 },
                 {
                     event: { data: {}, meta: { type: "conference_id_requested" } }
@@ -634,12 +716,19 @@ slice_tests.push({ test_function: provide_conference_id,
                 {
                     exception: error_no_request_found,
                     command: { data: { conference_id: "3333-4444-5555" } },
-                    purpose: "provide unique ID should throw an error when no request exists"
+                    check: "provide unique ID should throw an error when no request exists"
                 }
             ]
         }
     ]
 }); // test: generate_conference_id_sc
+
+slices.push({ name: "join_conference",
+    navigation: { direction: "output", path: "/join-conference", view: "join-conference"},
+    initial_state: "",
+    event_handlers: { "conference_id_generated": (state, event) => { return event.data.conference_id; } },
+    refinement_function: (state_function, parameter_function) => { return make_query_result({ conference_id: state_function() }); },
+});
 
 if (!run_tests) app.get("/join-conference", (_, res, error_next) => { 
     get_state_http_wrapper(join_conference_sv, error_next, (state) => { res.render("join-conference", { conference_id: state.conference_id || "1234" }); });
@@ -740,7 +829,7 @@ slice_tests.push({ test_function: register_state_change,
                             registration_id: "eeee-ffff-00000",
                             conference_id: "1111-2222-3333"
                         }},
-                    purpose: "Should reject registration when conference doesn't exist"
+                    check: "Should reject registration when conference doesn't exist"
                 },
                 {
                     event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" }}
@@ -760,7 +849,7 @@ slice_tests.push({ test_function: register_state_change,
                             conference_id: "1111-2222-3333"
                         }
                     },
-                    purpose: "Should allow first registration"
+                    check: "Should allow first registration"
                 },
                 {
                     exception: error_already_registered,
@@ -771,7 +860,7 @@ slice_tests.push({ test_function: register_state_change,
                             conference_id: "1111-2222-3333"
                         }
                     },
-                    purpose: "Should reject duplicate registration"
+                    check: "Should reject duplicate registration"
                 },
                 {
                     event: {
@@ -792,7 +881,7 @@ slice_tests.push({ test_function: register_state_change,
                             registration_id: "eeee-ffff-00000",
                             conference_id: "1111-2222-3333"
                         } },
-                    purpose: "Should reject registration for old conference"
+                    check: "Should reject registration for old conference"
                 },
                 {
                     event: { data: { 
@@ -808,7 +897,7 @@ slice_tests.push({ test_function: register_state_change,
                             conference_id: "2222-3333-4444"
                         }
                     },
-                    purpose: "Should allow registration for new conference"
+                    check: "Should allow registration for new conference"
                 }
             ]
         },
@@ -829,7 +918,7 @@ slice_tests.push({ test_function: register_state_change,
                             conference_id: "1111-2222-3333"
                         }
                     },
-                    purpose: "Should reject registration when closed"
+                    check: "Should reject registration when closed"
                 }
             ]
         }
@@ -1054,24 +1143,24 @@ function tests() {
             summary += ` ⏱️  Testing timeline: ${timeline.timeline_name}\n`;
             timeline.checkpoints.reduce((acc, checkpoint) => {
                 summary += checkpoint.progress_marker ? `  🦉 ${checkpoint.progress_marker}\n` : '';
-                if (checkpoint.purpose !== undefined) {
+                if (checkpoint.check !== undefined) {
                     try {
-                        const state = acc.events.reduce((event_handlers_acc, event) => {
+                        const state_function = () => acc.events.reduce((event_handlers_acc, event) => {
                             if (slice.event_handlers[event.name] === undefined) return event_handlers_acc;
                             return slice.event_handlers[event.name](event_handlers_acc, event);
                         }, deepClone(slice.initial_state));
-                        let result = slice.refinement_function(state, checkpoint.parameter, slice.exceptions);
+                        let result = slice.refinement_function(state_function, () => checkpoint.parameter, slice.exceptions);
                         const expected = checkpoint.exception !==undefined ? { name: checkpoint.exception } : (checkpoint.query !== undefined ? { query: checkpoint.query} : checkpoint.event);
                         result = { ...result, type: undefined, summary: undefined }; 
                         
                         assert(JSON.stringify(result) === JSON.stringify(expected), "Should be equal to " + JSON.stringify(expected) + " but was: " + JSON.stringify(result));
                         checkpoint.test_pass = true; console.log("test passed");
-                        summary += `  ✅ Test passed: ${checkpoint.purpose} \n`;
+                        summary += `  ✅ Test passed: ${checkpoint.check} \n`;
                         
                     } catch (error) {
                         checkpoint.test_pass = false; console.log("test failed");
                         checkpoint.error_message = error.message;
-                        summary += `  ❌ Test failed: ${checkpoint.purpose} due to: ${error.message}\n`;
+                        summary += `  ❌ Test failed: ${checkpoint.check} due to: ${error.message}\n`;
                         console.log("💥 Test failed in Slice '" + slice_name + "' with test '" + (checkpoint.test !== undefined ? checkpoint.test.name : "auto-runner") + "'");
                         console.error(error);
                     }

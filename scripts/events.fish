@@ -40,15 +40,17 @@ function events
 			while true
 				# Get all files, sort them numerically, and process only new ones
 				for file in (ls event-stream 2>/dev/null | sort)
+                    set original_file $file
                     set file "event-stream/$file"
                     set file_parts (string split -n "-" (basename $file))
 					set file_num $file_parts[1] 
                     set event_type $file_parts[2]
 					if test -n "$file_num" -a "$file_num" -gt "$last_processed"
-                        echo -n "$file_num $event_type "
                         if test $all_event_data = true
+                            echo -n "$original_file "
                             cat $file | jq -C --compact-output '.'
                         else
+                            echo -n "$file_num $event_type "
                             cat $file | jq -C --compact-output '.data'
                         end
 						set last_processed $file_num
