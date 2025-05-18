@@ -30,11 +30,11 @@
             <h2>Rooms:</h2>
             <form class="input-group" action="/rooms" method="POST" enctype="multipart/form-data">
                 <label for="roomName">Room Name</label>
-                <input type="text" id="roomName" name="roomName" class="input-field" placeholder="Enter room name">
+                <input type="text" id="roomName" name="roomName" class="input-field" placeholder="Enter room name" autofocus>
                 <button type="submit" class="btn btn-secondary">Add</button>
             </form>
 
-            <ul class="list">
+            <ul class="list" id="roomList">
                 {{#rooms}}
                     <li class="list-item">{{.}}</li>
                 {{/rooms}}
@@ -45,5 +45,61 @@
             </div>
         </section>
     </main>
+
+    <script>
+        function generateNextRoomName() {
+            const roomList = document.getElementById('roomList');
+            const rooms = Array.from(roomList.getElementsByClassName('list-item')).map(li => li.textContent);
+            
+            if (rooms.length === 0) {
+                return "Room 1";
+            }
+
+            const lastRoom = rooms[rooms.length - 1];
+            
+            // Match any text (including spaces) followed by numbers at the end
+            const pattern = /^(.*?)(\d+)$/;
+            const match = lastRoom.match(pattern);
+            
+            if (match) {
+                const prefix = match[1];  // Keep the prefix exactly as is, including spaces
+                const number = match[2];
+                
+                // Find the last non-zero digit and its position
+                let lastNonZeroDigit = 0;
+                let lastNonZeroPosition = -1;
+                
+                for (let i = number.length - 1; i >= 0; i--) {
+                    if (number[i] !== '0') {
+                        lastNonZeroDigit = parseInt(number[i]);
+                        lastNonZeroPosition = i;
+                        break;
+                    }
+                }
+                
+                if (lastNonZeroPosition === -1) {
+                    // If all digits are zero, increment by 1
+                    return `${prefix}${parseInt(number) + 1}`;
+                }
+                
+                // Calculate the increment based on the position of the last non-zero digit
+                const increment = Math.pow(10, number.length - lastNonZeroPosition - 1);
+                const nextNumber = parseInt(number) + increment;
+                
+                return `${prefix}${nextNumber}`;
+            }
+
+            // If no pattern matches, just append a number
+            return `${lastRoom} 1`;
+        }
+
+        // Set the suggested room name when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const roomInput = document.getElementById('roomName');
+            roomInput.value = generateNextRoomName();
+            roomInput.focus();
+            roomInput.select();
+        });
+    </script>
 </body>
 </html> 
