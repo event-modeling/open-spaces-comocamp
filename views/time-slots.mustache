@@ -5,6 +5,133 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Slots Setup</title>
     <link rel="stylesheet" href="/styles/main.css">
+    <script>
+        function pad(num) {
+            return num.toString().padStart(2, '0');
+        }
+
+        function adjustTimeByMinutes(timeStr, delta) {
+            const [h, m] = timeStr.split(':').map(Number);
+            let total = h * 60 + m + delta;
+            if (total < 0) total = 0;
+            if (total > 23 * 60 + 55) total = 23 * 60 + 55;
+            const newH = Math.floor(total / 60);
+            const newM = total % 60;
+            return pad(newH) + ':' + pad(newM);
+        }
+
+        function addTimeWheelListeners() {
+            document.querySelectorAll('input[type="time"]').forEach(input => {
+                input.addEventListener('wheel', function(e) {
+                    e.preventDefault();
+                    let delta = e.deltaY < 0 ? 5 : -5;
+                    this.value = adjustTimeByMinutes(this.value, delta);
+                });
+            });
+        }
+
+        function calculateDefaultName() {
+            const timeSlots = Array.from(document.querySelectorAll('.time-slots-table tbody tr')).filter(tr => !tr.querySelector('.empty-message'));
+            
+            if (timeSlots.length === 0) {
+                return "Session 1";
+            }
+            
+            // Get all session names
+            const sessionNames = timeSlots.map(tr => tr.cells[2].textContent);
+            
+            // Find the last session name that ends with a number
+            const numberedSessions = sessionNames.filter(name => /\d+$/.test(name));
+            if (numberedSessions.length === 0) {
+                return "Session 1";
+            }
+            
+            // Get the last numbered session
+            const lastNumberedSession = numberedSessions[numberedSessions.length - 1];
+            
+            // Extract the base name and number
+            const match = lastNumberedSession.match(/(.*?)(\d+)$/);
+            if (!match) {
+                return "Session 1";
+            }
+            
+            const [, baseName, number] = match;
+            const nextNumber = parseInt(number) + 1;
+            return `${baseName}${nextNumber}`;
+        }
+
+        function calculateDefaultTimes() {
+            const timeSlots = Array.from(document.querySelectorAll('.time-slots-table tbody tr')).filter(tr => !tr.querySelector('.empty-message'));
+            
+            if (timeSlots.length === 0) {
+                // No slots: Default to 8:00-8:55
+                return { start: '08:00', end: '08:55' };
+            }
+            
+            // Get all session names and find numbered ones
+            const numberedSlots = timeSlots.filter(tr => /\d+$/.test(tr.cells[2].textContent));
+            const lastSlot = timeSlots[timeSlots.length - 1];
+            const lastStart = lastSlot.cells[0].textContent;
+            const lastEnd = lastSlot.cells[1].textContent;
+            
+            // If we have numbered slots, use the last numbered slot's duration
+            let duration;
+            if (numberedSlots.length > 0) {
+                const lastNumberedSlot = numberedSlots[numberedSlots.length - 1];
+                const numberedStart = new Date(`2000-01-01T${lastNumberedSlot.cells[0].textContent}`);
+                const numberedEnd = new Date(`2000-01-01T${lastNumberedSlot.cells[1].textContent}`);
+                duration = numberedEnd - numberedStart;
+            } else {
+                // If no numbered slots, use the last slot's duration
+                const lastStartTime = new Date(`2000-01-01T${lastStart}`);
+                const lastEndTime = new Date(`2000-01-01T${lastEnd}`);
+                duration = lastEndTime - lastStartTime;
+            }
+            
+            if (timeSlots.length === 1) {
+                // One slot: Start 5 minutes after the end of first slot, maintain duration
+                const lastStartTime = new Date(`2000-01-01T${lastStart}`);
+                const lastEndTime = new Date(`2000-01-01T${lastEnd}`);
+                const duration = lastEndTime - lastStartTime;
+                
+                // Start 5 minutes after the end of the last slot
+                const startTime = new Date(lastEndTime.getTime() + (5 * 60 * 1000));
+                const endTime = new Date(startTime.getTime() + duration);
+                
+                return {
+                    start: startTime.toTimeString().slice(0, 5),
+                    end: endTime.toTimeString().slice(0, 5)
+                };
+            }
+            
+            // Two or more slots: Calculate based on pattern
+            const secondLastSlot = timeSlots[timeSlots.length - 2];
+            const secondLastStart = secondLastSlot.cells[0].textContent;
+            
+            const lastStartTime = new Date(`2000-01-01T${lastStart}`);
+            const secondLastStartTime = new Date(`2000-01-01T${secondLastStart}`);
+            
+            // Calculate the time difference between last two slots
+            const timeDiff = lastStartTime - secondLastStartTime;
+            
+            // Calculate new start and end times
+            const newStartTime = new Date(lastStartTime.getTime() + timeDiff);
+            const newEndTime = new Date(newStartTime.getTime() + duration);
+            
+            return {
+                start: newStartTime.toTimeString().slice(0, 5),
+                end: newEndTime.toTimeString().slice(0, 5)
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const defaults = calculateDefaultTimes();
+            document.getElementById('startTime').value = defaults.start;
+            document.getElementById('endTime').value = defaults.end;
+            document.getElementById('name').value = calculateDefaultName();
+            addTimeWheelListeners();
+        });
+    </script>
 </head>
 <body>
     <header class="header">
