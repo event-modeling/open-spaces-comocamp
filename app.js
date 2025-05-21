@@ -67,10 +67,16 @@ function calculate_state(get_events_function, initial_state, event_handlers) {
     return state;}
 
 function notify_processors(event = null) {
-    if (event === null) { processors.forEach(processor => processor.do_each_item()); return;}
+    console.log("notifying processors with event: ", JSON.stringify(event, null, 2));
+    console.log("processors: ", JSON.stringify(processors, null, 2));
+    try {
+    if (event === null) { console.log("no event, so notifying all processors"); processors.forEach(processor => processor.do_each_item()); return;}
+    console.log("notifying processors that care about this event");
     processors.forEach(processor => { 
-        if (processor.triggering_events === undefined) return;
-        if (processor.triggering_events.includes(event.name)) processor.do_each_item(); });}
+        console.log("inspecting processor: ", JSON.stringify(processor, null, 2));
+        if (processor.triggering_events === undefined) { console.log("processor has no triggering events, so not notifying"); return; }
+        if (processor.triggering_events.includes(event.name)) processor.do_each_item(); });
+    } catch (error) { console.error("Error notifying processors: " + error.message); } }
 const processors = [];
 
 function get_access_token_http_wrapper(request, error_next, success_action) {
@@ -120,21 +126,23 @@ function bootstrap(slices) {
                 return error_next(new_error); }
             switch (result.type) {
                 case "event":
-                    try { console.log("4.0 pushing event: ", JSON.stringify(result, null, 2));
+                    try { console.log("4.0 storing event from result: ", JSON.stringify(result, null, 2));
                         let event_type = result.name;
                         let summary = result.summary ? result.summary : "";
                         let event = { data: result.data, name: event_type};
+                        console.log("4.1 ensuring eventstore exists");
                         if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
-
+                        console.log("4.2 getting event count");
                         const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('-event.json')).length;
-                        
+                        console.log("4.3 calculating event sequence");
                         const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
-                        
+                        console.log("4.4 writing event to eventstore"); 
                         fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
+                        console.log("4.5 notifying processors");
                         notify_processors(event); 
-
+                        console.log("4.6 redirecting to next path");
                         res.redirect(slice.navigation.next_path);
-                    } catch (error) { console.error("4.1 Error pushing event: " + error.message);
+                    } catch (error) { console.error("4.7 Error persisting event: " + error.message);
                         const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
                     break;
                 case "exception":
@@ -157,6 +165,7 @@ function bootstrap(slices) {
         });
         if (slice.processor === undefined) return;
         let processor = slice.processor;
+        processor.state_change_function = slice.refinement_function;
         const todo_list_slice = slices.find(slice => slice.name === processor.todo_list_slice);
         processor.todo_list = {
             initial_state: todo_list_slice.initial_state,
@@ -164,7 +173,19 @@ function bootstrap(slices) {
             refinement_function: todo_list_slice.refinement_function,
             };
         function do_each_item(processor) {
-            calculate_state(get_events, processor.todo_list.initial_state, processor.todo_list.event_handlers).forEach(item => { if (processor.processor_filter(item)) { processor.processor_action(() => get_events, item); } });
+            console.log("do_each_item - calling calculate_state");
+            calculate_state(get_events, processor.todo_list.initial_state, processor.todo_list.event_handlers)
+            .forEach(item => {
+                console.log("do_each_item - checking if item should be processed. item: ", JSON.stringify(item, null, 2));
+                if (processor.processor_filter(item)) { 
+                    console.log("do_each_item - item should be processed. calling state_change_function");
+                    processor.state_change_function( 
+                        () => get_events, 
+                        () => {
+                            console.log("do_each_item - calling processor_action");
+                            processor.processor_action(() => get_events, item);
+                        }
+                    ); } });
         }
         if (processor.execution === "immediate") {
             // add to processors so they are checked when new events are stored and provide a way to do each item
@@ -233,7 +254,7 @@ slices.push({ name: "name_the_conference",
     navigation: { direction: "input", path: "/set-conference-name", next_path: "/set-conference-name-confirmation", 
         web_data: (req) => { return req.body.conferenceName; } },
     initial_state: "",
-    event_handlers: { "conference_named": (state, event) => { return event.data.name; } },
+    event_handlers: { "conference_named": (state = null, event) => { return event.data.name; } },
     exceptions: { "no_change_to_name": "You didn't change the name. No change registered." },
     refinement_function: (state_function, parameter_function) => {
         const state = state_function(); const parameter = parameter_function();
@@ -464,32 +485,36 @@ slices.push( { name: "conference_id_generation_todo",
     navigation: { direction: "output", path: "/todo-gen-conf-ids", view: "todo-gen-conf-ids" },
     initial_state: true,
     event_handlers: { 
-        "conference_id_requested": (state, event) => { return true; },
-        "conference_id_generated": (state, event) => { return false; } },
-    refinement_function: (state_function, parameter_function) => { return make_query_result({ requested: state_function() }); },
+        "conference_id_requested": (state, event) => { console.log("conference_id_requested handler - returning true"); return [true]; },
+        "conference_id_generated": (state, event) => { console.log("conference_id_generated handler - returning false"); return [false]; } },
+    refinement_function: (state_function, parameter_function) => { return make_query_result({ requested: state_function()[0] }); },
 });
 
 slices.push( { name: "conference_id_generation_processor_action",
     navigation: { direction: "input", path: "/provide-conference-id", next_path: "/todo-gen-conf-ids", web_data: (req) => { return req.body.conference_id; } },
-    processor: { execution: "immediate", todo_list_slice: "conference_id_generation_todo",
-        triggering_events: ["conference_id_requested"],
-        processor_filter: (todo_list_item) => { return todo_list_item.conference_id === ""; },
+    processor: { execution: "immediate", todo_list_slice: "conference_id_generation_todo", triggering_events: ["conference_id_requested"],
+        processor_filter: (todo_list_item) => { console.log("processor_filter - returning todo_list_item"); return todo_list_item; },
         processor_action: (events_function, todo_list_item) => {
-            if (todo_list_item.conference_id !== "") return;
+            console.log("processor_action - seeing if need to generate a conference ID. todo_list_item: ", JSON.stringify(todo_list_item, null, 2));
+            if (!todo_list_item) return;
+            console.log("processor_action - generating a conference ID");
             return generate_id();
     }},
     event_handlers: { 
-        "conference_id_requested": (state, event) => { return true; },
-        "conference_id_generated": (state, event) => { return false; } },
+        "conference_id_requested": (state, event) => { return [true]; },
+        "conference_id_generated": (state, event) => { return [false]; } },
     exceptions: { 
         "conference_id_not_requested": "No request for a conference ID has been made",
         "conference_id_cannot_be_blank": "Conference ID cannot be blank" },
     refinement_function: (state_function, parameter_function) => { 
+        console.log("refinement_function for conference_id_generation_processor_action");
         const state = state_function();
+        console.log("refinement_function - got state: ", JSON.stringify(state, null, 2));
         const parameter = parameter_function();
+        console.log("refinement_function - got parameter: ", JSON.stringify(parameter, null, 2));
         if (parameter === undefined || parameter === null) parameter = "";
         if (parameter === "") return make_exception_result("conference_id_cannot_be_blank");
-        if (state) return make_event_result("conference_id_provided", { conference_id: parameter });
+        if (state[0]) return make_event_result("conference_id_provided", { conference_id: parameter() });
         return make_exception_result("conference_id_not_requested"); },
 })
 
@@ -654,7 +679,6 @@ function generate_conference_id_processor(history) {
     console.log("Found conf ID request.");
     if (conference_ids[conference_ids.length - 1].conference_id === "") generate_conference_id();
 } // gen_conference_id_processor
-processors.push({ function: generate_conference_id_processor, events: ["conference_id_requested"] });
 
 function generate_conference_id() {
     const conference_id = generate_id();
@@ -730,9 +754,9 @@ slices.push({ name: "join_conference",
     refinement_function: (state_function, parameter_function) => { return make_query_result({ conference_id: state_function() }); },
 });
 
-if (!run_tests) app.get("/join-conference", (_, res, error_next) => { 
-    get_state_http_wrapper(join_conference_sv, error_next, (state) => { res.render("join-conference", { conference_id: state.conference_id || "1234" }); });
-}); 
+// if (!run_tests) app.get("/join-conference", (_, res, error_next) => { 
+//     get_state_http_wrapper(join_conference_sv, error_next, (state) => { res.render("join-conference", { conference_id: state.conference_id || "1234" }); });
+// }); 
 
 function join_conference_sv(history) {
     return history.reduce((acc, event) => {
