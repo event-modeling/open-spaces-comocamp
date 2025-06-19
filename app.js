@@ -110,12 +110,12 @@ function bootstrap(slices) {
         const app_method = slice.navigation.direction === "input" ? app_post : app_get;
         app_method(slice.navigation.path, (req, res, error_next) => {
             let state_function = undefined; 
-            try { console.log("2.0 calculating state");
+            try { console.log("2.0 setting up calculating state function");
                 state_function = () => calculate_state(get_events, slice.initial_state, slice.event_handlers); 
-            } catch (error) { console.error("2.1 Error calculating state: " + error.message);
+            } catch (error) { console.error("2.1 Error setting up calculating state function: " + error.message);
                 const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
             let result = undefined; 
-            try { console.log("3.0 calculating invariants");
+            try { console.log("3.0 calling refinement function");
                 result = slice.refinement_function(state_function, () => {if (slice.navigation.web_data === undefined) return undefined;  return slice.navigation.web_data(req);} );
             } catch (error) { console.error("3.1 Error invariant function: " + error.message);
                 const new_error = new Error(error.message); new_error.status = 422; return error_next(new_error); }
@@ -165,12 +165,12 @@ function bootstrap(slices) {
         });
         if (slice.processor === undefined) return;
         let processor = slice.processor;
-        processor.state_change_function = slice.refinement_function;
-        const todo_list_slice = slices.find(slice => slice.name === processor.todo_list_slice);
+        processor.slice_name = slice.name;
+        processor.todo_list_slice = slices.find(slice => slice.name === processor.todo_list_slice);
         processor.todo_list = {
-            initial_state: todo_list_slice.initial_state,
-            event_handlers: todo_list_slice.event_handlers,
-            refinement_function: todo_list_slice.refinement_function,
+            initial_state: processor.todo_list_slice.initial_state,
+            event_handlers: processor.todo_list_slice.event_handlers,
+            refinement_function: processor.todo_list_slice.refinement_function,
             };
         function do_each_item(processor) {
             console.log("do_each_item - calling calculate_state");
@@ -179,13 +179,50 @@ function bootstrap(slices) {
                 console.log("do_each_item - checking if item should be processed. item: ", JSON.stringify(item, null, 2));
                 if (processor.processor_filter(item)) { 
                     console.log("do_each_item - item should be processed. calling state_change_function");
-                    processor.state_change_function( 
-                        () => get_events, 
-                        () => {
-                            console.log("do_each_item - calling processor_action");
-                            processor.processor_action(() => get_events, item);
-                        }
-                    ); } });
+
+                    // some command handlers may not need to use the statee. this may be based on the command parameters. 
+                    // so the state determination needs to be a function instaead of a parameter to not bother with the expensive satet calculation
+                    let state_function = undefined; 
+                    try { console.log("2.0 setting up calculating state function");
+                        const slice = slices.find(s => s.name === processor.slice_name);
+                        state_function = () => calculate_state(get_events, slice.initial_state, slice.event_handlers); 
+                    } catch (error) { console.error("2.1 Error setting up calculating state function: " + error.message); return;}
+
+                    let result = undefined; 
+                    try { console.log("3.0 calling refinement function");
+                        const slice = slices.find(s => s.name === processor.slice_name);
+                        result = slice.refinement_function(state_function, () => { if (processor.processor_action === undefined) return undefined;  return processor.processor_action(get_events, item);} );
+                    } catch (error) { console.error("3.1 Error invariant function: " + error.message); return; }
+                    console.log("3.2 result: ", JSON.stringify(result, null, 2));
+                    // act on the type of result
+                    switch (result.type) {
+                        case "event":
+                            try { console.log("4.0 storing event from result: ", JSON.stringify(result, null, 2));
+                                let event_type = result.name;
+                                let summary = result.summary ? result.summary : "";
+                                let event = { data: result.data, name: event_type};
+                                console.log("4.1 ensuring eventstore exists");
+                                if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
+                                console.log("4.2 getting event count");
+                                const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('-event.json')).length;
+                                console.log("4.3 calculating event sequence");
+                                const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
+                                console.log("4.4 writing event to eventstore"); 
+                                fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
+                                console.log("4.5 notifying processors");
+                                notify_processors(event); 
+                                console.log("4.6 event stored successfully");
+                            } catch (error) { console.error("4.7 Error persisting event: " + error.message); }
+                            break;
+                        case "exception":
+                            console.error("exception: ", JSON.stringify(result, null, 2));
+                            break;
+                        default:
+                            console.error("unknown result type in result: ", JSON.stringify(result, null, 2));
+                            break;
+                    }
+                }
+            });
         }
         if (processor.execution === "immediate") {
             // add to processors so they are checked when new events are stored and provide a way to do each item
@@ -197,7 +234,8 @@ function bootstrap(slices) {
                 // get the todo list
                 processor.todo_list = processor.todo_list_function(get_events);
                 // for each item in the todo list, check if it should be processed
-                processor.todo_list.forEach(item => { if (processor.processor_filter(item)) processor.processor_action(item); });
+                processor.todo_list.forEach(item => { if (processor.processor_filter(item)) { const result = processor.processor_action(item); 
+                    if (result && result.type === "event") { push_event(result); } } });
             }, processor.frequency);
             processor.timer = timer;
         }
@@ -492,11 +530,10 @@ slices.push( { name: "conference_id_generation_todo",
 
 slices.push( { name: "conference_id_generation_processor_action",
     navigation: { direction: "input", path: "/provide-conference-id", next_path: "/todo-gen-conf-ids", web_data: (req) => { return req.body.conference_id; } },
+    initial_state: [false],
     processor: { execution: "immediate", todo_list_slice: "conference_id_generation_todo", triggering_events: ["conference_id_requested"],
         processor_filter: (todo_list_item) => { console.log("processor_filter - returning todo_list_item"); return todo_list_item; },
         processor_action: (events_function, todo_list_item) => {
-            console.log("processor_action - seeing if need to generate a conference ID. todo_list_item: ", JSON.stringify(todo_list_item, null, 2));
-            if (!todo_list_item) return;
             console.log("processor_action - generating a conference ID");
             return generate_id();
     }},
@@ -510,13 +547,12 @@ slices.push( { name: "conference_id_generation_processor_action",
         console.log("refinement_function for conference_id_generation_processor_action");
         const state = state_function();
         console.log("refinement_function - got state: ", JSON.stringify(state, null, 2));
-        const parameter = parameter_function();
+        const parameter = parameter_function() || "";
         console.log("refinement_function - got parameter: ", JSON.stringify(parameter, null, 2));
-        if (parameter === undefined || parameter === null) parameter = "";
         if (parameter === "") return make_exception_result("conference_id_cannot_be_blank");
-        if (state[0]) return make_event_result("conference_id_provided", { conference_id: parameter() });
-        return make_exception_result("conference_id_not_requested"); },
-})
+        if (state[0]) return make_event_result("conference_id_provided", { conference_id: parameter });
+        return make_exception_result("conference_id_not_requested"); }
+});
 
 // if (!run_tests) app.get("/generate-conf-id", (_, res) => { res.render("generate-conf-id"); });
 
