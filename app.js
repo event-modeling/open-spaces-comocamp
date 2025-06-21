@@ -786,7 +786,7 @@ slice_tests.push({ test_function: provide_conference_id,
 slices.push({ name: "join_conference",
     navigation: { direction: "output", path: "/join-conference", view: "join-conference"},
     initial_state: "",
-    event_handlers: { "conference_id_generated": (state, event) => { return event.data.conference_id; } },
+    event_handlers: { "conference_id_provided": (state, event) => { return event.data.conference_id; } },
     refinement_function: (state_function, parameter_function) => { return make_query_result({ conference_id: state_function() }); },
 });
 
