@@ -111,7 +111,7 @@ function bootstrap(slices) {
         app_method(slice.navigation.path, (req, res, error_next) => {
             let state_function = undefined; 
             try { console.log("2.0 setting up calculating state function");
-                state_function = () => calculate_state(get_events, slice.initial_state, slice.event_handlers); 
+                state_function = () => calculate_state(get_events, slice.initial_state, slice.event_handlers);
             } catch (error) { console.error("2.1 Error setting up calculating state function: " + error.message);
                 const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
             let result = undefined; 
@@ -554,154 +554,7 @@ slices.push( { name: "conference_id_generation_processor_action",
         return make_exception_result("conference_id_not_requested"); }
 });
 
-// if (!run_tests) app.get("/generate-conf-id", (_, res) => { res.render("generate-conf-id"); });
 
-// if (!run_tests) app.post("/generate-conf-id", (_, res, error_next) => { change_state_http_wrapper(request_unique_id, { data: {} }, error_next, () => { res.redirect('/join-conference'); }); }); 
-
-// const exception_unique_id_already_requested = new Error("A request already exists");
-// function request_unique_id(history, command) {
-//     const request_available =history.reduce((acc, event) => {
-//         switch(event.meta.type) {
-//             case "conference_id_requested": acc = false; break;
-//             case "conference_id_generated": acc = true; break;
-//             default: break;
-//         }
-//         return acc;
-//     }, true );
-//     if (!request_available) throw exception_unique_id_already_requested;
-//     return { data: {}, meta: { type: "conference_id_requested" } };
-// } // request_unique_id
-
-// slice_tests.push({ test_function: request_unique_id,
-//     timelines: [
-//         {
-//             timeline_name: "Happy Path",
-//             checkpoints: [        
-//                 {
-//                     event: { data: {}, meta: { type: "conference_id_requested" } },
-//                     command: { data: {} },
-//                     check: "request unique ID should be added when requested",
-//                 },
-//                 {
-//                     exception: exception_unique_id_already_requested,
-//                     command: { data: {} },
-//                     check: "request unique ID should throw an error when request already exists",
-//                 },
-//                 {
-//                     event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" } }
-//                 },
-//                 {
-//                     event: { data: {}, meta: { type: "conference_id_requested" } },
-//                     command: { data: {} },
-//                     check: "request unique ID event should be added when requested after a conference ID has been generated"
-//                 }
-//             ]
-//         }
-//     ]
-// }); // test: request_unique_id_sc
-
-// if (!run_tests) app.get("/todo-gen-conf-ids",(_, res, error_next)=>{ 
-//     get_state_http_wrapper(todo_gen_conference_id_sv, error_next, (conference_ids) => { res.render("todo-gen-conf-ids", { conference_ids }); });
-// }); 
-
-function todo_gen_conference_id_sv(history) {
-    return history.reduce((acc, event) => {
-        switch(event.name) {
-            case "conference_id_requested":
-                if (acc.last_event !== null && acc.last_event.name === "conference_id_requested") break;
-                acc.todos.push({ conference_id: "" });
-                break;
-            case "conference_id_generated":
-                if (   acc.last_event === null 
-                    || acc.last_event.meta.type !== "conference_id_requested"
-                    || acc.todos.length === 0
-                    || acc.todos[acc.todos.length - 1].conference_id !== "") 
-                    break;
-                acc.todos[acc.todos.length - 1].conference_id = event.data.conference_id;
-                break;
-        }
-        acc.last_event = event;
-        return acc;
-    }, { todos: [], last_event: null }).todos;
-} // todo_gen_conference_id_sv
-
-
-slice_tests.push({ test_function: todo_gen_conference_id_sv,
-    timelines: [
-        {
-            timeline_name: "Happy Path",
-            checkpoints: [
-                {
-                    event: { data: {}, meta: { type: "conference_id_requested" } },
-                    state: [],
-                    check: "empty array should be returned when no events exist"
-                },
-                {
-                    event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" }},
-                    state: [{ conference_id: "" }],
-                    check: "empty conf ID should be added on request"
-                },
-                {
-                    event: { data: {}, meta: { type: "some_other_event" } },
-                    state: [{ conference_id: "1111-2222-3333" }],
-                    check: "conf ID should be updated when generated"
-                },
-                {
-                    progress_marker: "Second Request behaves the same way"
-                },
-                {
-                    event: { data: {}, meta: { type: "conference_id_requested" } }
-                },
-                {
-                    event: { data: { conference_id: "2222-3333-4444" }, meta: { type: "conference_id_generated" }},
-                    state: [{ conference_id: "1111-2222-3333" }, { conference_id: "" }],
-                    check: "second request should add new empty conf ID"
-                },
-                {
-                    state:  [{ conference_id: "1111-2222-3333" }, { conference_id: "2222-3333-4444" }],
-                    check: "second conf ID should be updated when generated"
-                }
-            ]
-        },
-        {
-            timeline_name: "A processor is idempotent",
-            checkpoints: [
-                {
-                    event: { data: {}, meta: { type: "conference_id_requested" } }
-                },
-                {
-                    progress_marker: "A duplicate request of an ID will be ignored"
-                },
-                {
-                    event: { data: {}, meta: { type: "conference_id_requested" } },
-                    state: [{ conference_id: "" }],
-                    check: "duplicate request should be ignored"
-               },
-                {
-                    event: { data: { conference_id: "3333-4444-5555" }, meta: { type: "conference_id_generated" } }
-                },
-                {
-                    progress_marker: "A duplicate provision of an ID will be ignored"
-                },
-                {
-                    event: { data: { conference_id: "4444-5555-6666" }, meta: { type: "conference_id_generated" } },
-                    state:  [{ conference_id: "3333-4444-5555" }] ,
-                    check: "duplicate generation should be ignored"
-                }
-            ]
-        },
-        {
-            timeline_name: "If no requests appear in the TODO list, a provided ID is ignored",
-            checkpoints: [
-                {
-                    event: { data: { conference_id: "1111-2222-3333" }, meta: { type: "conference_id_generated" } },
-                    state: [] ,
-                    check: "generated ID should be ignored without request"
-                }
-            ]
-        }
-    ]
-}); // test: todo_gen_conference_id_sv
 
 function generate_conference_id_processor(history) {
     console.log("Looking for conf ID request in:");
@@ -790,20 +643,48 @@ slices.push({ name: "join_conference",
     refinement_function: (state_function, parameter_function) => { return make_query_result({ conference_id: state_function() }); },
 });
 
-// if (!run_tests) app.get("/join-conference", (_, res, error_next) => { 
-//     get_state_http_wrapper(join_conference_sv, error_next, (state) => { res.render("join-conference", { conference_id: state.conference_id || "1234" }); });
-// }); 
+slices.push({name: "register",
+    navigation: { 
+        direction: "output", 
+        path: "/register/:conference_id", 
+        view: "register",
+        web_data: (req) => req.params.conference_id
+    },
+    initial_state: { conference_id: "", conference_name: "" },
+    event_handlers: { 
+        "conference_id_provided": (state, event) => { 
+            state.conference_id = event.data.conference_id; 
+            return state; 
+        },
+        "conference_named": (state, event) => { 
+            state.conference_name = event.data.name; 
+            return state; 
+        }
+    },
+    refinement_function: (state_function, parameter_function) => { 
+        const state = state_function();
+        const param_id = parameter_function();
 
-function join_conference_sv(history) {
-    return history.reduce((acc, event) => {
-        switch(event.meta.type) { case "conference_id_generated": acc.conference_id = event.data.conference_id; break; }
-        return acc;
-    }, { conference_id: null });
-} // join_conference_sv
+        // Return not found if either ID is missing or they don't match
+        if (!state.conference_id || !param_id || state.conference_id !== param_id) {
+            return make_query_result({ not_found: true });
+        }
 
-if (!run_tests) app.get("/register/:conference_id", (req, res, error_next) => { 
-    get_state_http_wrapper(conference_name_state_view, error_next, (conference_name) => { res.render("register", { conference_name, conference_id: req.params.conference_id }); });
-}); 
+        return make_query_result({ 
+            conference_id: param_id,
+            conference_name: state.conference_name || "Unnamed Conference",
+            not_found: false
+        });
+    },
+    exceptions: { "registration_closed": "Registration is closed." },
+})
+
+slices.push({name: "register_success",
+    navigation: { direction: "input", path: "/register-success/:registration_id", next_path: "/todo-register-success", web_data: (req) => { return req.params.registration_id; } },
+    initial_state: "",
+    event_handlers: { "registered": (state, event) => { return event.data.registration_id; } },
+    refinement_function: (state_function, parameter_function) => { return make_event_result("register_success", { registration_id: state_function() }); },
+})
 
 if (!run_tests) app.post("/register/:conference_id", multer().none(), (req, res, error_next) => {
     const id = req.params.conference_id;
@@ -811,6 +692,13 @@ if (!run_tests) app.post("/register/:conference_id", multer().none(), (req, res,
     const registration_id = generate_id();
     change_state_http_wrapper(register_state_change,{ data: { conference_id: id, registration_id: registration_id, name: name } }, error_next, () => { res.redirect(`/register-success/${registration_id}`); });
 }); // app.post("/register/:id")
+
+slices.push({name: "register_success",
+    navigation: { direction: "output", path: "/register-success/:registration_id", view: "register-success"},
+    initial_state: "",
+    event_handlers: { "conference_id_provided": (state, event) => { return event.data.conference_id; } },
+    refinement_function: (state_function, parameter_function) => { return make_query_result({ conference_id: state_function() }); },
+})
         
 if (!run_tests) app.post("/close-registration", (_, r, error_next) => { 
     change_state_http_wrapper(close_registration_state_change, {}, error_next, () => { r.redirect("/sessions"); });
