@@ -763,17 +763,17 @@ slices.push({name: "submit_registration",
     ]
 });
 
-function participant_registered(get_events_function, request) {
-    const registration_id = request.params.registration_id;
-    const state = calculate_state(get_events_function, { registrations: {} }, {
-        "registered": (state, event) => {
-            state.registrations[event.data.registration_id] = event.data.name;
-            return state;
-        }
-    });
-    console.log("state: ", JSON.stringify(state, null, 2));
-    return registration_id in state.registrations;
-}; // participant_registered
+// function participant_registered(get_events_function, request) {
+//     const registration_id = request.params.registration_id;
+//     const state = calculate_state(get_events_function, { registrations: {} }, {
+//         "registered": (state, event) => {
+//             state.registrations[event.data.registration_id] = event.data.name;
+//             return state;
+//         }
+//     });
+//     console.log("state: ", JSON.stringify(state, null, 2));
+//     return registration_id in state.registrations;
+// }; // participant_registered
 
 slices.push({name: "register_success",
     navigation: { direction: "output", path: "/register-success/:registration_id", view: "register-success", web_data: (req) => { return req.params.registration_id; },
@@ -991,6 +991,34 @@ function close_registration_state_change(history, command) {
     if (state.closed) throw new Error("Registration is already closed");
     return { data: {}, meta: { type: "registration_closed" } };
 } // close_registration_state_change
+
+slices.push({name: "submit_session",
+    navigation: { direction: "output", path: "/submit-session/:registration_id", view: "submit-session", web_data: (req) => { return req.params.registration_id; },
+        access_checks: [ participant_registered ]
+    },
+    initial_state: { topics: [] },
+    event_handlers: { 
+        "conference_id_generated": (state, event) => { state = { topics: [] }; },
+        "session_submitted": (state, event) => { state.topics.push({ topic: event.data.topic}); },
+        "close_voting": (state, event) => { state.closed = true; }
+    },
+    exceptions: [ error_session_already_submitted ],
+    refinement_function: (state_function, parameter_function) => {
+        const state = state_function();
+        const registration_id = parameter_function();
+        const name = state.registrations[registration_id];
+        if (!name) {
+            return make_query_result({ not_found: true });
+        }
+        
+        return make_query_result({ 
+            name: name,
+            conference_name: state.conference_name,
+            registration_id: registration_id,
+            not_found: false
+        }); 
+    },
+});
 
 if (!run_tests) app.get("/topic-suggestion", (req, res, error_next) => {
     get_access_token_http_wrapper(req, error_next, (token) => { res.render("submit-session", { name: token.name, registration_id: token.registration_id }); });
