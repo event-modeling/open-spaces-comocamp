@@ -54,7 +54,7 @@ This is an event-sourced Node.js application for managing open spaces conference
 - `processor_filter`: function (required)
 - `processor_action`: function (required)
 
-**Purpose**: Processor nodes enable background processing by automatically responding to specific events, filtering todo items from a designated slice, and executing actions like generating conference IDs or other automated tasks.
+**Purpose**: Processor nodes enable background processing by automatically responding to specific events, filtering todo items from a designated slice and executing actions.
 
 ## Timeline Node Rules
 
@@ -88,7 +88,7 @@ This is an event-sourced Node.js application for managing open spaces conference
 ### Validation Rules
 - Either `event` OR (`check` with `parameter`/`query`/`exception`) must be present
 - If `check` is present, either `parameter`, `query`, or `exception` must be present
-- `progress_marker` can be used independently or alongside other properties
+- `progress_marker` can be inserted where clarity is needed
 - `query` is used for output slices to verify state views
 - `parameter` is used for input slices to test refinement functions
 - `exception` is used to verify error handling
