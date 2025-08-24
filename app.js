@@ -91,6 +91,18 @@ function get_access_token_http_wrapper(request, error_next, success_action) {
     });
 } // get_access_token
 
+function participant_registered(get_events_function, request) {
+    const registration_id = request.params.registration_id;
+    const state = calculate_state(get_events_function, { registrations: {} }, {
+        "registered": (state, event) => {
+            state.registrations[event.data.registration_id] = event.data.name;
+            return state;
+        }
+    });
+    console.log("state: ", JSON.stringify(state, null, 2));
+    return registration_id in state.registrations;
+} // participant_registered
+
 function bootstrap(slices) {
     //function app_get(path, error_next, success_action) {}
     function app_post(path, action) {
@@ -992,6 +1004,7 @@ function close_registration_state_change(history, command) {
     return { data: {}, meta: { type: "registration_closed" } };
 } // close_registration_state_change
 
+const error_session_already_submitted = new Error("A session with this topic has already been suggested");
 slices.push({name: "submit_session",
     navigation: { direction: "output", path: "/submit-session/:registration_id", view: "submit-session", web_data: (req) => { return req.params.registration_id; },
         access_checks: [ participant_registered ]
@@ -1036,7 +1049,6 @@ if (!run_tests) app.post("/topic-suggestion", multer().none(), (req, res, error_
     });
 }); // app.post("/topic-suggestion", (req, res) => {
 
-const error_session_already_submitted = new Error("A session with this topic has already been suggested");
 function submit_session(events, command) {
     const existingTopics = events.reduce((acc, event) => {
         switch(event.meta.type) {
