@@ -1004,7 +1004,7 @@ if (!run_tests) app.post("/topic-suggestion", multer().none(), (req, res, error_
                 facilitation: req.body.facilitation, 
                 registration_id: token.registration_id 
             }
-        }, error_next, () => { res.redirect("/topics?registration_id=" + token.registration_id); });
+        }, error_next, () => { res.redirect("/topics/" + token.registration_id); });
     });
 }); // app.post("/topic-suggestion", (req, res) => {
 
@@ -1022,8 +1022,8 @@ function submit_session(events, command) {
     return { data: { topic: command.data.topic, facilitation: command.data.facilitation, registration_id: command.data.registration_id }, meta: { type: "session_submitted", summary: command.data.facilitation + "," + command.data.topic + "," + command.data.registration_id }};
 } // function submit_session(events, command)
 
-if (!run_tests) app.get("/topics", (req, res, error_next) => {
-    get_state_http_wrapper(topics_state_view, error_next, (state) => { res.render("topics", { topics: state, registration_id: req.query.registration_id }); });
+if (!run_tests) app.get("/topics/:registration_id", (req, res, error_next) => {
+    get_state_http_wrapper(topics_state_view, error_next, (state) => { res.render("topics", { topics: state, registration_id: req.params.registration_id }); });
 }); // sessions
 
 function topics_state_view(history) {
