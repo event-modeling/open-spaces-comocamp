@@ -1,7 +1,7 @@
 # Open Spaces Comocamp - Project Rules
 
 ## Project Overview
-This is an event-sourced Node.js application for managing open spaces conferences. The draw io diagram contains the event model that matches the slices.
+This is an event-sourced Node.js application for managing open spaces conferences. The draw io diagram contains the event model that matches the slices. These are in no way associated with the programming concept in js of the slice method.
 
 ## Slice Architecture
 
