@@ -102,6 +102,7 @@ function bootstrap(slices) {
         app.get(path, action);
     }
     slices.forEach(slice => { console.log("bootstrapping slice: ", JSON.stringify(slice, null, 2));
+        if (slice.test_timelines !== undefined) delete slice.test_timelines; // not needed to run the app
         if (slice.refinement_function === undefined) {
             console.log("bootstrapping view only slice: ", slice.name);
             app.get(slice.navigation.path + "", (req, res) => { res.render(slice.navigation.view + "", {}); });
