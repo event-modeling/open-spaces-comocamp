@@ -112,10 +112,12 @@ function bootstrap(slices) {
             if (slice.navigation.access_checks !== undefined) {
                 const access_check = slice.navigation.access_checks.find(check => check(get_events, req));
                 if (access_check === undefined) {
+                    console.log("an access check that failed was found, returning 403");
                     const new_error = new Error("Access denied");
                     new_error.status = 403;
                     return error_next(new_error);
                 }
+                console.log("access checks passed, continuing");
             }
             let state_function = undefined; 
             try { console.log("2.0 setting up calculating state function");
@@ -296,6 +298,22 @@ function make_event_result(name, data, summary) { return { type: "event", data: 
 function make_exception_result(name) { return { type: "exception", name: name }; }
 function make_query_result(query) { return { type: "query", query: query }; }
 
+function participant_registered(get_events_function, request) {
+    const registration_id = request.params.registration_id;
+    const state = calculate_state(get_events_function, { registrations: {} }, {
+        "registered": (state, event) => {
+            state.registrations[event.data.registration_id] = event.data.name;
+            return state;
+        }
+    });
+    console.log("access check - participant_registered - state: ", JSON.stringify(state, null, 2));
+    if (registration_id in state.registrations) {
+        console.log("access check passed - participant_registered - registration_id found in registrations");
+        return true;
+    }
+    console.log("access check failed - participant_registered - registration_id not found in registrations");
+    return false;
+} // participant_registered
 
 slices.push({ name: "set_conference_name_default", 
     navigation: { direction: "output", path: "/set-conference-name", view: "set-conference-name" } });
@@ -794,13 +812,8 @@ slices.push({name: "register_success",
         const state = state_function();
         const registration_id = parameter_function();
         
-        const name = state.registrations[registration_id];
-        if (!name) {
-            return make_query_result({ not_found: true });
-        }
-        
         return make_query_result({ 
-            name: name,
+            name: state.registrations[registration_id],
             conference_name: state.conference_name,
             registration_id: registration_id,
             not_found: false
@@ -992,6 +1005,7 @@ function close_registration_state_change(history, command) {
     return { data: {}, meta: { type: "registration_closed" } };
 } // close_registration_state_change
 
+const error_session_already_submitted = new Error("A session with this topic has already been suggested");
 slices.push({name: "submit_session",
     navigation: { direction: "output", path: "/submit-session/:registration_id", view: "submit-session", web_data: (req) => { return req.params.registration_id; },
         access_checks: [ participant_registered ]
@@ -1032,11 +1046,10 @@ if (!run_tests) app.post("/topic-suggestion", multer().none(), (req, res, error_
                 facilitation: req.body.facilitation, 
                 registration_id: token.registration_id 
             }
-        }, error_next, () => { res.redirect("/topics?registration_id=" + token.registration_id); });
+        }, error_next, () => { res.redirect("/topics/" + token.registration_id); });
     });
 }); // app.post("/topic-suggestion", (req, res) => {
 
-const error_session_already_submitted = new Error("A session with this topic has already been suggested");
 function submit_session(events, command) {
     const existingTopics = events.reduce((acc, event) => {
         switch(event.meta.type) {
@@ -1050,8 +1063,8 @@ function submit_session(events, command) {
     return { data: { topic: command.data.topic, facilitation: command.data.facilitation, registration_id: command.data.registration_id }, meta: { type: "session_submitted", summary: command.data.facilitation + "," + command.data.topic + "," + command.data.registration_id }};
 } // function submit_session(events, command)
 
-if (!run_tests) app.get("/topics", (req, res, error_next) => {
-    get_state_http_wrapper(topics_state_view, error_next, (state) => { res.render("topics", { topics: state, registration_id: req.query.registration_id }); });
+if (!run_tests) app.get("/topics/:registration_id", (req, res, error_next) => {
+    get_state_http_wrapper(topics_state_view, error_next, (state) => { res.render("topics", { topics: state, registration_id: req.params.registration_id }); });
 }); // sessions
 
 function topics_state_view(history) {
