@@ -195,8 +195,8 @@ function bootstrap(slices) {
                 if (processor.processor_filter(item)) { 
                     console.log("do_each_item - item should be processed. calling state_change_function");
 
-                    // some command handlers may not need to use the statee. this may be based on the command parameters. 
-                    // so the state determination needs to be a function instaead of a parameter to not bother with the expensive satet calculation
+                    // some command handlers may not need to use the state. this may be based on the command parameters. 
+                    // so the state determination needs to be a function instaead of a parameter to not bother with the expensive state calculation
                     let state_function = undefined; 
                     try { console.log("2.0 setting up calculating state function");
                         const slice = slices.find(s => s.name === processor.slice_name);
