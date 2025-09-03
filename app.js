@@ -168,7 +168,16 @@ function bootstrap(slices) {
                     break;
                 case "query":
                     console.log("6.0 rendering query: ", JSON.stringify(result.query, null, 2));
-                    res.render(slice.navigation.view, typeof result.query === "string" ? { model: result.query } : result.query);
+                    let query_data = typeof result.query === "string" ? { model: result.query } : result.query;
+                    
+                    // For output slices, merge web_data with query result
+                    if (slice.navigation.direction === "output" && slice.navigation.web_data) {
+                        const web_data = slice.navigation.web_data(req);
+                        query_data = { ...query_data, ...web_data };
+                    }
+                    
+                    console.log("6.1 rendering query data: ", JSON.stringify(query_data, null, 2));
+                    res.render(slice.navigation.view, query_data);
                     break;
                 default:
                     console.log("7.0 unknown result type: ", JSON.stringify(result, null, 2));
@@ -795,7 +804,7 @@ slices.push({name: "submit_registration",
 // }; // participant_registered
 
 slices.push({name: "register_success",
-    navigation: { direction: "output", path: "/register-success/:registration_id", view: "register-success", web_data: (req) => { return req.params.registration_id; },
+    navigation: { direction: "output", path: "/register-success/:registration_id", view: "register-success", web_data: (req) => { return { registration_id: req.params.registration_id }; },
         access_checks: [ participant_registered ]
     },
     initial_state: { registrations: {}, conference_name: "Unnamed Conference" },
@@ -1008,7 +1017,7 @@ function close_registration_state_change(history, command) {
 
 const error_session_already_submitted = new Error("A session with this topic has already been suggested");
 slices.push({name: "submit_session",
-    navigation: { direction: "output", path: "/submit-session/:registration_id", view: "submit-session", web_data: (req) => { return req.params.registration_id; },
+    navigation: { direction: "output", path: "/submit-session/:registration_id", view: "submit-session", web_data: (req) => { return { registration_id: req.params.registration_id }; },
         access_checks: [ participant_registered ]
     },
     initial_state: { topics: [] },
@@ -1064,31 +1073,59 @@ function submit_session(events, command) {
     return { data: { topic: command.data.topic, facilitation: command.data.facilitation, registration_id: command.data.registration_id }, meta: { type: "session_submitted", summary: command.data.facilitation + "," + command.data.topic + "," + command.data.registration_id }};
 } // function submit_session(events, command)
 
-if (!run_tests) app.get("/topics/:registration_id", (req, res, error_next) => {
-    get_state_http_wrapper(topics_state_view, error_next, (state) => { res.render("topics", { topics: state, registration_id: req.params.registration_id }); });
-}); // sessions
-
-function topics_state_view(history) {
-    const state = history.reduce((acc, event) => { 
-        switch(event.meta.type) { 
-            case "conference_id_generated":
-                acc.registrations = {};
-                acc.topics = [];
-                break;
-            case "registered":
-                acc.registrations[event.data.registration_id] = event.data.name;
-                break;
-            case "session_submitted":
-                try {
-                    acc.topics.push({ topic: event.data.topic, facilitation: event.data.facilitation, name: acc.registrations[event.data.registration_id] });
-                } catch (error) { console.log("Error adding topic: " + error.message); }
-                break;
-            default: break;
+slices.push({ name: "topics_state_view",
+    navigation: { direction: "output", path: "/topics/:registration_id", view: "topics", web_data: (req) => { return { registration_id: req.params.registration_id }; } },
+    initial_state: { registrations: {}, topics: [] },
+    event_handlers: { 
+        "conference_id_generated": (state, event) => { 
+            state.registrations = {};
+            state.topics = [];
+            return state;
+        },
+        "registered": (state, event) => { 
+            state.registrations[event.data.registration_id] = event.data.name;
+            return state;
+        },
+        "session_submitted": (state, event) => { 
+            try {
+                state.topics.push({ 
+                    topic: event.data.topic, 
+                    facilitation: event.data.facilitation, 
+                    name: state.registrations[event.data.registration_id],
+                    registration_id: event.data.registration_id
+                });
+            } catch (error) { 
+                console.log("Error adding topic: " + error.message); 
+            }
+            return state;
         }
-        return acc;
-    }, { registrations: {}, topics: [] }); 
-    return state.topics;
-} // topics_state_view
+    },
+    refinement_function: (state_function, parameter_function) => { 
+        return make_query_result({ 
+            topics: state_function().topics
+        }); 
+    },
+    test_timelines: [
+        { timeline_name: "Happy Path",
+            checkpoints: [
+                { check: "no topics should be returned when no events have occurred",
+                    query: { topics: [] } },
+                { event: { data: { conference_id: "1111-2222-3333" }, name: "conference_id_generated" }},
+                { event: { data: { registration_id: "reg-001", name: "John Doe" }, name: "registered" }},
+                { event: { data: { topic: "Event Sourcing", facilitation: "Adam", registration_id: "reg-001" }, name: "session_submitted" }},
+                { check: "one topic should be returned when one session has been submitted",
+                    query: { topics: [{ topic: "Event Sourcing", facilitation: "Adam", name: "John Doe", registration_id: "reg-001" }] } },
+                { event: { data: { registration_id: "reg-002", name: "Jane Smith" }, name: "registered" }},
+                { event: { data: { topic: "CQRS", facilitation: "Jane", registration_id: "reg-002" }, name: "session_submitted" }},
+                { check: "two topics should be returned when two sessions have been submitted",
+                    query: { topics: [
+                        { topic: "Event Sourcing", facilitation: "Adam", name: "John Doe", registration_id: "reg-001" },
+                        { topic: "CQRS", facilitation: "Jane", name: "Jane Smith", registration_id: "reg-002" }
+                    ] } }
+            ]
+        }
+    ]
+});
 
 function get_state_http_wrapper_v2(query, error_next, success_action) {
     let events = null;
@@ -1239,6 +1276,7 @@ function tests() {
         summary += `🍰 Testing slice: ${slice_name}\n`;
         slice.test_timelines.forEach(timeline => {
             summary += ` ⏱️  Testing timeline: ${timeline.timeline_name}\n`;
+            console.log(`testing timeline: ${timeline.timeline_name}`);
             timeline.checkpoints.reduce((acc, checkpoint) => {
                 summary += checkpoint.progress_marker ? `  🦉 ${checkpoint.progress_marker}\n` : '';
                 if (checkpoint.check !== undefined) {
@@ -1247,11 +1285,14 @@ function tests() {
                             if (slice.event_handlers[event.name] === undefined) return event_handlers_acc;
                             return slice.event_handlers[event.name](event_handlers_acc, event);
                         }, deepClone(slice.initial_state));
-                        let result = slice.refinement_function(state_function, () => checkpoint.parameter, slice.exceptions);
+                        let result = slice.navigation.direction === "input" 
+                            ? slice.refinement_function(state_function, () => checkpoint.parameter, slice.exceptions)
+                            : slice.refinement_function(state_function, () => checkpoint.parameter);
                         const expected = checkpoint.exception !==undefined ? { name: checkpoint.exception } : (checkpoint.query !== undefined ? { query: checkpoint.query} : checkpoint.event);
                         result = { ...result, type: undefined, summary: undefined }; 
-                        
-                        assert(JSON.stringify(result) === JSON.stringify(expected), "Should be equal to " + JSON.stringify(expected) + " but was: " + JSON.stringify(result));
+                        console.log("result: ", JSON.stringify(result, null, 2));
+                        console.log("expected: ", JSON.stringify(expected, null, 2));
+                        assert(JSON.stringify(result) === JSON.stringify(expected), "Should be equal to\n" + JSON.stringify(expected) + "\nbut was:\n" + JSON.stringify(result));
                         checkpoint.test_pass = true; console.log("test passed");
                         summary += `  ✅ Test passed: ${checkpoint.check} \n`;
                         
