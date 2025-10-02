@@ -1006,31 +1006,33 @@ function close_registration_state_change(history, command) {
 } // close_registration_state_change
 
 const error_session_already_submitted = new Error("A session with this topic has already been suggested");
-slices.push({name: "submit_session",
-    navigation: { direction: "output", path: "/submit-session/:registration_id", view: "submit-session", web_data: (req) => { return req.params.registration_id; },
+slices.push({name: "topics",
+    navigation: { direction: "output", path: "/topics/:registration_id", view: "topics", web_data: (req) => { return req.params.registration_id; },
         access_checks: [ participant_registered ]
     },
-    initial_state: { topics: [] },
+    initial_state: { registrations: {}, topics: [] },
     event_handlers: { 
-        "conference_id_generated": (state, event) => { state = { topics: [] }; },
-        "session_submitted": (state, event) => { state.topics.push({ topic: event.data.topic}); },
-        "close_voting": (state, event) => { state.closed = true; }
-    },
-    exceptions: [ error_session_already_submitted ],
-    refinement_function: (state_function, parameter_function) => {
-        const state = state_function();
-        const registration_id = parameter_function();
-        const name = state.registrations[registration_id];
-        if (!name) {
-            return make_query_result({ not_found: true });
+        "conference_id_generated": (state, event) => { 
+            state.registrations = {};
+            state.topics = [];
+            return state;
+        },
+        "registered": (state, event) => { 
+            state.registrations[event.data.registration_id] = event.data.name; 
+            return state;
+        },
+        "session_submitted": (state, event) => { 
+            state.topics.push({ 
+                topic: event.data.topic, 
+                facilitation: event.data.facilitation, 
+                name: state.registrations[event.data.registration_id] 
+            });
+            return state;
         }
-        
-        return make_query_result({ 
-            name: name,
-            conference_name: state.conference_name,
-            registration_id: registration_id,
-            not_found: false
-        }); 
+    },
+    refinement_function: (state_function, parameter_function) => { 
+        const state = state_function();
+        return make_query_result({ topics: state.topics }); 
     },
 });
 
@@ -1063,7 +1065,7 @@ function submit_session(events, command) {
     return { data: { topic: command.data.topic, facilitation: command.data.facilitation, registration_id: command.data.registration_id }, meta: { type: "session_submitted", summary: command.data.facilitation + "," + command.data.topic + "," + command.data.registration_id }};
 } // function submit_session(events, command)
 
-if (!run_tests) app.get("/topics/:registration_id", (req, res, error_next) => {
+if (!run_tests) app.get("/topics-old/:registration_id", (req, res, error_next) => {
     get_state_http_wrapper(topics_state_view, error_next, (state) => { res.render("topics", { topics: state, registration_id: req.params.registration_id }); });
 }); // sessions
 
