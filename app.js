@@ -1047,9 +1047,11 @@ slices.push({name: "topics",
     },
 });
 
-if (!run_tests) app.get("/topic-suggestion", (req, res, error_next) => {
-    get_access_token_http_wrapper(req, error_next, (token) => { res.render("submit-session", { name: token.name, registration_id: token.registration_id }); });
-}); // app.get("/topic-suggestion", (req, res) => {
+slices.push({name: "topic_suggestion",
+    navigation: { direction: "output", path: "/topic-suggestion", view: "submit-session", 
+        access_checks: [participant_registered],
+        web_data: (req) => { return { name: req.query.name, registration_id: req.query.registration_id }; } }
+});
 
 if (!run_tests) app.post("/topic-suggestion", multer().none(), (req, res, error_next) => {
     get_access_token_http_wrapper(req, error_next, (token) => {
