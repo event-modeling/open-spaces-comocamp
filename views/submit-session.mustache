@@ -20,9 +20,9 @@
         <h1>Submit Your Session Proposal</h1>
         
         <section class="form-section">
-            <form method="POST" action="/topic-suggestion{{#registration_id}}?registration_id={{registration_id}}{{/registration_id}}" enctype="multipart/form-data">
+            <form method="POST" action="/topic-suggestion{{#web_data.registration_id}}?registration_id={{web_data.registration_id}}{{/web_data.registration_id}}" enctype="multipart/form-data">
                 <div class="input-group">
-                    <div class="name-display">{{name}}</div>
+                    <div class="name-display">{{web_data.name}}</div>
                 </div>
 
                 <div class="input-group">
@@ -47,7 +47,7 @@
 
                 <div class="button-group">
                     <button type="submit" class="btn btn-primary">Submit Topic</button>
-                    <a href="/sessions{{#registration_id}}?registration_id={{registration_id}}{{/registration_id}}" class="btn btn-secondary">Skip</a>
+                    <a href="/sessions{{#web_data.registration_id}}?registration_id={{web_data.registration_id}}{{/web_data.registration_id}}" class="btn btn-secondary">Skip</a>
                 </div>
             </form>
         </section>

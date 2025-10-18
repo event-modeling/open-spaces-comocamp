@@ -16,11 +16,11 @@
     </header>
     <main class="container">
         <section class="form-section">
-            <h2>Thank you, {{name}}</h2>
-            <p>for registering at {{conference_name}}!</p>
+            <h2>Thank you, {{query.name}}</h2>
+            <p>for registering at {{query.conference_name}}!</p>
             
             <div class="button-group">
-                <a href="/topics/{{registration_id}}" class="btn btn-primary">Continue</a>
+                <a href="/topics/{{web_data.registration_id}}" class="btn btn-primary">Continue</a>
             </div>
         </section>
     </main>

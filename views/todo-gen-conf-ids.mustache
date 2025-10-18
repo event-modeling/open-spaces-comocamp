@@ -15,19 +15,19 @@
             <form action="/provide-conference-id" method="POST" class="manual-id-form" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="conference_id">Conference ID:</label>
-                    <input type="text" id="conference_id" name="conference_id" required {{^requested}}disabled{{/requested}}>
-                    <button type="submit" class="btn" {{^requested}}disabled{{/requested}}>Add ID manually</button>
+                    <input type="text" id="conference_id" name="conference_id" required {{^query.requested}}disabled{{/query.requested}}>
+                    <button type="submit" class="btn" {{^query.requested}}disabled{{/query.requested}}>Add ID manually</button>
                 </div>
             </form>
 
             <div class="results-section">
                 <h3>Currently waiting for confID:</h3>
-                {{#requested}}
+                {{#query.requested}}
                     <p>Yes</p>
-                {{/requested}}
-                {{^requested}}
+                {{/query.requested}}
+                {{^query.requested}}
                     <p>No</p>
-                {{/requested}}
+                {{/query.requested}}
             </div>
         </section>
     </main>

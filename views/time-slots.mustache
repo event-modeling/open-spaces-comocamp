@@ -165,18 +165,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{#time_slots}}
+                        {{#query.time_slots}}
                         <tr>
                             <td>{{start_time}}</td>
                             <td>{{end_time}}</td>
                             <td>{{name}}</td>
                         </tr>
-                        {{/time_slots}}
-                        {{^time_slots}}
+                        {{/query.time_slots}}
+                        {{^query.time_slots}}
                         <tr>
                             <td colspan="3" class="empty-message">No time slots added yet</td>
                         </tr>
-                        {{/time_slots}}
+                        {{/query.time_slots}}
                     </tbody>
                 </table>
             </div>

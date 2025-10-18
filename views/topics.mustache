@@ -29,27 +29,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{#topics}}
+                    {{#query.topics}}
                     <tr>
                         <td>{{name}}</td>
                         <td>{{facilitation}}</td>
                         <td>{{topic}}</td>
                     </tr>
-                    {{/topics}}
-                    {{^topics}}
+                    {{/query.topics}}
+                    {{^query.topics}}
                     <tr>
                         <td colspan="3" class="empty-message">No sessions proposed yet</td>
                     </tr>
-                    {{/topics}}
+                    {{/query.topics}}
                 </tbody>
             </table>
 
-            {{#registration_id}}
+            {{#web_data.registration_id}}
             <div class="button-group">
-                <a href="/topic-suggestion?registration_id={{registration_id}}" class="btn btn-primary">Suggest Another</a>
-				<a href="/voting?registration_id={{registration_id}}" class="btn btn-secondary">Continue to Voting</a>
+                <a href="/topic-suggestion?registration_id={{web_data.registration_id}}" class="btn btn-primary">Suggest Another</a>
+				<a href="/voting?registration_id={{web_data.registration_id}}" class="btn btn-secondary">Continue to Voting</a>
             </div>
-            {{/registration_id}}
+            {{/web_data.registration_id}}
         </section>
     </main>
 </body>

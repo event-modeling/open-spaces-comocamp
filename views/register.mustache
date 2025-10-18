@@ -23,9 +23,9 @@
             {{/not_found}}
             
             {{^not_found}}
-                <h1>Welcome to {{ conference_name }}!</h1>
+                <h1>Welcome to {{ query.conference_name }}!</h1>
                 
-                <form method="POST" action="/register/{{conference_id}}" enctype="multipart/form-data">
+                <form method="POST" action="/register/{{web_data}}" enctype="multipart/form-data">
                     <div class="input-group">
                         <label for="participantName">Name:</label>
                         <input type="text" 

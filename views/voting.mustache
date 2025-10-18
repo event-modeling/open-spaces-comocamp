@@ -20,7 +20,7 @@
         <h1>Vote on your favourite sessions:</h1>
         
         <section class="sessions-section">
-            <form method="POST" action="/voting{{#registration_id}}?registration_id={{registration_id}}{{/registration_id}}" enctype="multipart/form-data">
+            <form method="POST" action="/voting{{#web_data.registration_id}}?registration_id={{web_data.registration_id}}{{/web_data.registration_id}}" enctype="multipart/form-data">
                 <table class="table">
                     <thead>
                         <tr>
@@ -32,7 +32,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{#sessions}}
+                        {{#query.sessions}}
                         <tr>
                             <td>{{vote_count}}</td>
                             <td>{{name}}</td>
@@ -42,12 +42,12 @@
                                 <input type="checkbox" name="session_{{topic}}" value="true" {{#voted}}checked{{/voted}}>
                             </td>
                         </tr>
-                        {{/sessions}}
-                        {{^sessions}}
+                        {{/query.sessions}}
+                        {{^query.sessions}}
                         <tr>
                             <td colspan="5" class="empty-message">No sessions available for voting</td>
                         </tr>
-                        {{/sessions}}
+                        {{/query.sessions}}
                     </tbody>
                 </table>
 

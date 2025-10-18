@@ -169,13 +169,7 @@ function bootstrap(slices) {
                 case "query":
                     console.log("6.0 rendering query: ", JSON.stringify(result.query, null, 2));
                     let query_data = typeof result.query === "string" ? { model: result.query } : result.query;
-                    
-                    // For output slices, merge web_data with query result
-                    if (slice.navigation.direction === "output" && slice.navigation.web_data) {
-                        const web_data = slice.navigation.web_data(req);
-                        query_data = { ...query_data, ...web_data };
-                    }
-                    
+                    query_data = { query: query_data, web_data: (typeof slice.navigation.web_data === 'function') ? slice.navigation.web_data(req) : undefined };
                     console.log("6.1 rendering query data: ", JSON.stringify(query_data, null, 2));
                     res.render(slice.navigation.view, query_data);
                     break;
@@ -330,7 +324,7 @@ slices.push({ name: "set_conference_name_default",
 
 slices.push({ name: "name_the_conference", 
     navigation: { direction: "input", path: "/set-conference-name", next_path: "/set-conference-name-confirmation", 
-        web_data: (req) => { return req.body.conferenceName; } },
+        web_data: (req) => { return { conferenceName: req.body.conferenceName }; } },
     initial_state: "",
     event_handlers: { "conference_named": (state = null, event) => { return event.data.name; } },
     exceptions: { "no_change_to_name": "You didn't change the name. No change registered." },
@@ -569,7 +563,7 @@ slices.push( { name: "conference_id_generation_todo",
 });
 
 slices.push( { name: "conference_id_generation_processor_action",
-    navigation: { direction: "input", path: "/provide-conference-id", next_path: "/todo-gen-conf-ids", web_data: (req) => { return req.body.conference_id; } },
+    navigation: { direction: "input", path: "/provide-conference-id", next_path: "/todo-gen-conf-ids", web_data: (req) => { return { conference_id: req.body.conference_id }; } },
     initial_state: [false],
     processor: { execution: "immediate", todo_list_slice: "conference_id_generation_todo", triggering_events: ["conference_id_requested"],
         processor_filter: (todo_list_item) => { console.log("processor_filter - returning todo_list_item"); return todo_list_item; },
