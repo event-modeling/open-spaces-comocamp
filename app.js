@@ -168,7 +168,7 @@ function bootstrap(slices) {
                     break;
                 case "query":
                     console.log("6.0 rendering query: ", JSON.stringify(result.query, null, 2));
-                    let query_data = typeof result.query === "string" ? { model: result.query } : result.query;
+                    let query_data = typeof result.query === "string" ? result.query  : result.query;
                     query_data = { query: query_data, web_data: (typeof slice.navigation.web_data === 'function') ? slice.navigation.web_data(req) : undefined };
                     console.log("6.1 rendering query data: ", JSON.stringify(query_data, null, 2));
                     res.render(slice.navigation.view, query_data);
@@ -324,7 +324,7 @@ slices.push({ name: "set_conference_name_default",
 
 slices.push({ name: "name_the_conference", 
     navigation: { direction: "input", path: "/set-conference-name", next_path: "/set-conference-name-confirmation", 
-        web_data: (req) => { return { conferenceName: req.body.conferenceName }; } },
+        web_data: (req) => { return req.body.conferenceName; } },
     initial_state: "",
     event_handlers: { "conference_named": (state = null, event) => { return event.data.name; } },
     exceptions: { "no_change_to_name": "You didn't change the name. No change registered." },
@@ -365,7 +365,7 @@ slices.push( { name: "conference_name_confirmation",
     navigation: { direction: "output", path: "/set-conference-name-confirmation", view: "set-conference-name-confirmation" },
     initial_state: "",
     event_handlers: { "conference_named": (state, event) => { console.log("conference_named: " + event.data.name); return event.data.name; } },
-    refinement_function: (state_function, parameter_function) => { return make_query_result({ name: state_function() }); },
+    refinement_function: (state_function, parameter_function) => { return make_query_result( state_function() ); },
 });
 
 slices.push({ name: "set_dates_default", 
@@ -1042,12 +1042,12 @@ slices.push({name: "topics",
 });
 
 slices.push({name: "topic_suggestion",
-    navigation: { direction: "output", path: "/topic-suggestion", view: "submit-session", 
+    navigation: { direction: "output", path: "/topic-suggestion/:registration_id", view: "submit-session", 
         access_checks: [participant_registered],
-        web_data: (req) => { return { name: req.query.name, registration_id: req.query.registration_id }; } }
+        web_data: (req) => { return { name: req.query.name, registration_id: req.params.registration_id }; } }
 });
 
-if (!run_tests) app.post("/topic-suggestion", multer().none(), (req, res, error_next) => {
+if (!run_tests) app.post("/topic-suggestion/:registration_id", multer().none(), (req, res, error_next) => {
     get_access_token_http_wrapper(req, error_next, (token) => {
         change_state_http_wrapper(submit_session, { 
             data: { 
@@ -1057,7 +1057,7 @@ if (!run_tests) app.post("/topic-suggestion", multer().none(), (req, res, error_
             }
         }, error_next, () => { res.redirect("/topics/" + token.registration_id); });
     });
-}); // app.post("/topic-suggestion", (req, res) => {
+}); // app.post("/topic-suggestion/:registration_id", (req, res) => {
 
 function submit_session(events, command) {
     const existingTopics = events.reduce((acc, event) => {
