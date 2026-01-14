@@ -1150,33 +1150,6 @@ slices.push({name: "submit_session",
     }
 });
 
-
-if (!run_tests) app.get("/topics-old/:registration_id", (req, res, error_next) => {
-    get_state_http_wrapper(topics_state_view, error_next, (state) => { res.render("topics", { topics: state, registration_id: req.params.registration_id }); });
-}); // sessions
-
-function topics_state_view(history) {
-    const state = history.reduce((acc, event) => { 
-        switch(event.meta.type) { 
-            case "conference_id_generated":
-                acc.registrations = {};
-                acc.topics = [];
-                break;
-            case "registered":
-                acc.registrations[event.data.registration_id] = event.data.name;
-                break;
-            case "session_submitted":
-                try {
-                    acc.topics.push({ topic: event.data.topic, facilitation: event.data.facilitation, name: acc.registrations[event.data.registration_id] });
-                } catch (error) { console.log("Error adding topic: " + error.message); }
-                break;
-            default: break;
-        }
-        return acc;
-    }, { registrations: {}, topics: [] });
-    return { topics: state.topics };
-} // topics_state_view
-
 slices.push({ name: "topics_state_view",
     navigation: { direction: "output", path: "/topics/:registration_id", view: "topics", web_data: (req) => { return { registration_id: req.params.registration_id }; } },
     initial_state: { registrations: {}, topics: [] },
