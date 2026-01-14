@@ -11,6 +11,8 @@ function deepClone(obj) { if (obj === undefined) return undefined; if (obj === n
     if (Array.isArray(obj)) return obj.map(deepClone);
     if (typeof obj === 'object') { return Object.fromEntries( Object.entries(obj).map(([key, value]) => [key, deepClone(value)]) ); }
     return obj; }
+function get_request(req) { return { method: req.method, url: req.url, headers: req.headers, body: req.body, ip: req.ip }; }
+
 let app, fs, multer, upload;
 if (!run_tests) {
     const express = require("express");
@@ -104,21 +106,41 @@ function bootstrap(slices) {
     slices.forEach(slice => { console.log("bootstrapping slice: ", JSON.stringify(slice, null, 2));
         if (slice.test_timelines !== undefined) delete slice.test_timelines; // not needed to run the app
         if (slice.refinement_function === undefined) {
+           
             console.log("bootstrapping view only slice: ", slice.name);
-            app.get(slice.navigation.path + "", (req, res) => { res.render(slice.navigation.view + "", {}); });
+            app.get(slice.navigation.path + "", (req, res, error_next) => { 
+                console.log("rendering view only slice: ", slice.navigation.view + "", "with data: ", JSON.stringify(slice.navigation.web_data(req), null, 2));
+                if (slice.navigation.access_checks !== undefined) {
+                    // fail here because access checks only protect dynamic data. 
+                    // this requires a refinement function to be defined. 
+                    const new_error = new Error("Access checks only protect dynamic data. This slice requires a refinement function to be defined.");
+                    new_error.status = 500;
+                    return error_next(new_error);
+                }
+                res.render(slice.navigation.view + "", {}); });
             return;
         }
         const app_method = slice.navigation.direction === "input" ? app_post : app_get;
         app_method(slice.navigation.path, (req, res, error_next) => {
+            console.log("EXECUTING SLICE: ", slice.name, slice.navigation.direction);
             if (slice.navigation.access_checks !== undefined) {
-                const access_check = slice.navigation.access_checks.find(check => check(get_events, req));
-                if (access_check === undefined) {
-                    console.log("an access check that failed was found, returning 403");
+                console.log("ACCESS CHECKS: Running", slice.navigation.access_checks.length, "access check(s) for slice:", slice.name);
+                console.log("ACCESS CHECKS: Request details:", JSON.stringify(get_request(req), null, 2));
+                const failed_checks = [];
+                slice.navigation.access_checks.forEach((check, index) => {
+                    const check_result = check(get_events, req);
+                    console.log("ACCESS CHECKS: Check", index + 1, "of", slice.navigation.access_checks.length, "- Result:", check_result);
+                    if (!check_result) {
+                        failed_checks.push(index + 1);
+                    }
+                });
+                if (failed_checks.length > 0) {
+                    console.log("ACCESS CHECKS: FAILED - Check(s)", failed_checks.join(", "), "failed. Denying access. Returning 403");
                     const new_error = new Error("Access denied");
                     new_error.status = 403;
                     return error_next(new_error);
                 }
-                console.log("access checks passed, continuing");
+                console.log("ACCESS CHECKS: PASSED - All", slice.navigation.access_checks.length, "check(s) passed. Continuing");
             }
             let state_function = undefined; 
             try { console.log("2.0 setting up calculating state function");
@@ -266,8 +288,8 @@ function bootstrap(slices) {
     });
     // Custom error handler for 404s
     app.use((req, res, next) => {
-        // skip favicon.ico requests
-        if (req.path === "/favicon.ico") return;
+        // skip favicon.ico requests and Chrome DevTools requests
+        if (req.path === "/favicon.ico" || req.path.startsWith("/.well-known/")) return;
         console.log("404 error handler: " + req.path);
         const err = new Error('Not Found');
         err.status = 404;
@@ -309,7 +331,8 @@ function make_exception_result(name) { return { type: "exception", name: name };
 function make_query_result(query) { return { type: "query", query: query }; }
 
 function participant_registered(get_events_function, request) {
-    const registration_id = request.params.registration_id;
+    const registration_id = request.query.registration_id || request.params.registration_id;
+    console.log("access check - participant_registered - registration_id from request: ", registration_id);
     const state = calculate_state(get_events_function, { registrations: {} }, {
         "registered": (state, event) => {
             state.registrations[event.data.registration_id] = event.data.name;
@@ -1048,35 +1071,84 @@ slices.push({name: "topics",
 });
 
 slices.push({name: "topic_suggestion",
-    navigation: { direction: "output", path: "/topic-suggestion", view: "submit-session", 
+    navigation: { direction: "output", path: "/topic-suggestion/:registration_id", view: "submit-session", 
         access_checks: [participant_registered],
-        web_data: (req) => { return { name: req.query.name, registration_id: req.query.registration_id }; } }
+        web_data: (req) => { return { registration_id: req.params.registration_id }; } },
+    initial_state: { registrations: {}, topics: [] },
+    event_handlers: { 
+        "conference_id_generated": (state, event) => { 
+            state.registrations = {};
+            state.topics = [];
+            return state;
+        },
+        "registered": (state, event) => { 
+            state.registrations[event.data.registration_id] = event.data.name; 
+            return state;
+        },
+        "session_submitted": (state, event) => { 
+            state.topics.push({ 
+                topic: event.data.topic, 
+                facilitation: event.data.facilitation, 
+                name: state.registrations[event.data.registration_id],
+                registration_id: event.data.registration_id
+            });
+            return state;
+        }
+    },
+    refinement_function: (state_function, parameter_function) => { 
+        const state = state_function();
+        const parameter = parameter_function();
+        return make_query_result({ 
+            name: state.registrations[parameter.registration_id],
+            registration_id: parameter.registration_id,
+            topics: state.topics
+        }); 
+    }
 });
 
-if (!run_tests) app.post("/topic-suggestion", multer().none(), (req, res, error_next) => {
-    get_access_token_http_wrapper(req, error_next, (token) => {
-        change_state_http_wrapper(submit_session, { 
-            data: { 
+slices.push({name: "submit_session",
+    navigation: { 
+        path: "/topic-suggestion/:registration_id", 
+        direction: "input", 
+        next_path: (result) => "/topics/" + result.data.registration_id,
+        access_checks: [participant_registered],
+        web_data: (req) => { 
+            return { 
                 topic: req.body.topic, 
                 facilitation: req.body.facilitation, 
-                registration_id: token.registration_id 
-            }
-        }, error_next, () => { res.redirect("/topics/" + token.registration_id); });
-    });
-}); // app.post("/topic-suggestion", (req, res) => {
-
-function submit_session(events, command) {
-    const existingTopics = events.reduce((acc, event) => {
-        switch(event.meta.type) {
-            case "conference_id_generated": acc.topics = new Set(); break;
-            case "session_submitted": acc.topics.add(event.data.topic.toLowerCase()); break;
+                registration_id: req.params.registration_id 
+            }; 
         }
-        return acc;
-    }, { topics: new Set() }).topics;
-
-    if (existingTopics.has(command.data.topic.toLowerCase())) throw error_session_already_submitted;
-    return { data: { topic: command.data.topic, facilitation: command.data.facilitation, registration_id: command.data.registration_id }, meta: { type: "session_submitted", summary: command.data.facilitation + "," + command.data.topic + "," + command.data.registration_id }};
-} // function submit_session(events, command)
+    },
+    initial_state: { topics: [] },
+    event_handlers: { 
+        "conference_id_generated": (state, event) => { 
+            state.topics = [];
+            return state; 
+        },
+        "session_submitted": (state, event) => { 
+            state.topics.push(event.data.topic.toLowerCase());
+            return state; 
+        }
+    },
+    exceptions: { 
+        "session_already_submitted": "This topic has already been submitted."
+    },
+    refinement_function: (state_function, parameter_function) => {
+        const state = state_function();
+        const parameter = parameter_function();
+        
+        if (state.topics.includes(parameter.topic.toLowerCase())) {
+            return make_exception_result("session_already_submitted");
+        }
+        
+        return make_event_result("session_submitted", { 
+            topic: parameter.topic, 
+            facilitation: parameter.facilitation, 
+            registration_id: parameter.registration_id 
+        }, parameter.facilitation + "," + parameter.topic + "," + parameter.registration_id);
+    }
+});
 
 
 if (!run_tests) app.get("/topics-old/:registration_id", (req, res, error_next) => {
@@ -1159,140 +1231,135 @@ slices.push({ name: "topics_state_view",
     ]
 });
 
-function get_state_http_wrapper_v2(query, error_next, success_action) {
-    let events = null;
-    try { events = get_events(); console.log("events count for state view: " + events.length);
-    } catch (error) { console.error("Error getting events: " + error.message);
-        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
-    let state = null;
-    try { state = query.state_view(events); console.log("state: ", JSON.stringify(state));
-        state = query.adjustment_function(state); console.log("state after adjustment_function: ", JSON.stringify(state));
-    } catch (error) { console.error("Error getting state: " + error.message);
-        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
-    if (success_action !== undefined) success_action(state);
-    return state;
-} // get_state_via_http
-
-if (!run_tests) app.get("/voting", (req, res, error_next) => {
-    get_access_token_http_wrapper(req, error_next, (token) => {
-         get_state_http_wrapper_v2(
-            { 
-                state_view: voting_state_view, 
-                adjustment_function: (state) => {
-                    return { registration_id: token.registration_id, sessions: state.map(topic =>({ 
-                        ...topic, 
-                        voted: topic.voters.includes(token.registration_id) })) }; }}, 
-            error_next, 
-            (model) => { res.render("voting", model); });
-    });
-}); // voting
-
-function history_reducer(history, default_state, event_handlers) {
-    const state = history.reduce((acc, event) => {
-        console.log("processing event: " + JSON.stringify(event, null, 2));
-        let event_handler = undefined;
-        try {
-            if (!event_handlers[event.meta.type]) return acc; // skipping event
-            event_handler = event_handlers[event.meta.type];
-        } catch (error) {
-            console.error("Error getting event handler for event: " + JSON.stringify(event, null, 2));
-            console.error(error);
-            return acc;
-        }
-        try {
-            event_handler(acc, event);
-        } catch (error) {
-            console.error("Error handling event: " + JSON.stringify(event, null, 2));
-            console.error(error);
-            return acc;
-        }
-        return acc;
-    }, default_state);
-    return state;
-}
-function state_change(command) {
-    const state = history_reducer(command.history, command.default_state, command.event_handlers);
-    return command.invariant_function(state);
-}
-
-function state_view(history, event_handlers, initial_state, mapper_function) {
-    const state = history_reducer(history, initial_state, event_handlers);
-    let model = undefined;
-    try { model = mapper_function(state); console.log("model: ", JSON.stringify(model, null, 2));
-    } catch (error) { console.error("Error mapping state: " + JSON.stringify(state, null, 2)); console.error(error); }
-    return model;
-}
-
-function voting_state_view(history) {
-    return state_view(history, event_handlers = {
-        "conference_id_generated": (state, event) => { state = { registrations: {}, topics: [] }; },
-        "registered": (state, event) => { state.registrations[event.data.registration_id] = event.data.name; },
-        "session_submitted": (state, event) => { state.topics.push({ topic: event.data.topic, facilitation: event.data.facilitation, name: state.registrations[event.data.registration_id], votes: [] }); },
-        "voted_for_sessions": (state, event) => {
-            state.topics.forEach(topic => { topic.votes = topic.votes.filter(vote => vote !== event.data.registration_id); });
-            event.data.topics.forEach(topic => { state.topics.forEach(t => { if (t.topic === topic) t.votes.push(event.data.registration_id); }); });
+slices.push({ name: "voting",
+    navigation: { 
+        direction: "output", 
+        path: "/voting", 
+        view: "voting",
+        web_data: (req) => { return { registration_id: req.query.registration_id }; },
+        access_checks: [ participant_registered ]
+    },
+    initial_state: { registrations: {}, topics: [], closed: false },
+    event_handlers: { 
+        "conference_id_generated": (state, event) => { 
+            state.registrations = {};
+            state.topics = [];
+            state.closed = false;
+            return state;
         },
-        "close_voting": (state, event) => { state.closed = true; }
-    }, initial_state = { registrations: {}, topics: [] }, 
-       mapper_function = (state)=> { 
-         return state.topics.map(topic => (
-        { topic: topic.topic, facilitation: topic.facilitation, name: topic.name, vote_count: topic.votes.length, voters: topic.votes }));
-    });
-} // voting_state_view
-
-function get_votes_from_post_request(req) {
-    const selectedTopics = [];
-    for (const [key, value] of Object.entries(req.body)) selectedTopics.push(key.replace("session_", ""));
-    return selectedTopics;
-}
-
-function change_state_http_wrapper_v2(command, error_next, success_action) {
-    let events, result_event = undefined;
-    try { events = get_events(); console.log("events count for state change: " + events.length);
-    } catch (error) { console.error("Error getting events: " + error.message);
-        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
-    console.log("-- command: ", JSON.stringify(command, null, 2));
-        try { 
-            const command_handler = command.meta.command_handler;
-            const input_data = {...command, command_handler: undefined};
-            console.log("-- input_data: ", JSON.stringify(input_data, null, 2));
-            result_event = command_handler(events, input_data); console.log("result_event: ", JSON.stringify(result_event));
-    } catch (error) { console.error("Error changing state (command: " + JSON.stringify(command) + "): " + error.message); 
-        const new_error = new Error(error.message); new_error.status = 422; return error_next(new_error); }
-    try { push_event(result_event);
-    } catch (error) { console.error("Error pushing event: " + error.message); 
-        const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
-    if (success_action !== undefined) success_action(result_event);
-    return result_event;
-} // change_state_via_http
-
-if (!run_tests) app.post("/voting", multer().none(), (req, res, error_next) => {
-    get_access_token_http_wrapper(req, error_next, (token) => {
-        change_state_http_wrapper_v2(command = { meta: { command_name: "vote_for_sessions", command_handler: vote_for_sessions }, data: { topics: get_votes_from_post_request(req), registration_id: token.registration_id } }, error_next, () => { res.redirect("/voting?registration_id=" + token.registration_id); });
-    });
-}); // vote
-
-const error_voting_closed = new Error("Voting is closed");
-const error_topic_not_found = new Error("Topic not found");
-function vote_for_sessions(history, input) {
-    console.log("-- vote_for_sessions input: ", JSON.stringify(input, null, 2));
-    return state_change(command = {
-        history: history,
-        default_state: { topics: [], closed: false },
-        event_handlers: {
-            "conference_id_generated": (state, event) => { state = { topics: [], closed: false }; },
-            "session_submitted": (state, event) => { state.topics.push({ topic: event.data.topic}); },
-            "close_voting": (state, event) => { state.closed = true; } },
-        invariant_function: (state) => {
-            if (state.closed) throw error_voting_closed;
-            if (!input.data.topics.reduce((acc, topic) => {
-                if (!state.topics.find(t => t.topic === topic)) return false;
-                return acc;
-            }, true)) throw error_topic_not_found;
-            return { data: { registration_id: input.data.registration_id, topics: input.data.topics }, meta: { type: "voted_for_sessions", summary: input.data.registration_id + "," + input.data.topics} };
+        "registered": (state, event) => { 
+            state.registrations[event.data.registration_id] = event.data.name;
+            return state;
+        },
+        "session_submitted": (state, event) => { 
+            state.topics.push({ 
+                topic: event.data.topic, 
+                facilitation: event.data.facilitation, 
+                name: state.registrations[event.data.registration_id], 
+                votes: [] 
+            });
+            return state;
+        },
+        "voted_for_sessions": (state, event) => {
+            state.topics.forEach(topic => { 
+                topic.votes = topic.votes.filter(vote => vote !== event.data.registration_id); 
+            });
+            event.data.topics.forEach(topic => { 
+                const topicState = state.topics.find(t => t.topic === topic);
+                if (topicState) {
+                    topicState.votes.push(event.data.registration_id);
+                }
+            });
+            return state;
+        },
+        "close_voting": (state, event) => { 
+            state.closed = true;
+            return state;
         }
-    }); 
-} // vote_for_sessions
+    },
+    refinement_function: (state_function, parameter_function) => { 
+        const state = state_function();
+        const parameter = parameter_function();
+        const registration_id = parameter.registration_id;
+        
+        const sessions = state.topics.map(topic => ({
+            topic: topic.topic,
+            facilitation: topic.facilitation,
+            name: topic.name,
+            vote_count: topic.votes.length,
+            voters: topic.votes,
+            voted: topic.votes.includes(registration_id)
+        }));
+        
+        return make_query_result({ 
+            registration_id: registration_id,
+            sessions: sessions
+        }); 
+    }
+});
+
+slices.push({ name: "submit_votes",
+    navigation: { 
+        direction: "input", 
+        path: "/voting", 
+        next_path: (result) => "/voting?registration_id=" + result.data.registration_id,
+        web_data: (req) => { 
+            const selectedTopics = [];
+            for (const [key, value] of Object.entries(req.body)) {
+                if (key.startsWith("session_")) {
+                    selectedTopics.push(key.replace("session_", ""));
+                }
+            }
+            return { 
+                topics: selectedTopics,
+                registration_id: req.query.registration_id || req.body.registration_id
+            }; 
+        },
+        access_checks: [ participant_registered ]
+    },
+    initial_state: { topics: [], closed: false },
+    event_handlers: { 
+        "conference_id_generated": (state, event) => { 
+            state.topics = [];
+            state.closed = false;
+            return state; 
+        },
+        "session_submitted": (state, event) => { 
+            state.topics.push({ topic: event.data.topic }); 
+            return state; 
+        },
+        "close_voting": (state, event) => { 
+            state.closed = true;
+            return state; 
+        }
+    },
+    exceptions: { 
+        "voting_closed": "Voting is closed",
+        "topic_not_found": "Topic not found"
+    },
+    refinement_function: (state_function, parameter_function) => {
+        const state = state_function();
+        const parameter = parameter_function();
+        
+        if (state.closed) {
+            return make_exception_result("voting_closed");
+        }
+        
+        const allTopicsExist = parameter.topics.reduce((acc, topic) => {
+            if (!state.topics.find(t => t.topic === topic)) return false;
+            return acc;
+        }, true);
+        
+        if (!allTopicsExist) {
+            return make_exception_result("topic_not_found");
+        }
+        
+        return make_event_result("voted_for_sessions", { 
+            registration_id: parameter.registration_id, 
+            topics: parameter.topics 
+        }, parameter.registration_id + "," + parameter.topics.join(","));
+    }
+});
 
 if (!run_tests) bootstrap(slices);
 
