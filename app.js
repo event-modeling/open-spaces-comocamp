@@ -50,15 +50,18 @@ function get_events(on_each_event, error_callback) {
         return 0;
     }
 }
-function push_event(event) {
-    let event_type = event.name;
-    let summary = event.summary ? event.summary : "";
-    event = strip_summary(event);
+function persist_event(event) {
+    const event_type = event.name;
+    const summary = event.summary || "";
+    const stripped_event = strip_summary(event);
+    
     if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
     const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('-event.json')).length;
-    const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;   
-    fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
-    notify_processors(event); }
+    const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
+    
+    fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(stripped_event));
+    notify_processors(stripped_event);
+}
 function calculate_state(get_events_function, initial_state, event_handlers) { 
     console.log("1.0 calculate_state called with get_events_function: ", get_events_function, "initial_state: ", initial_state, "event_handlers: ", event_handlers);
     if (get_events_function === undefined) throw new Error("get_events_function is required");
@@ -81,18 +84,6 @@ function notify_processors(event = null) {
     } catch (error) { console.error("Error notifying processors: " + error.message); } }
 const processors = [];
 
-function get_access_token_http_wrapper(request, error_next, success_action) {
-    throw new Error("get_access_token_http_wrapper is deprecated");
-    const registration_id = request.query.registration_id || request.params.registration_id; 
-    get_state_http_wrapper(registrations_state_view, error_next, (state) => {
-        const name = state.registrations[registration_id];
-        if (name === undefined) { const new_error = new Error("Forbidden"); new_error.status = 403; return error_next(new_error); }
-        const token = { name: name, registration_id: registration_id };
-        if (success_action !== undefined) success_action(token);
-        return token;
-    });
-} // get_access_token
-
 function bootstrap(slices) {
     //function app_get(path, error_next, success_action) {}
     function app_post(path, action) {
@@ -109,7 +100,7 @@ function bootstrap(slices) {
            
             console.log("bootstrapping view only slice: ", slice.name);
             app.get(slice.navigation.path + "", (req, res, error_next) => { 
-                console.log("rendering view only slice: ", slice.navigation.view + "", "with data: ", JSON.stringify(slice.navigation.web_data(req), null, 2));
+                console.log("rendering view only slice: ", slice.navigation.view + "", "with data: ", slice.navigation.web_data === undefined ? "undefined" : JSON.stringify(slice.navigation.web_data(req), null, 2));
                 if (slice.navigation.access_checks !== undefined) {
                     // fail here because access checks only protect dynamic data. 
                     // this requires a refinement function to be defined. 
@@ -160,26 +151,16 @@ function bootstrap(slices) {
             switch (result.type) {
                 case "event":
                     try { console.log("4.0 storing event from result: ", JSON.stringify(result, null, 2));
-                        let event_type = result.name;
-                        let summary = result.summary ? result.summary : "";
-                        let event = { data: result.data, name: event_type};
-                        console.log("4.1 ensuring eventstore exists");
-                        if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
-                        console.log("4.2 getting event count");
-                        const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('-event.json')).length;
-                        console.log("4.3 calculating event sequence");
-                        const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
-                        console.log("4.4 writing event to eventstore"); 
-                        fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
-                        console.log("4.5 notifying processors");
-                        notify_processors(event); 
-                        console.log("4.6 about to redirect to next path");
+                        let event = { data: result.data, name: result.name, summary: result.summary };
+                        console.log("4.1 persisting event");
+                        persist_event(event);
+                        console.log("4.2 about to redirect to next path");
                         const next_path = typeof slice.navigation.next_path === 'function' 
                             ? slice.navigation.next_path(result) 
                             : slice.navigation.next_path;
-                        console.log("4.7 redirecting to next path: ", next_path);
+                        console.log("4.3 redirecting to next path: ", next_path);
                         res.redirect(next_path);
-                    } catch (error) { console.error("4.7 Error persisting event: " + error.message);
+                    } catch (error) { console.error("4.4 Error persisting event: " + error.message);
                         const new_error = new Error(error.message); new_error.status = 500; return error_next(new_error); }
                     break;
                 case "exception":
@@ -244,21 +225,11 @@ function bootstrap(slices) {
                     switch (result.type) {
                         case "event":
                             try { console.log("4.0 storing event from result: ", JSON.stringify(result, null, 2));
-                                let event_type = result.name;
-                                let summary = result.summary ? result.summary : "";
-                                let event = { data: result.data, name: event_type};
-                                console.log("4.1 ensuring eventstore exists");
-                                if (!fs.existsSync(eventstore)) fs.mkdirSync(eventstore);
-                                console.log("4.2 getting event count");
-                                const event_count = fs.readdirSync(eventstore).filter(file => file.endsWith('-event.json')).length;
-                                console.log("4.3 calculating event sequence");
-                                const event_seq = event_seq_padding.slice(0, event_seq_padding.length - event_count.toString().length) + event_count;
-                                console.log("4.4 writing event to eventstore"); 
-                                fs.writeFileSync(`${eventstore}/${event_seq}-${event_type}-${summary}-event.json`, JSON.stringify(event));
-                                console.log("4.5 notifying processors");
-                                notify_processors(event); 
-                                console.log("4.6 event stored successfully");
-                            } catch (error) { console.error("4.7 Error persisting event: " + error.message); }
+                                let event = { data: result.data, name: result.name, summary: result.summary };
+                                console.log("4.1 persisting event");
+                                persist_event(event);
+                                console.log("4.2 event stored successfully");
+                            } catch (error) { console.error("4.3 Error persisting event: " + error.message); }
                             break;
                         case "exception":
                             console.error("exception: ", JSON.stringify(result, null, 2));
@@ -281,7 +252,7 @@ function bootstrap(slices) {
                 processor.todo_list = processor.todo_list_function(get_events);
                 // for each item in the todo list, check if it should be processed
                 processor.todo_list.forEach(item => { if (processor.processor_filter(item)) { const result = processor.processor_action(item); 
-                    if (result && result.type === "event") { push_event(result); } } });
+                    if (result && result.type === "event") { persist_event(result); } } });
             }, processor.frequency);
             processor.timer = timer;
         }
@@ -843,7 +814,7 @@ slices.push({name: "register_success",
     },
     refinement_function: (state_function, parameter_function) => { 
         const state = state_function();
-        const registration_id = parameter_function();
+        const registration_id = parameter_function().registration_id;
         
         return make_query_result({ 
             name: state.registrations[registration_id],
